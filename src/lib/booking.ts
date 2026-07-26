@@ -12,7 +12,7 @@
  *   empty   → the enquiry dialog: leave your details, we call you back.
  *
  * The wording is part of the switch, not decoration. A button that says
- * "Κλείσε Ραντεβού" under a heading that says "Αφήστε μας τα στοιχεία σας" tells
+ * "Κλείστε Ραντεβού" under a heading that says "Αφήστε μας τα στοιχεία σας" tells
  * the visitor two different things about what is about to happen.
  */
 import { site } from '../content/site';
@@ -42,10 +42,10 @@ export const booking: BookingMode = url
       href: url,
       useDialog: false,
       external: true,
-      label: 'Κλείσε ραντεβού online',
+      label: 'Κλείστε ραντεβού online',
       icon: 'calendar',
       heading: 'Δείτε τις διαθέσιμες ώρες',
-      lead: 'Επιλέγετε μέρα και ώρα από το ημερολόγιο και το ραντεβού επιβεβαιώνεται αμέσως.',
+      lead: 'Επιλέξτε ημέρα και ώρα από το ημερολόγιο και το ραντεβού σας θα επιβεβαιωθεί αμέσως.',
       hint: 'Ηλεκτρονική κράτηση — ανοίγει σε νέα καρτέλα',
     }
   : {
@@ -54,7 +54,7 @@ export const booking: BookingMode = url
       external: false,
       label: site.cta.label,
       heading: 'Αφήστε μας τα στοιχεία σας',
-      lead: 'Θα σας καλέσουμε για να βρούμε μαζί την πρώτη διαθέσιμη ώρα.',
+      lead: 'Θα σας καλέσουμε άμεσα για να βρούμε μαζί την πρώτη διαθέσιμη ώρα.',
       hint: 'Σας καλούμε εμείς — δεν χρειάζεται να τηλεφωνήσετε',
     };
 

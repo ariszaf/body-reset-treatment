@@ -14,6 +14,7 @@ export function getPage(slug: string): PageMeta {
 
 /** Title ≤60 chars. Home: "{Business} | {Tagline}" · inner: "{Page} | {Business} {Location}" */
 export function generateTitle(page: PageMeta): string {
+  if (page.title) return page.title;   // εγκεκριμένο κείμενο — δεν το πειράζουμε
   const title =
     page.slug === ''
       ? `${site.name} | ${site.tagline}`
@@ -23,6 +24,7 @@ export function generateTitle(page: PageMeta): string {
 
 /** Description ≤155 chars — keyword + location (+ CTA/phone where it fits). */
 export function generateDescription(page: PageMeta): string {
+  if (page.description) return page.description;   // εγκεκριμένο κείμενο
   let desc = page.descriptionHint || page.excerpt || `${page.keyword} — ${site.name}, ${site.location}.`;
   if (!desc.includes(site.location)) desc = `${desc.replace(/\.?\s*$/, '')} στ${site.locationArticle ?? 'ην'} ${site.location}.`;
   const cta = ` Καλέστε: ${site.phone}.`;

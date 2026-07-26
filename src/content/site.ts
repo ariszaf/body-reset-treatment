@@ -11,7 +11,7 @@ export const site = {
   tagline: 'Μασάζ κατ’ οίκον',
   url: 'https://bodyresettreatment.gr', // TODO: confirm domain (must match astro.config site)
   description:
-    'Αθλητικό και σουηδικό μασάζ, θεραπεία προσώπου και βεντούζες — στον δικό σας χώρο, κατόπιν ραντεβού.',
+    'Αθλητικό και σουηδικό μασάζ, θεραπεία προσώπου και βεντούζες στον δικό σας χώρο, κατόπιν ραντεβού.',
 
   /* NAP — must stay IDENTICAL here, in the footer, on the contact page and in the schema.
      MOBILE SERVICE: the treatment happens at the client's home, so there is no
@@ -28,10 +28,10 @@ export const site = {
   },
   location: 'Αθήνα',         // the visible location keyword used in meta/copy
   locationArticle: 'ην',     // "στην Αθήνα"
-  serviceArea: 'Αθήνα και γύρω περιοχές', // TODO: confirm the real coverage
+  serviceArea: 'Αθήνα και περίχωρα', // TODO: confirm the real coverage
   mapUrl: '',
 
-  hours: 'Δευ–Σαβ, κατόπιν ραντεβού',    // TODO: confirm
+  hours: 'Δευτέρα – Σάββατο, αποκλειστικά κατόπιν ραντεβού',    // TODO: confirm
   social: {
     facebook: '',
     instagram: '',
@@ -48,7 +48,7 @@ export const site = {
 
   /* Branding / integrations — ONE CTA sitewide: the appointment.
      Anchor (not a page) so it works from every page while the contact page is pending. */
-  cta: { label: 'Κλείσε Ραντεβού', href: '/#epikoinonia' },
+  cta: { label: 'Κλείστε Ραντεβού', href: '/#epikoinonia' },
 
   /* Online scheduler (Cal). THE MOMENT this is filled, every CTA on the site
      switches from "leave your details and we call you" to real self-service

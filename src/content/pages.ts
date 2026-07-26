@@ -4,7 +4,12 @@
  * Slugs: latin-transliterated ONLY (map in seo.md) — never Greek chars / %-encoding.
  */
 export type PageMeta = {
-  slug: string;            // '' = home · 'ypiresies', 'epikoinonia', …
+  slug: string;
+  /** Χειροκίνητος τίτλος/περιγραφή Google. Όταν λείπουν, παράγονται από
+   *  site.ts + keyword (meta.ts). Μπαίνουν μόνο όταν το κείμενο είναι
+   *  γραμμένο και εγκεκριμένο — αλλιώς η αυτόματη μορφή είναι ασφαλέστερη. */
+  title?: string;
+  description?: string;            // '' = home · 'ypiresies', 'epikoinonia', …
   nameEl: string;          // 'Υπηρεσίες'
   keyword: string;         // primary (focus) keyword — must be UNIQUE per page
   descriptionHint: string; // one-line hint — meta.ts expands it (≤155 final)
@@ -18,6 +23,9 @@ export const pages: PageMeta[] = [
     slug: '',
     nameEl: 'Αρχική',
     keyword: 'μασάζ κατ’ οίκον Αθήνα',
+    title: 'Body Reset Treatment | Μασάζ κατ’ οίκον Αθήνα',
+    description:
+      'Εξειδικευμένο αθλητικό και σουηδικό μασάζ, θεραπεία προσώπου και βεντούζες. Απολαύστε τη συνεδρία στον δικό σας χώρο στην Αθήνα, κατόπιν ραντεβού.',
     descriptionHint: 'Αθλητικό και σουηδικό μασάζ, θεραπεία προσώπου και βεντούζες, στον δικό σας χώρο.',
     excerpt: 'Θεραπείες σώματος στον δικό σας χώρο — αθλητικό μασάζ, σουηδικό μασάζ, βεντούζες.',
     inNav: true,
@@ -26,6 +34,9 @@ export const pages: PageMeta[] = [
     slug: 'poioi-eimaste',
     nameEl: 'Ποιοι Είμαστε',
     keyword: 'αθλητικό μασάζ κατ’ οίκον',
+    title: 'Ποιοι Είμαστε | Μασάζ κατ’ οίκον Αθήνα | Body Reset',
+    description:
+      'Η προσέγγιση πίσω από κάθε συνεδρία αθλητικού και σουηδικού μασάζ — μία επίσκεψη τη φορά, αποκλειστικά στον δικό σας χώρο στην Αθήνα.',
     descriptionHint: 'Η προσέγγιση πίσω από κάθε συνεδρία — μία επίσκεψη τη φορά, στον δικό σας χώρο.',
     excerpt: 'Μια προσέγγιση που ξεκινά από το σώμα, όχι από το πρόγραμμα — στον δικό σας χώρο.',
     inNav: true,
@@ -36,5 +47,5 @@ export const pages: PageMeta[] = [
   { slug: 'oroi-xrisis-kai-politiki-aporritou', nameEl: 'Όροι Χρήσης & Πολιτική Απορρήτου', keyword: 'όροι χρήσης πολιτική απορρήτου', descriptionHint: 'Όροι χρήσης, πολιτική απορρήτου και cookies του ιστότοπου.', inNav: false },
 
   /* Custom 404 — ALWAYS present, branded (spec: pages.md) */
-  { slug: '404', nameEl: 'Η σελίδα δεν βρέθηκε', keyword: '404', descriptionHint: 'Η σελίδα που ψάχνετε δεν υπάρχει ή έχει μετακινηθεί.', inNav: false },
+  { slug: '404', nameEl: 'Η σελίδα δεν βρέθηκε', keyword: '404', descriptionHint: 'Η σελίδα που αναζητάτε δεν υπάρχει πλέον ή έχει μετακινηθεί.', inNav: false },
 ];
