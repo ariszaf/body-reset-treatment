@@ -1,0 +1,9 @@
+# Client-site .gitignore (ships with every project cloned from the starter)
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+qa-report/
+.DS_Store

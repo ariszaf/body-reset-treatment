@@ -1,0 +1,15 @@
+---
+/** Section heading — text-section-title token; optional lead line. */
+interface Props { lead?: string }
+const { lead } = Astro.props;
+---
+
+<div class="section-heading">
+  <h2 class="text-section-title"><slot /></h2>
+  {lead && <p class="text-lead space-stack-sm">{lead}</p>}
+</div>
+
+<style>
+  .section-heading { max-width: 46rem; margin-block-end: var(--stack-lg); }
+  .section-heading p { color: var(--color-muted); }
+</style>

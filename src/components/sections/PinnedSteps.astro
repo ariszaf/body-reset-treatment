@@ -1,0 +1,226 @@
+---
+/**
+ * PinnedSteps — the panel holds still while the content changes under the scroll.
+ *
+ * A tall track (one viewport per step) with a `position: sticky` stage inside it.
+ * The page keeps scrolling completely normally — nothing is hijacked, the
+ * scrollbar never lies, and a flick of the wheel is never swallowed. What the
+ * visitor sees is the stage pinned in place while the step inside it swaps.
+ *
+ * Progress is computed from the track's own position rather than from step
+ * markers or IntersectionObserver: one rAF-throttled read of getBoundingClientRect
+ * gives an exact 0→1 fraction, so the swap point is deterministic instead of
+ * depending on threshold tuning.
+ *
+ * Degradation is the default state, not an afterthought — the markup renders as
+ * a plain stacked list, and the pinning only switches on when JS adds
+ * `is-pinned`. No JS, or reduced motion: all steps are simply readable in order.
+ *
+ * Props:
+ *   eyebrow  small label above the stage
+ *   title    section heading
+ *   steps    { icon, title, text }[]
+ */
+import Container from '@components/Container.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import type { IconName } from '@lib/icons';
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  steps: { icon: IconName; title: string; text: string }[];
+}
+const { eyebrow, title, steps } = Astro.props;
+---
+
+<section class="pinned" style={`--steps:${steps.length}`}>
+  <div class="pinned-track">
+    <div class="pinned-stage">
+      <Container>
+        <div class="pinned-inner">
+          {eyebrow && <p class="text-eyebrow pinned-eyebrow">{eyebrow}</p>}
+          {title && <h2 class="text-section-title pinned-title">{title}</h2>}
+
+          <ol class="pinned-steps">
+            {steps.map((s, i) => (
+              <li class="pinned-step" data-step={i} aria-hidden={i === 0 ? undefined : 'true'}>
+                <BrandIcon name={s.icon} class="pinned-icon" />
+                <h3 class="text-card-title pinned-step-title">{s.title}</h3>
+                <p class="text-lead pinned-step-text">{s.text}</p>
+              </li>
+            ))}
+          </ol>
+
+          <ol class="pinned-progress" aria-hidden="true">
+            {steps.map((_, i) => (
+              <li class="pinned-tick" data-tick={i}>
+                <span class="pinned-num">{String(i + 1).padStart(2, '0')}</span>
+                <span class="pinned-bar"></span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Container>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------------- default: a plain stacked list (no JS / reduced motion) --- */
+  .pinned { padding-block: var(--space-section); }
+  .pinned-steps { list-style: none; margin: var(--stack-xl) 0 0; padding: 0; display: grid; gap: var(--stack-xl); }
+  .pinned-step { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
+  .pinned-step-title { margin-block-start: var(--stack-md); }
+  .pinned-step-text { margin-block-start: var(--stack-sm); color: var(--color-muted); max-width: 34rem; }
+  .pinned-title { margin-block-start: var(--stack-md); }
+  .pinned-progress { display: none; }
+
+  /* --------------------------- pinned mode (JS on) -------------------------- */
+  :global(html.js-pinned) .pinned { padding-block: 0; }
+  :global(html.js-pinned) .pinned-track {
+    /* One viewport of scroll buys one step. */
+    height: calc(var(--steps) * 100dvh);
+    position: relative;
+  }
+  :global(html.js-pinned) .pinned-stage {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: grid;
+    align-content: center;
+    overflow: hidden;
+  }
+
+  :global(html.js-pinned) .pinned-steps {
+    margin-block-start: var(--stack-lg);
+    display: grid;
+    gap: 0;
+  }
+  /* All steps stack in the SAME grid cell, so the stage never changes height and
+     the pin never jumps as the text length varies. */
+  :global(html.js-pinned) .pinned-step {
+    grid-area: 1 / 1;
+    border-top: 0;
+    padding-block-start: 0;
+    opacity: 0;
+    transform: translateY(1.25rem);
+    visibility: hidden;
+    transition:
+      opacity 0.55s var(--reveal-ease),
+      transform 0.55s var(--reveal-ease),
+      visibility 0s linear 0.55s;
+  }
+  :global(html.js-pinned) .pinned-step.is-active {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition:
+      opacity 0.55s var(--reveal-ease),
+      transform 0.55s var(--reveal-ease);
+  }
+
+  /* ------------------------------ progress ---------------------------------- */
+  :global(html.js-pinned) .pinned-progress {
+    display: flex;
+    gap: var(--stack-md);
+    list-style: none;
+    margin: var(--stack-xl) 0 0;
+    padding: 0;
+  }
+  .pinned-tick { display: flex; align-items: center; gap: 0.625rem; }
+  .pinned-num {
+    font-size: var(--text-label);          /* 17px floor */
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+    transition: color var(--transition-base);
+  }
+  .pinned-bar {
+    display: block;
+    width: clamp(2rem, 5vw, 3.5rem);
+    height: 1px;                            /* px — hairline */
+    background: var(--color-border);
+    transform-origin: left;
+    transition: background var(--transition-base);
+  }
+  .pinned-tick.is-active .pinned-num { color: var(--color-text); }
+  .pinned-tick.is-active .pinned-bar { background: var(--color-accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Never pin: the stacked list is the whole experience. */
+    :global(html.js-pinned) .pinned-track { height: auto; }
+    :global(html.js-pinned) .pinned-stage { position: static; height: auto; overflow: visible; }
+    :global(html.js-pinned) .pinned-steps { gap: var(--stack-xl); }
+    :global(html.js-pinned) .pinned-step {
+      grid-area: auto;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      transition: none;
+      border-top: 1px solid var(--color-border);
+      padding-block-start: var(--stack-md);
+    }
+    :global(html.js-pinned) .pinned-progress { display: none; }
+  }
+</style>
+
+<script>
+  /**
+   * Pinning is opt-in from JS so the no-JS render is a readable list, never a
+   * stack of invisible absolutely-positioned steps.
+   */
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function bind() {
+    const sections = document.querySelectorAll<HTMLElement>('.pinned');
+    if (!sections.length || reduce) return;
+    document.documentElement.classList.add('js-pinned');
+
+    sections.forEach((section) => {
+      if (section.dataset.pinBound) return;
+      section.dataset.pinBound = '1';
+
+      const track = section.querySelector<HTMLElement>('.pinned-track');
+      const steps = [...section.querySelectorAll<HTMLElement>('.pinned-step')];
+      const ticks = [...section.querySelectorAll<HTMLElement>('.pinned-tick')];
+      if (!track || steps.length < 2) return;
+
+      let current = -1;
+      let queued = false;
+
+      const apply = () => {
+        queued = false;
+        const rect = track.getBoundingClientRect();
+        // Scrollable distance inside the track while the stage stays pinned.
+        const travel = track.offsetHeight - window.innerHeight;
+        const progress = travel > 0 ? Math.min(Math.max(-rect.top / travel, 0), 1) : 0;
+        // The last step needs the same share as the others, hence the epsilon.
+        const index = Math.min(steps.length - 1, Math.floor(progress * steps.length - 1e-6 + 1e-6));
+
+        if (index === current) return;
+        current = index;
+        steps.forEach((el, i) => {
+          const on = i === index;
+          el.classList.toggle('is-active', on);
+          // Only the visible step is exposed; the others are duplicates to a reader.
+          if (on) el.removeAttribute('aria-hidden');
+          else el.setAttribute('aria-hidden', 'true');
+        });
+        ticks.forEach((el, i) => el.classList.toggle('is-active', i === index));
+      };
+
+      const onScroll = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(apply);
+      };
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      apply();
+    });
+  }
+
+  bind();
+  document.addEventListener('astro:after-swap', bind);
+</script>

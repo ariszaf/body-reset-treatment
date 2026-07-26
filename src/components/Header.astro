@@ -1,0 +1,89 @@
+---
+/** Sticky header — nav from content, mobile hamburger (vanilla JS), CTA button. */
+import { site } from '../content/site';
+import { navigation } from '../content/navigation';
+import Button from './Button.astro';
+import Container from './Container.astro';
+---
+
+<header class="site-header">
+  <Container>
+    <div class="header-inner">
+      <a href="/" class="brand text-card-title" aria-label={`${site.name} — Αρχική`}>{site.name}</a>
+
+      <nav class="main-nav" aria-label="Κύριο μενού">
+        <ul>
+          {navigation.map((item) => (
+            <li><a class="nav-link text-nav-link" href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <div class="header-cta">
+        <Button href={site.cta.href}>{site.cta.label}</Button>
+      </div>
+
+      <button class="hamburger" aria-label="Μενού" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </Container>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Μενού κινητού" hidden>
+    <ul>
+      {navigation.map((item) => (
+        <li><a class="text-nav-link" href={item.href}>{item.label}</a></li>
+      ))}
+      <li><a class="text-nav-link" href={site.cta.href}>{site.cta.label}</a></li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .header-inner { display: flex; align-items: center; gap: var(--stack-md); padding-block: 0.75rem; }
+  .brand {
+    color: var(--color-primary-dark); text-decoration: none; font-weight: 700;
+    /* ≥40px tap target, layout-neutral */
+    display: inline-block; padding-block: 0.45em; margin-block: -0.45em;
+  }
+  .main-nav { margin-inline-start: auto; }
+  .main-nav ul { display: flex; gap: var(--stack-md); list-style: none; margin: 0; padding: 0; }
+
+  /* Hover: thin underline grows from center (catalog: animate.md) */
+  .nav-link { position: relative; text-decoration: none; color: var(--color-text); padding-block: 0.25em; }
+  .nav-link::after {
+    content: ''; position: absolute; inset-inline: 0; bottom: 0; height: 2px;
+    background: var(--color-primary); transform: scaleX(0); transform-origin: center;
+  }
+  @media (hover: hover) {
+    .nav-link::after { transition: transform var(--transition-base); }
+    .nav-link:hover::after { transform: scaleX(1); }
+  }
+
+  .hamburger { display: none; flex-direction: column; justify-content: center; gap: 5px; background: none; border: 0; padding: 0.75rem 0.5rem; min-height: 2.75rem; min-width: 2.75rem; cursor: pointer; }
+  .hamburger span { width: 24px; height: 2px; background: var(--color-text); }
+
+  .mobile-nav ul { list-style: none; margin: 0; padding: var(--space-container); display: grid; gap: var(--stack-sm); }
+  .mobile-nav a { display: block; padding: 0.6em 0; text-decoration: none; color: var(--color-text); }
+
+  @media (max-width: 48rem) {
+    .main-nav, .header-cta { display: none; }
+    .hamburger { display: flex; margin-inline-start: auto; }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector('.hamburger');
+  const nav = document.getElementById('mobile-nav');
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    if (nav) nav.hidden = open;
+  });
+</script>

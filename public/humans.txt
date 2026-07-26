@@ -1,0 +1,10 @@
+/* TEAM */
+Agency: Polarzee — Web Development & Digital Marketing
+Site: https://polarzee.com
+Location: Athens, Greece
+Address: Asklipiou 26-28, Athens
+
+/* SITE */
+Client: Body Reset Treatment
+Built by: Polarzee (https://polarzee.com)
+Services: Web Development, SEO, GEO/AI Visibility, Google Ads

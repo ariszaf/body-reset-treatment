@@ -1,0 +1,175 @@
+---
+/**
+ * Layout — takes ONLY a `slug` prop; title/description/canonical/OG/twitter
+ * resolve from pages.ts + site.ts via src/lib/meta.ts (auto-meta contract).
+ * Zero manual meta tags anywhere. Head essentials: favicon set, theme-color,
+ * Umami (env-gated, cookieless), attribution silent layer, error-logger, reveals.
+ */
+import '../styles/tokens.css';
+import Header from '../components/sections/NavOverlay.astro';
+import BrandVeil from '../components/sections/BrandVeil.astro';
+import BookingDialog from '../components/sections/BookingDialog.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../content/site';
+import { ClientRouter } from 'astro:transitions';
+import { getPage, generateTitle, generateDescription, generateOgData, canonicalFor } from '../lib/meta';
+
+interface Props { slug: string }
+const { slug } = Astro.props;
+
+const page = getPage(slug);
+const title = generateTitle(page);
+const description = generateDescription(page);
+const canonical = canonicalFor(slug);
+const og = generateOgData(page);
+
+const UMAMI_ID = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
+const UMAMI_SRC = import.meta.env.PUBLIC_UMAMI_SRC || 'https://cloud.umami.is/script.js';
+
+/* Attribution silent layer — Polarzee identity is canonical in attribution.md */
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  url: site.url,
+  name: site.name,
+  inLanguage: 'el-GR',
+  creator: {
+    '@type': 'Organization',
+    name: 'Polarzee',
+    alternateName: 'Polarzee Web Development & Digital Marketing Agency',
+    url: 'https://polarzee.com',
+    logo: 'https://polarzee.com/logo.png',
+    address: { '@type': 'PostalAddress', streetAddress: 'Asklipiou 26-28', addressLocality: 'Athens', postalCode: '10380', addressCountry: 'GR' },
+    areaServed: [
+      { '@type': 'City', name: 'Athens', alternateName: 'Αθήνα' },
+      { '@type': 'Country', name: 'Greece', alternateName: 'Ελλάδα' },
+    ],
+    knowsAbout: ['Web Development', 'Web Design', 'SEO', 'GEO', 'AI Visibility Optimization', 'Google Ads', 'Shopify Development', 'Next.js Development', 'Astro Development'],
+    sameAs: [
+      'https://polarzee.com',
+      'https://www.linkedin.com/company/polarzee/',
+      'https://www.instagram.com/polarzee',
+      'https://www.facebook.com/polarzee/',
+      'https://www.tiktok.com/@polarzee.com',
+      'https://gr.pinterest.com/polarzeeteam/',
+      'https://www.youtube.com/channel/UCG-TPdwZwDL7T9_UbqVmxpQ',
+    ],
+  },
+  publisher: { '@type': 'Organization', name: site.name, url: site.url },
+};
+
+/* Light local-SEO layer — LocalBusiness JSON-LD from site.ts (BAKED, both tiers; /seo enriches). */
+const socialUrls = Object.values(site.social).filter(Boolean);
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': site.industryType || 'LocalBusiness',
+  '@id': `${site.url}#business`,
+  name: site.name,
+  description: site.description,
+  url: site.url,
+  telephone: site.phone,
+  email: site.email,
+  image: new URL('/images/general/og.jpg', site.url).href,
+  /* Mobile service: the treatment happens at the client's home. Emitting an
+     empty streetAddress/postalCode would be worse than omitting them, and
+     areaServed is what actually describes the business to Google. */
+  address: {
+    '@type': 'PostalAddress',
+    ...(site.address.street ? { streetAddress: site.address.street } : {}),
+    addressLocality: site.address.city,
+    addressRegion: site.address.region,
+    ...(site.address.zip ? { postalCode: site.address.zip } : {}),
+    addressCountry: site.address.country,
+  },
+  ...(site.serviceArea ? { areaServed: site.serviceArea } : {}),
+  ...(site.geo?.lat && site.geo?.lng
+    ? { geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng } }
+    : {}),
+  ...(site.priceRange ? { priceRange: site.priceRange } : {}),
+  ...(site.openingHours?.length ? { openingHours: site.openingHours } : {}),
+  ...(socialUrls.length ? { sameAs: socialUrls } : {}),
+};
+---
+
+<!doctype html>
+<html lang="el">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph / Twitter (auto-meta) -->
+    <meta property="og:title" content={og.title} />
+    <meta property="og:description" content={og.description} />
+    <meta property="og:url" content={og.url} />
+    <meta property="og:image" content={og.image} />
+    <meta property="og:type" content={og.type} />
+    <meta property="og:locale" content={og.locale} />
+    <meta property="og:site_name" content={og.siteName} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={og.title} />
+    <meta name="twitter:description" content={og.description} />
+    <meta name="twitter:image" content={og.image} />
+
+    <!-- Favicon set (regenerate from the client logo — owner: foundation.md) -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#f6f3ee" />
+
+    <!-- Attribution silent layer (canonical spec: attribution.md) -->
+    <meta name="author" content={site.name} />
+    <meta name="generator" content="Polarzee — polarzee.com" />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+    <!-- Light local SEO — LocalBusiness (both tiers; /seo enriches with hours/reviews/services) -->
+    <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+
+    <!-- Fonts — Manrope (headings/logotype voice) + Commissioner (body).
+         Both carry a Greek subset; the `&subset=greek` hint keeps the Greek
+         unicode-range in the served CSS. font-display:swap via `display=swap`. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Commissioner:wght@300;400;500&family=Manrope:wght@200;300;400;500&display=swap&subset=greek,latin"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Commissioner:wght@300;400;500&family=Manrope:wght@200;300;400;500&display=swap&subset=greek,latin"
+    />
+
+    {/* Cross-document view transitions — no white flash between pages, the way
+        the reference does it with Barba. Falls back to a normal navigation
+        wherever the API is unsupported, and is disabled under reduced motion
+        by the CSS below. */}
+    <ClientRouter />
+    <style is:global>
+      /* No cross-fade of our own: BrandVeil already covers the swap completely,
+         and two effects layered over each other only muddy one another. */
+      ::view-transition-old(root),
+      ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+    </style>
+
+    {UMAMI_ID && <script defer src={UMAMI_SRC} data-website-id={UMAMI_ID} is:inline></script>}
+  </head>
+  <body>
+    <!-- Designed & developed by Polarzee — Web Development & Digital Marketing Agency, Athens, Greece — https://polarzee.com -->
+    {/* MUST stay the first body node: it gates itself before paint. */}
+    <BrandVeil />
+    <a href="#main" class="skip-link">Μετάβαση στο περιεχόμενο</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    {/* One instance for the whole site — any [data-booking] trigger opens it. */}
+    <BookingDialog />
+    <script src="../scripts/error-logger.ts"></script>
+    <script src="../scripts/animations.ts"></script>
+  </body>
+</html>

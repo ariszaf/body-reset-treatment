@@ -1,0 +1,92 @@
+---
+/**
+ * FullBleedBreak — an edge-to-edge photograph between text sections.
+ *
+ * The page otherwise lives inside one 64rem column. This deliberately breaks
+ * out of it: the image runs the full width of the viewport, gets a lot of
+ * height, and carries at most one quiet line of text. It is the editorial
+ * beat that stops a minimal site from reading as a single uniform block.
+ *
+ * The reveal is a WIPE, not a fade — the frame opens from the left over 1.6s.
+ * A fade says "content loaded"; a wipe says someone chose to show you this.
+ *
+ * Props:
+ *   image     ImageEntry from images.ts
+ *   caption   optional quiet line beneath the frame
+ *   ratio     aspect on desktop (default '21 / 9'); portrait screens get 4/5
+ */
+import type { ImageEntry } from '@content/images';
+import Container from '@components/Container.astro';
+
+interface Props {
+  image: ImageEntry;
+  caption?: string;
+  ratio?: string;
+}
+const { image, caption, ratio = '21 / 9' } = Astro.props;
+---
+
+<section class="bleed" style={`--bleed-ratio:${ratio}`}>
+  {/* reveal-clip is the engine's wipe (mask-based since starter v1.6.1 — a
+      clip-path here would deadlock the observer). Only the timing is overridden. */}
+  <figure class="bleed-frame reveal reveal-clip">
+    <img
+      src={image.src}
+      alt={image.alt}
+      width={image.width}
+      height={image.height}
+      loading="lazy"
+      decoding="async"
+    />
+  </figure>
+  {caption && (
+    <Container>
+      <p class="bleed-caption text-caption reveal reveal-up">{caption}</p>
+    </Container>
+  )}
+</section>
+
+<style>
+  .bleed {
+    /* No py-section: this IS the break in the rhythm, so it sits tight against
+       the sections either side and lets them supply the air. */
+    margin-block: var(--space-section);
+  }
+  .bleed-frame {
+    margin: 0;
+    width: 100%;
+    aspect-ratio: 4 / 5;              /* portrait screens */
+    overflow: hidden;
+  }
+  .bleed-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scale(1.04);
+    transition: transform 2.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .bleed-caption {
+    margin-block-start: var(--stack-md);
+    max-width: 34rem;
+  }
+
+  @media (min-width: 48rem) {
+    .bleed-frame { aspect-ratio: var(--bleed-ratio); }
+  }
+
+  /* Slower than a standard reveal, and no fade — the frame should read as being
+     opened, not as an image loading. */
+  :global(html.reveal-ready) .bleed-frame {
+    opacity: 1;
+    transition:
+      -webkit-mask-size 1.6s cubic-bezier(0.33, 0.85, 0.3, 1),
+      mask-size 1.6s cubic-bezier(0.33, 0.85, 0.3, 1);
+  }
+  /* The photograph settles out of its slight over-scale as the frame opens. */
+  :global(html.reveal-ready) .bleed-frame.in img { transform: scale(1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bleed-frame img { transform: none !important; transition: none !important; }
+  }
+</style>

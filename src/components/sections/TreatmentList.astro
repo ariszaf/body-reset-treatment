@@ -1,0 +1,155 @@
+---
+/**
+ * TreatmentList — the six treatments as a quiet, self-closing accordion.
+ *
+ * ZERO JavaScript. Native <details>/<summary> carries the whole interaction:
+ * keyboard, screen readers, and the browser's own find-in-page (which expands a
+ * closed section to show a match) all work without a line of script. A
+ * hand-rolled accordion gets at least one of those wrong.
+ *
+ * One open at a time comes from the `name` attribute — the platform's exclusive
+ * accordion. Where unsupported, several can be open, which is harmless.
+ *
+ * The open/close glide uses ::details-content with interpolate-size. Where that
+ * is unsupported (Firefox, at time of writing) the panel simply appears
+ * instantly — still perfectly usable, just without the ease. Height is never
+ * measured in JS, so nothing can desync when the text reflows.
+ *
+ * Props: { title?, lead?, items }
+ */
+import Container from '@components/Container.astro';
+import SectionHeading from '@components/SectionHeading.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import type { Service } from '@content/services';
+
+interface Props {
+  title?: string;
+  lead?: string;
+  items: Service[];
+}
+const { title, lead, items } = Astro.props;
+---
+
+<section class="py-section">
+  <Container>
+    {title && <SectionHeading lead={lead}>{title}</SectionHeading>}
+
+    <div class="tl-list reveal-stagger">
+      {items.map((item, i) => (
+        <details class="tl-item reveal reveal-up" name="treatment" open={i === 0}>
+          <summary class="tl-summary">
+            <BrandIcon name={item.icon} class="tl-icon" />
+            <span class="tl-head">
+              <h3 class="text-card-title tl-title">{item.title}</h3>
+              {/* A length option inside one treatment — never a second row. */}
+              {item.durations && (
+                <span class="tl-durations">{item.durations.join(' · ')}</span>
+              )}
+            </span>
+            <span class="tl-chevron" aria-hidden="true">
+              <svg width="14" height="9" viewBox="0 0 14 9" fill="none">
+                <path d="M1 1L7 7L13 1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+              </svg>
+            </span>
+          </summary>
+
+          <div class="tl-body">
+            {item.description.split('\n\n').map((para) => (
+              <p class="text-card-body tl-text">{para}</p>
+            ))}
+          </div>
+        </details>
+      ))}
+    </div>
+  </Container>
+</section>
+
+<style>
+  /* Lets the browser ease to and from `auto` height. Scoped to this component
+     so it cannot change layout behaviour anywhere else on the site. */
+  .tl-list { interpolate-size: allow-keywords; }
+
+  .tl-item { border-top: 1px solid var(--color-border); }
+  .tl-item:last-child { border-bottom: 1px solid var(--color-border); }
+
+  /* ------------------------------- summary ------------------------------- */
+  .tl-summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    padding-block: clamp(1.25rem, 3vw, 1.9rem);
+    cursor: pointer;
+    list-style: none;                 /* drop the default disclosure marker */
+    transition: color var(--transition-base);
+  }
+  .tl-summary::-webkit-details-marker { display: none; }
+  .tl-summary::marker { content: ''; }
+
+  .tl-summary :global(.tl-icon) {
+    width: clamp(2.25rem, 4vw, 2.75rem);
+    height: clamp(2.25rem, 4vw, 2.75rem);
+    transition: color var(--transition-base);
+  }
+  .tl-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 1rem;
+  }
+  .tl-title { margin: 0; font-weight: 400; transition: color var(--transition-base); }
+  /* Quiet enough to read as an option on the treatment, not as a price list. */
+  .tl-durations {
+    font-size: var(--text-label);     /* 17px floor */
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+
+  .tl-chevron {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;                   /* ≥44px tap target, inside the row */
+    height: 2.75rem;
+    color: var(--color-muted);
+    transition: transform var(--transition-base), color var(--transition-base);
+  }
+  .tl-item[open] .tl-chevron { transform: rotate(180deg); color: var(--color-text); }
+  .tl-item[open] .tl-summary :global(.tl-icon) { color: var(--color-text); }
+
+  @media (hover: hover) {
+    .tl-summary:hover .tl-title { color: var(--color-accent); }
+    .tl-summary:hover .tl-chevron { color: var(--color-text); }
+  }
+  .tl-summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* -------------------------------- body --------------------------------- */
+  .tl-body {
+    padding-block-end: clamp(1.5rem, 3.5vw, 2.25rem);
+    /* Line the text up with the title, past the mark's column. */
+    padding-inline-start: calc(clamp(2.25rem, 4vw, 2.75rem) + clamp(1rem, 2.5vw, 1.75rem));
+    max-width: 46rem;
+  }
+  .tl-text { color: var(--color-muted); }
+  .tl-text + .tl-text { margin-block-start: var(--stack-md); }
+
+  /* The glide. Progressive enhancement: without ::details-content support the
+     panel just appears, which is the correct fallback for a disclosure. */
+  .tl-item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 0.42s var(--reveal-ease),
+      content-visibility 0.42s allow-discrete;
+  }
+  .tl-item[open]::details-content { block-size: auto; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tl-item::details-content { transition: none; }
+    .tl-chevron { transition: none; }
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+/**
+ * Breadcrumbs — visual trail + BreadcrumbList JSON-LD (spec origin: seo.md §10).
+ * Place at the top of every page EXCEPT the homepage.
+ * Auto-derives from the current URL via pages.ts; pass `trail` to override
+ * (e.g. service pages: [{name:'Υπηρεσίες',href:'/ypiresies/'},{name:'Λεύκανση'}]).
+ */
+import { site } from '../content/site';
+import { pages } from '../content/pages';
+
+interface Crumb { name: string; href?: string }
+interface Props { trail?: Crumb[] }
+
+const { trail } = Astro.props;
+
+const path = Astro.url.pathname.replace(/\/$/, '').replace(/^\//, '');
+const auto: Crumb[] = path
+  ? path.split('/').map((seg, i, all) => {
+      const slug = all.slice(0, i + 1).join('/');
+      const page = pages.find((p) => p.slug === slug);
+      return { name: page?.nameEl ?? seg, href: i < all.length - 1 ? `/${slug}/` : undefined };
+    })
+  : [];
+
+const crumbs: Crumb[] = [{ name: 'Αρχική', href: '/' }, ...(trail ?? auto)];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.name,
+    ...(c.href ? { item: new URL(c.href, site.url).href } : {}),
+  })),
+};
+---
+
+{crumbs.length > 1 && (
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <ol>
+      {crumbs.map((c, i) => (
+        <li>
+          {c.href ? <a href={c.href}>{c.name}</a> : <span aria-current="page">{c.name}</span>}
+          {i < crumbs.length - 1 && <span class="sep" aria-hidden="true">›</span>}
+        </li>
+      ))}
+    </ol>
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+  </nav>
+)}
+
+<style>
+  .breadcrumbs { padding-block: var(--stack-sm); }
+  .breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+  .breadcrumbs li { display: flex; gap: 0.5rem; align-items: center; font-size: var(--text-caption); color: var(--color-muted); }
+  /* Padding + matching negative margin: a ≥40px touch target without changing
+     where the crumb sits on the line. */
+  .breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-block;
+    padding-block: 0.55em;
+    margin-block: -0.55em;
+  }
+  @media (hover: hover) { .breadcrumbs a:hover { color: var(--color-primary); text-decoration: underline; } }
+  .sep { color: var(--color-border); }
+</style>

@@ -1,0 +1,52 @@
+---
+/**
+ * Όροι Χρήσης & Πολιτική Απορρήτου — ΕΝΙΑΙΑ νομική σελίδα (spec: legal.md).
+ * Renders the three documents in sequence (Όροι → Απόρρητο → Cookies) and the
+ * builder disclaimer LAST — wording varies per site (renderBuilderDisclaimer).
+ */
+import { marked } from 'marked';
+import Layout from '../layouts/Layout.astro';
+import Container from '../components/Container.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { renderLegal, renderBuilderDisclaimer } from '../content/legal';
+
+const html = marked.parse(
+  [renderLegal('terms'), renderLegal('privacy'), renderLegal('cookies'), renderBuilderDisclaimer()].join('\n\n---\n\n')
+);
+---
+
+<Layout slug="oroi-xrisis-kai-politiki-aporritou">
+  <Container>
+    <Breadcrumbs />
+    <article class="legal-doc py-section" set:html={html} />
+  </Container>
+</Layout>
+
+<style is:global>
+  .legal-doc { max-width: 46rem; }
+  .legal-doc h2 { font-size: var(--text-section-title); margin-block: var(--stack-xl) var(--stack-md); }
+  .legal-doc h2:first-child { margin-block-start: 0; }
+  .legal-doc h3 { font-size: var(--text-card-title); margin-block: var(--stack-lg) var(--stack-sm); }
+  .legal-doc p, .legal-doc li { line-height: 1.7; margin-block-end: var(--stack-sm); }
+  .legal-doc table { width: 100%; border-collapse: collapse; font-size: var(--text-body); }
+  .legal-doc th, .legal-doc td { border: 1px solid var(--color-border); padding: 0.5em 0.75em; text-align: left; }
+  .legal-doc blockquote { border-inline-start: 3px solid var(--color-border); padding-inline-start: var(--stack-md); color: var(--color-muted); }
+  .legal-doc hr { border: 0; border-top: 1px solid var(--color-border); margin-block: var(--stack-xl); }
+
+  /* Inline links in the prose (emails, URLs, the authority's site) sat at a 22px
+     hit area — below the 40px touch minimum. Vertical padding grows the target
+     without touching the line box; the negative margin keeps the paragraph
+     rhythm identical. Same pattern as the footer and .link-underline. */
+  .legal-doc a {
+    display: inline-block;
+    padding-block: 0.62em;
+    margin-block: -0.62em;
+    color: var(--color-text);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+  @media (hover: hover) {
+    .legal-doc a { transition: color var(--transition-base); }
+    .legal-doc a:hover { color: var(--color-accent); }
+  }
+</style>

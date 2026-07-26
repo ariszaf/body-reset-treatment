@@ -1,0 +1,189 @@
+---
+/**
+ * Ποιοι Είμαστε.
+ *
+ * NO photographs on this page. The one image the site owns belongs to the hero;
+ * repeating it here would read as padding. More importantly the service is
+ * mobile — there is no premises — so an interior shot would be describing
+ * something that does not exist. The page is carried by type and line marks.
+ *
+ * ⚠ COPY NOTE: nothing here claims credentials, years in practice, staff names
+ * or certifications — none of that was supplied, and inventing it on a health
+ * page is not acceptable.
+ */
+import Layout from '@layouts/Layout.astro';
+import Container from '@components/Container.astro';
+import Button from '@components/Button.astro';
+import WaveRule from '@components/WaveRule.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import { site } from '@content/site';
+import { booking, bookingAttrs } from '@lib/booking';
+
+const principles = [
+  {
+    title: 'Αξιολόγηση πριν από κάθε άγγιγμα',
+    text: 'Καμία συνεδρία δεν ξεκινά χωρίς να καταλάβουμε πρώτα τι συμβαίνει, από πότε και υπό ποιες συνθήκες επιδεινώνεται.',
+  },
+  {
+    title: 'Μία επίσκεψη τη φορά',
+    text: 'Δεν υπάρχει επόμενος στην αναμονή. Ο χρόνος που κλείνετε είναι ο χρόνος που παίρνετε, χωρίς συμπίεση.',
+  },
+  {
+    title: 'Χωρίς πακέτα και δεσμεύσεις',
+    text: 'Η επόμενη συνεδρία ορίζεται μόνο αν έχει νόημα. Δεν πουλάμε σειρές συνεδριών εκ των προτέρων.',
+  },
+];
+
+const athome = [
+  {
+    icon: 'home' as const,
+    title: 'Στον δικό σας χώρο',
+    text: 'Το σαλόνι ή η κρεβατοκάμαρα αρκούν. Χρειάζεται περίπου δύο επί δύο μέτρα ελεύθερα — τα υπόλοιπα τα φέρνουμε εμείς.',
+  },
+  {
+    icon: 'table' as const,
+    title: 'Πλήρης εξοπλισμός',
+    text: 'Επαγγελματικό κρεβάτι, καθαρά λινά και έλαια σε κάθε επίσκεψη. Ο χώρος παραδίδεται όπως τον βρήκαμε.',
+  },
+];
+---
+
+<Layout slug="poioi-eimaste">
+  <section class="py-section page-head">
+    <Container>
+      <Breadcrumbs />
+      <p class="text-eyebrow reveal reveal-up">Ποιοι είμαστε</p>
+      <h1 class="text-h1 page-title reveal reveal-up">Μια προσέγγιση που ξεκινά από το σώμα, όχι από το πρόγραμμα</h1>
+      <p class="text-lead page-lead reveal reveal-up">
+        Το Body Reset Treatment δεν λειτουργεί σαν κατάστημα υπηρεσιών. Η θεραπεία
+        έρχεται σε εσάς, και κάθε συνεδρία σχεδιάζεται για το συγκεκριμένο σώμα που
+        βρίσκεται μπροστά μας.
+      </p>
+    </Container>
+  </section>
+
+  <section class="py-section athome">
+    <Container>
+      <h2 class="text-section-title reveal reveal-up">Πώς γίνεται στο σπίτι</h2>
+      <ul class="athome-list reveal-stagger">
+        {athome.map((item) => (
+          <li class="athome-item reveal reveal-up">
+            <BrandIcon name={item.icon} />
+            <h3 class="text-card-title athome-title">{item.title}</h3>
+            <p class="text-card-body athome-text">{item.text}</p>
+          </li>
+        ))}
+      </ul>
+      <p class="text-card-body athome-note reveal reveal-up">
+        Δουλεύουμε αποκλειστικά κατόπιν ραντεβού, ώστε να μην υπάρχει ποτέ αναμονή
+        ούτε επικάλυψη μεταξύ επισκέψεων.
+      </p>
+    </Container>
+  </section>
+
+  <WaveRule />
+
+  <section class="py-section principles">
+    <Container>
+      <h2 class="text-section-title reveal reveal-up">Πώς δουλεύουμε</h2>
+      <ol class="principles-list reveal-stagger">
+        {principles.map((p, i) => (
+          <li class="principle reveal reveal-up">
+            <span class="principle-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <div class="principle-body">
+              <h3 class="text-card-title">{p.title}</h3>
+              <p class="text-card-body principle-text">{p.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Container>
+  </section>
+
+  <WaveRule />
+
+  <section class="py-section detail-band">
+    <Container>
+      <div class="detail-copy">
+        <p class="text-eyebrow reveal reveal-up">Ραντεβού</p>
+        <h2 class="text-section-title reveal reveal-up">Κλείστε την πρώτη σας συνεδρία</h2>
+        <p class="text-lead detail-lead reveal reveal-up">{booking.lead}</p>
+        <div class="detail-action reveal reveal-up">
+          {/* Online scheduler once site.bookingUrl is set; the enquiry dialog until then. */}
+          <Button class="booking-btn" {...bookingAttrs}>
+            {booking.icon && <BrandIcon name={booking.icon} class="booking-btn-icon" />}
+            <span>{booking.label}</span>
+          </Button>
+          <p class="booking-hint text-caption">{booking.hint}</p>
+        </div>
+      </div>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  /* The header floats over the page with no background, so inner pages have to
+     reserve the clearance the homepage gets for free from its full-bleed hero.
+     Matches the bar: logo clamp(4.5rem,8.5vw,7.5rem) + the edge gutter twice. */
+  .page-head { padding-block-start: calc(var(--space-section) + clamp(6.5rem, 9.5vw, 10.5rem)); }
+  .page-title {
+    margin-block-start: var(--stack-md);
+    max-width: 24ch;
+    text-transform: uppercase;
+    font-weight: 200;
+    letter-spacing: 0.1em;
+    line-height: 1.35;
+  }
+  .page-lead { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
+
+  /* ------------------------------ at home ---------------------------- */
+  .athome { background: var(--color-alt); }
+  .athome-list {
+    list-style: none;
+    margin: var(--stack-xl) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--stack-xl);
+  }
+  .athome-item { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
+  .athome-title { margin-block-start: var(--stack-md); }
+  .athome-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
+  .athome-note {
+    margin-block-start: var(--stack-xl);
+    max-width: 44rem;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .athome-list { grid-template-columns: repeat(2, 1fr); gap: var(--stack-xl); }
+  }
+
+  /* ---------------------------- principles --------------------------- */
+  .principles-list { list-style: none; margin: var(--stack-lg) 0 0; padding: 0; }
+  .principle {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: clamp(1.25rem, 3vw, 2rem);
+    padding-block: clamp(1.75rem, 4vw, 2.5rem);
+  }
+  .principle + .principle { border-top: 1px solid var(--color-border); }
+  .principle-num {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 200;
+    letter-spacing: var(--heading-tracking);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+    user-select: none;
+  }
+  .principle-text { margin-block-start: var(--stack-sm); color: var(--color-muted); max-width: 44rem; }
+
+  /* ---------------------------- detail band -------------------------- */
+  .detail-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }
+  .detail-action { margin-block-start: var(--stack-lg); }
+  .detail-action :global(.booking-btn) { display: inline-flex; align-items: center; gap: 0.7em; }
+  .detail-action :global(.booking-btn-icon) { width: 1.35em; height: 1.35em; color: currentColor; flex: none; }
+  .booking-hint { margin-block-start: var(--stack-sm); }
+</style>

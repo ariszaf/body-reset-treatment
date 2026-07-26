@@ -1,0 +1,239 @@
+---
+/**
+ * Homepage.
+ * hero → statement → how it works → treatments → the session → booking.
+ * The wave rule (the logo's own line) marks the joints.
+ *
+ * ONE photograph, in the hero only. The service is mobile — the therapist comes
+ * to the client — so there is no premises to show, and repeating the same
+ * interior down the page would both bore and mislead. Everything below the hero
+ * is carried by type and by the line marks in BrandIcon.
+ *
+ * No prices anywhere: every path leads to an appointment.
+ */
+import Layout from '@layouts/Layout.astro';
+import Container from '@components/Container.astro';
+import Button from '@components/Button.astro';
+import WaveRule from '@components/WaveRule.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import HeroFullBleed from '@components/sections/HeroFullBleed.astro';
+import TreatmentList from '@components/sections/TreatmentList.astro';
+import PinnedSteps from '@components/sections/PinnedSteps.astro';
+import { site } from '@content/site';
+import { booking, bookingAttrs } from '@lib/booking';
+import { services } from '@content/services';
+import { heroSequence } from '@content/images';
+
+const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
+
+/* What "at home" actually means in practice — the three things someone wants
+   answered before they let a stranger into their flat. */
+const howItWorks = [
+  {
+    icon: 'home' as const,
+    title: 'Ερχόμαστε σε εσάς',
+    text: 'Η συνεδρία γίνεται στον δικό σας χώρο. Δεν χρειάζεται να μετακινηθείτε πριν ή — κυρίως — μετά.',
+  },
+  {
+    icon: 'table' as const,
+    title: 'Φέρνουμε τον εξοπλισμό',
+    text: 'Κρεβάτι, λινά και έλαια έρχονται μαζί μας. Χρειάζεται μόνο ένας ελεύθερος χώρος περίπου δύο επί δύο μέτρα.',
+  },
+  {
+    icon: 'one' as const,
+    title: 'Μία επίσκεψη τη φορά',
+    text: 'Δεν υπάρχει επόμενος στην αναμονή. Ο χρόνος που κλείνετε είναι ο χρόνος που παίρνετε.',
+  },
+];
+
+/* What happens in the hour — removing the anxiety of the unknown is the single
+   most useful thing a page like this can do before someone books. */
+const session = [
+  {
+    icon: 'focus' as const,
+    title: 'Αξιολόγηση',
+    text: 'Πού πονάει, από πότε, τι το επιδεινώνει. Κοιτάμε στάση και εύρος κίνησης πριν ακουμπήσουμε οτιδήποτε.',
+  },
+  {
+    icon: 'flow' as const,
+    title: 'Θεραπεία',
+    text: 'Η τεχνική και η πίεση προσαρμόζονται στον ιστό, όχι σε ένα προκαθορισμένο πρόγραμμα.',
+  },
+  {
+    icon: 'time' as const,
+    title: 'Συνέχεια',
+    text: 'Τι να προσέξετε μέχρι την επόμενη φορά — και η επόμενη ορίζεται μόνο αν έχει νόημα.',
+  },
+];
+---
+
+<Layout slug="">
+  <HeroFullBleed
+    slides={heroSequence.slice(0, 1)}
+    eyebrow="Κατόπιν ραντεβού"
+    title="Αθλητικό & σουηδικό μασάζ κατ’ οίκον"
+    note={site.location}
+    nextAnchor="proseggisi"
+  />
+
+  <section id="proseggisi" class="py-section statement">
+    <Container>
+      <p class="text-eyebrow reveal reveal-up">Η προσέγγιση</p>
+      <h2 class="text-h1 statement-title reveal reveal-up">Καμία συνεδρία δεν είναι ίδια</h2>
+      <p class="text-lead statement-lead reveal reveal-up">
+        Κάθε συνεδρία ξεκινά από την αξιολόγηση και όχι από ένα έτοιμο πρωτόκολλο —
+        και γίνεται εκεί που είστε ήδη άνετα. Δεχόμαστε αποκλειστικά κατόπιν ραντεβού.
+      </p>
+    </Container>
+  </section>
+
+  <PinnedSteps eyebrow="Πώς λειτουργεί" title="Η θεραπεία έρχεται σε εσάς" steps={howItWorks} />
+
+  <WaveRule />
+
+  <TreatmentList
+    title="Οι θεραπείες"
+    lead="Τέσσερις θεραπείες, μία λογική: στοχευμένη δουλειά, χωρίς βιασύνη."
+    items={services}
+  />
+
+  <section class="py-section session">
+    <Container>
+      <p class="text-eyebrow reveal reveal-up">Η συνεδρία</p>
+      <h2 class="text-section-title session-title reveal reveal-up">Τι γίνεται στην ώρα σας</h2>
+      <ol class="session-list reveal-stagger">
+        {session.map((step) => (
+          <li class="session-step reveal reveal-up">
+            <BrandIcon name={step.icon} class="session-icon" />
+            <h3 class="text-card-title session-step-title">{step.title}</h3>
+            <p class="text-card-body session-text">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="session-cta reveal reveal-up">
+        <a class="link-underline" href="/poioi-eimaste/">Ποιοι είμαστε</a>
+      </p>
+    </Container>
+  </section>
+
+  <WaveRule />
+
+  <section id="epikoinonia" class="py-section booking">
+    <Container>
+      <p class="text-eyebrow reveal reveal-up">Ραντεβού</p>
+      <h2 class="text-section-title booking-title reveal reveal-up">{booking.heading}</h2>
+      <p class="text-lead booking-lead reveal reveal-up">{booking.lead}</p>
+
+      <dl class="booking-facts reveal reveal-up">
+        <div>
+          <dt class="text-eyebrow">Τηλέφωνο</dt>
+          <dd><a class="link-underline booking-tel" href={telHref}>{site.phone}</a></dd>
+        </div>
+        <div>
+          <dt class="text-eyebrow">Ωράριο</dt>
+          <dd class="text-card-body">{site.hours}</dd>
+        </div>
+        <div>
+          <dt class="text-eyebrow">Περιοχές</dt>
+          <dd class="text-card-body">{site.serviceArea}</dd>
+        </div>
+      </dl>
+
+      {/* Points at the online scheduler once site.bookingUrl is set; until then it
+          opens the enquiry dialog (src/lib/booking.ts). */}
+      <div class="booking-action reveal reveal-up">
+        <Button class="booking-btn" {...bookingAttrs}>
+          {booking.icon && <BrandIcon name={booking.icon} class="booking-btn-icon" />}
+          <span>{booking.label}</span>
+        </Button>
+        <p class="booking-hint text-caption">{booking.hint}</p>
+      </div>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  /* --------------------------- statement --------------------------- */
+  .statement-title {
+    margin-block-start: var(--stack-md);
+    max-width: 22ch;
+    text-transform: uppercase;
+    font-weight: 200;
+    letter-spacing: 0.1em;
+    line-height: 1.35;
+  }
+  .statement-lead {
+    margin-block-start: var(--stack-lg);
+    max-width: 44rem;
+    color: var(--color-muted);
+  }
+
+  /* ---------------------------- session ---------------------------- */
+  .session { background: var(--color-alt); }
+  .session-title { margin-block-start: var(--stack-md); }
+  .session-list {
+    list-style: none;
+    margin: var(--stack-xl) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--stack-xl);
+  }
+  .session-step { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
+  .session-step-title { margin-block-start: var(--stack-md); }
+  .session-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
+  .session-cta { margin-block-start: var(--stack-xl); }
+
+  @media (min-width: 48rem) {
+    .session-list { grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
+  }
+
+  /* ---------------------------- booking ---------------------------- */
+  .booking-title { margin-block-start: var(--stack-md); max-width: 20ch; }
+  .booking-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }
+
+  .booking-facts {
+    display: grid;
+    gap: var(--stack-lg);
+    margin-block-start: var(--stack-xl);
+    padding-block-start: var(--stack-lg);
+    border-top: 1px solid var(--color-border);
+  }
+  .booking-facts dd { margin: 0; margin-block-start: 0.5rem; }
+  .booking-tel { font-size: var(--text-lead); letter-spacing: 0.04em; }
+  .booking-action { margin-block-start: var(--stack-xl); }
+  /* The mark sits inside the button so the affordance travels with it — a
+     scheduler link has to look different from "we will ring you". */
+  .booking-action :global(.booking-btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7em;
+  }
+  .booking-action :global(.booking-btn-icon) {
+    width: 1.35em;
+    height: 1.35em;
+    color: currentColor;
+    flex: none;
+  }
+  .booking-hint { margin-block-start: var(--stack-sm); }
+
+  @media (min-width: 48rem) {
+    .booking-facts { grid-template-columns: repeat(3, 1fr); gap: var(--stack-md); }
+  }
+
+  /* Quiet link treatment: hairline that fills on hover. */
+  .link-underline {
+    color: var(--color-text);
+    text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100%;
+    background-size: 0% 1px;
+    display: inline-block;
+    padding-block: 0.6em;
+    margin-block: -0.6em;
+    background-position: 0 calc(100% - 0.6em);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+  }
+  @media (hover: hover) {
+    .link-underline { transition: background-size var(--transition-base), border-color var(--transition-base); }
+    .link-underline:hover { background-size: 100% 1px; border-bottom-color: transparent; }
+  }
+</style>

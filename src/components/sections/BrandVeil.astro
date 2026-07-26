@@ -1,0 +1,165 @@
+---
+/**
+ * BrandVeil — the logotype drawing itself, as the first-visit intro.
+ *
+ * The draw, in order:
+ *   1. the wave opens left → right
+ *   2. the slash is traced from the bottom up
+ *   3. the wordmark rises into focus
+ *
+ * How each part is drawn, and why they differ:
+ *   · The wave is a FILLED path — it has no stroke, so stroke-dashoffset simply
+ *     does not apply to it. It is drawn with a mask that grows in width, which
+ *     reads identically and is also paint-time.
+ *   · The slash IS a real <line> with a stroke, so it gets a true
+ *     stroke-dashoffset trace. Its length (216.1 user units) is computed from
+ *     its own coordinates by scratchpad/make-logo-parts.py and carried in the
+ *     SVG as --slash-len — never guessed, never hard-coded here.
+ *
+ * INTRO ONLY — once per session. Navigation is deliberately NOT covered: doing
+ * so meant holding the swap until the mark had drawn, which made every page
+ * change feel slow. The re-forming logotype lives in the header instead
+ * (BrandMark `draw`), where it plays over an already-loaded page.
+ *
+ * Must remain the FIRST child of <body>: the intro gates itself before paint.
+ */
+import logoParts from '../../assets/logo-parts.svg?raw';
+
+interface Props {
+  /** intro duration before the veil lifts */
+  introMs?: number;
+}
+const { introMs = 2400 } = Astro.props;
+
+/* Hoisted so the directive is define:vars={vars} — an inline object literal
+   reads as an unfilled template slot to the QA scan. */
+const vars = { introMs };
+---
+
+{/* Gate BEFORE paint — first body node. `intro-ran` is permanent (the hero's
+    entrance is sequenced off it); `veil-intro` is removed when the veil lifts. */}
+<script is:inline>
+  try {
+    if (!sessionStorage.getItem('brt_intro_seen'))
+      document.documentElement.classList.add('veil-intro', 'intro-ran');
+  } catch (e) {
+    document.documentElement.classList.add('veil-intro', 'intro-ran');
+  }
+</script>
+
+<div id="brand-veil" aria-hidden="true">
+  <div class="bv-mark" set:html={logoParts} />
+</div>
+
+<style is:global>
+  html.veil-intro { overflow: hidden; }
+
+  #brand-veil {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    z-index: 9999;
+    display: none;
+    place-items: center;
+    background: var(--color-bg);
+    opacity: 1;
+    transition: opacity 0.55s ease-in-out;
+  }
+  html.veil-intro #brand-veil { display: grid; }
+  #brand-veil.bv-lifting { opacity: 0; pointer-events: none; }
+
+  #brand-veil .bv-mark {
+    width: min(22rem, 62vw);
+    color: var(--color-primary);
+  }
+  /* NOTE: this block is is:global — `:global()` is NOT valid inside one and
+     silently invalidates the whole selector. Plain descendant selectors only. */
+  #brand-veil .bv-mark svg { display: block; width: 100%; height: auto; }
+
+  /* ---------------------------- the three parts --------------------------- */
+  /* Hidden by default so nothing flashes before the animation is assigned. */
+  #brand-veil .lg-wave {
+    -webkit-mask-image: linear-gradient(#000, #000);
+            mask-image: linear-gradient(#000, #000);
+    -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+    -webkit-mask-size: 0% 100%;
+            mask-size: 0% 100%;
+  }
+  #brand-veil .lg-slash line {
+    stroke-dasharray: var(--slash-len, 217);
+    stroke-dashoffset: var(--slash-len, 217);
+  }
+  #brand-veil .lg-word { opacity: 0; }
+
+  /* Playing state — the class is re-added per run so the animation restarts. */
+  #brand-veil.bv-play .lg-wave  { animation: bvWave var(--bv-wave) cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+  #brand-veil.bv-play .lg-slash line {
+    animation: bvSlash var(--bv-slash) cubic-bezier(0.4, 0, 0.2, 1) var(--bv-slash-delay) forwards;
+  }
+  #brand-veil.bv-play .lg-word  { animation: bvWord var(--bv-word) var(--reveal-ease) var(--bv-word-delay) forwards; }
+
+  #brand-veil { --bv-wave: 1.4s; --bv-slash: .9s; --bv-slash-delay: .75s; --bv-word: .8s; --bv-word-delay: 1.25s; }
+
+  @keyframes bvWave  { to { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; } }
+  @keyframes bvSlash { to { stroke-dashoffset: 0; } }
+  @keyframes bvWord  { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    #brand-veil { transition: none; }
+    #brand-veil .lg-wave { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+    #brand-veil .lg-slash line { stroke-dashoffset: 0; }
+    #brand-veil .lg-word { opacity: 1; }
+    #brand-veil.bv-play .lg-wave,
+    #brand-veil.bv-play .lg-slash line,
+    #brand-veil.bv-play .lg-word { animation: none; }
+  }
+</style>
+
+<script is:inline define:vars={vars}>
+  (function () {
+    var html = document.documentElement;
+    var veil = document.getElementById('brand-veil');
+    if (!veil) return;
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var LIFT_MS = 570; // must outlast the opacity transition above
+
+    function play() {
+      // Restart the animation: drop the class, force a reflow, re-add it.
+      veil.classList.remove('bv-play', 'bv-lifting');
+      void veil.offsetWidth;
+      veil.classList.add('bv-play');
+    }
+
+    function lift(done) {
+      veil.classList.add('bv-lifting');
+      setTimeout(function () {
+        html.classList.remove('veil-intro');
+        veil.classList.remove('bv-play', 'bv-lifting');
+        if (done) done();
+      }, reduce ? 0 : LIFT_MS);
+    }
+
+    /* ------------------------------- intro ------------------------------- */
+    if (html.classList.contains('veil-intro')) {
+      var introDone = false;
+      var finishIntro = function () {
+        if (introDone) return;
+        introDone = true;
+        try { sessionStorage.setItem('brt_intro_seen', '1'); } catch (e) {}
+        document.dispatchEvent(new CustomEvent('preloader:done'));
+        lift();
+      };
+      play();
+      veil.addEventListener('click', finishIntro);
+      setTimeout(finishIntro, reduce ? 400 : introMs);
+    }
+
+    /* The veil is for the INTRO ONLY. It used to cover navigation too, holding
+       the swap until the mark had drawn — which is exactly what made every page
+       change feel sluggish. The re-forming logotype now lives in the header
+       (BrandMark `draw`), where it costs nothing: the header re-renders on each
+       navigation, so the animation replays while the new page is already there. */
+  })();
+</script>

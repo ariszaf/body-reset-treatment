@@ -1,0 +1,27 @@
+---
+/**
+ * Custom 404 (ALWAYS — both tiers, spec: pages.md). Branded shell:
+ * /pages tailors the copy/links to the business. NO noindex (Astro sends the 404 status).
+ */
+import Layout from '../layouts/Layout.astro';
+import Container from '../components/Container.astro';
+import Button from '../components/Button.astro';
+import { site } from '../content/site';
+---
+
+<Layout slug="404">
+  <section class="py-section">
+    <Container>
+      <h1 class="text-h1">Η σελίδα δεν βρέθηκε</h1>
+      <p class="text-lead space-stack-md">Η σελίδα που ψάχνετε δεν υπάρχει ή έχει μετακινηθεί.</p>
+      <div class="space-stack-lg actions">
+        <Button href="/">Αρχική</Button>
+        <Button href={site.cta.href} variant="outline">{site.cta.label}</Button>
+      </div>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  .actions { display: flex; flex-wrap: wrap; gap: var(--stack-sm); }
+</style>

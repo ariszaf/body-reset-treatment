@@ -1,0 +1,149 @@
+---
+/**
+ * Contact form → the Polarzee hosted forms endpoint (forms.polarzee.com).
+ * NO API key, NO third-party mail service. Flow: GET a one-time token on mount,
+ * then POST the JSON payload with that token + a honeypot. The site's origin is
+ * allow-listed server-side — register the domain + key at forms.polarzee.com and
+ * set `site.formSiteKey`. Server limits: name ≤120, email ≤200, phone ≤60,
+ * subject ≤200, message ≤5000 (mirrored as maxlength for instant UX).
+ * Failures are reported through error-logger's logFormError.
+ */
+import { site } from '../content/site';
+---
+
+<form class="contact-form" novalidate data-site-key={site.formSiteKey}>
+  <div class="field">
+    <label class="text-label" for="cf-name">Ονοματεπώνυμο</label>
+    <input id="cf-name" name="name" type="text" required autocomplete="name" maxlength="120" />
+  </div>
+  <div class="field">
+    <label class="text-label" for="cf-email">Email</label>
+    <input id="cf-email" name="email" type="email" required autocomplete="email" maxlength="200" />
+  </div>
+  <div class="field">
+    <label class="text-label" for="cf-phone">Τηλέφωνο</label>
+    <input id="cf-phone" name="phone" type="tel" autocomplete="tel" maxlength="60" />
+  </div>
+  <div class="field">
+    <label class="text-label" for="cf-message">Μήνυμα</label>
+    <textarea id="cf-message" name="message" rows="5" required maxlength="5000"></textarea>
+  </div>
+  {/* honeypot — real visitors never see or fill this; bots that do are dropped */}
+  <input class="cf-hp" type="text" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true" />
+  <button class="btn-submit text-button" type="submit">Αποστολή</button>
+  <p class="form-status text-caption" role="status" aria-live="polite"></p>
+</form>
+
+<style>
+  .contact-form { display: grid; gap: var(--stack-md); max-width: 36rem; }
+  .field { display: grid; gap: 0.4rem; }
+  input, textarea {
+    font: inherit;
+    padding: 0.6em 0.8em;                 /* em — scales with the field's text */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+    background: var(--color-bg);
+  }
+  input:focus, textarea:focus { border-color: var(--color-primary); }
+  /* honeypot — off-screen, never shown */
+  .cf-hp { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .btn-submit {
+    justify-self: start;
+    padding: 0.7em 1.8em;
+    background: var(--color-primary); color: #fff;
+    border: 0; border-radius: var(--radius-base); cursor: pointer;
+  }
+  .btn-submit[disabled] { opacity: 0.6; cursor: default; }
+  @media (hover: hover) {
+    .btn-submit { transition: transform var(--transition-base), box-shadow var(--transition-base); }
+    .btn-submit:not([disabled]):hover { transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+  }
+</style>
+
+<script>
+  import { logFormError } from '../scripts/error-logger';
+
+  const ENDPOINT = 'https://forms.polarzee.com/';
+  const GENERIC = 'Δεν ήταν δυνατή η αποστολή του μηνύματος αυτή τη στιγμή — δοκιμάστε ξανά αργότερα ή επικοινωνήστε μαζί μας απευθείας.';
+
+  const form = document.querySelector<HTMLFormElement>('.contact-form');
+  const status = form?.querySelector<HTMLElement>('.form-status');
+  const btn = form?.querySelector<HTMLButtonElement>('.btn-submit');
+  const honeypot = form?.querySelector<HTMLInputElement>('[name="company_url"]');
+  const SITE_KEY = form?.dataset.siteKey || '';
+
+  let token = '';
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  async function getToken() {
+    try {
+      const r = await fetch(ENDPOINT);
+      const d = await r.json();
+      if (d?.ok && d.token) token = d.token;
+    } catch { /* offline / blocked — retried on submit */ }
+  }
+  // fetch on mount: the token is valid 2s–2h, and a human takes >2s to fill in
+  if (form) getToken();
+
+  async function post(fields: Record<string, string>) {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...fields, _token: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { res, data };
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    if (!f.name || !f.email || !f.message) {
+      if (status) status.textContent = 'Συμπληρώστε τα υποχρεωτικά πεδία.';
+      return;
+    }
+    const fields = {
+      site: SITE_KEY,
+      name: f.name || '', email: f.email || '',
+      phone: f.phone || '', subject: f.subject || '',
+      message: f.message || '',
+      company_url: honeypot?.value || '',
+    };
+
+    if (btn) btn.disabled = true;
+    if (status) status.textContent = 'Αποστολή…';
+    try {
+      if (!token) await getToken();
+      let { res, data } = await post(fields);
+
+      // one retry on a token problem: too_fast → brief wait; else → fresh token
+      if (res.status === 422 && data?.error === 'invalid_token') {
+        if (data.reason === 'too_fast') await wait(2100);
+        else await getToken();
+        ({ res, data } = await post(fields));
+      }
+
+      if (res.ok && data?.ok) {
+        if (status) status.textContent = 'Το μήνυμά σας εστάλη — θα επικοινωνήσουμε σύντομα.';
+        form.reset();
+        token = '';
+        getToken();                         // pre-fetch a fresh token for the next enquiry
+      } else if (res.status === 429) {
+        if (status) status.textContent = 'Πολλές προσπάθειες — δοκιμάστε ξανά σε λίγο.';
+      } else if (res.status === 422 && data?.error === 'validation') {
+        if (status) status.textContent = 'Ελέγξτε τα στοιχεία σας και δοκιμάστε ξανά.';
+      } else if (res.status === 422 && data?.error === 'invalid_token') {
+        token = ''; getToken();
+        if (status) status.textContent = 'Η σύνδεση έληξε — υποβάλετε ξανά.';
+      } else {
+        logFormError('contact', `HTTP ${res.status} ${data?.error || ''}`.trim());
+        if (status) status.textContent = GENERIC;   // 502 / 5xx / unexpected
+      }
+    } catch (err) {
+      logFormError('contact', err instanceof Error ? err.message : String(err));
+      if (status) status.textContent = GENERIC;      // network error
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+</script>

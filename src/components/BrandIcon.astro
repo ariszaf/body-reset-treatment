@@ -1,0 +1,90 @@
+---
+/**
+ * BrandIcon — renders one of the brand's line marks, and draws it.
+ *
+ * The glyphs themselves live in src/lib/icons.ts, not here: content files need
+ * the IconName type, and a .astro file cannot be imported for its types (the
+ * bundler tries to parse the component markup as TypeScript and fails).
+ *
+ * THE DRAW. Every glyph is pure stroke, so unlike the logo's wave (a filled
+ * shape that needed a mask) these can use stroke-dashoffset directly. The
+ * problem is that dashoffset is measured in path units and every glyph has a
+ * different length — so each would need measuring. `pathLength="1"` solves it:
+ * it tells the browser to treat the path as exactly one unit long, whatever its
+ * real geometry, and then a dasharray of 1 offset by 1 hides ANY shape and 0
+ * reveals it. No JavaScript, no measuring, no per-glyph constants.
+ *
+ * It hooks the starter's reveal engine rather than observing anything itself:
+ * every icon already sits inside a `.reveal` row, so the parent gaining `.in`
+ * on scroll is what starts the stroke. Multi-part glyphs draw part by part.
+ *
+ * Decorative by default (aria-hidden): every one of them sits next to a heading
+ * that already says the same thing, and a screen reader should not hear it twice.
+ */
+import { ICON_PATHS, type IconName } from '@lib/icons';
+
+interface Props {
+  name: IconName;
+  class?: string;
+}
+const { name, class: className } = Astro.props;
+
+// pathLength is injected here rather than written into all nine glyphs, so the
+// shape data stays readable geometry and the drawing mechanism stays in one place.
+const shapes = ICON_PATHS[name].replace(/<(path|circle)\b/g, '<$1 pathLength="1"');
+---
+
+<svg
+  class={`brandicon ${className ?? ''}`}
+  viewBox="0 0 48 48"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.25"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+  set:html={shapes}
+/>
+
+<style>
+  .brandicon {
+    display: block;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--color-accent);
+    overflow: visible;
+  }
+
+  /* Gated on .reveal-ready so that without JS the marks are simply drawn —
+     never a row of blank squares. */
+  :global(html.reveal-ready) .brandicon > :global(*) {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.05s var(--reveal-ease);
+  }
+  /* Two triggers, because icons live in two kinds of container:
+       .reveal.in  — a row the scroll engine has revealed
+       .is-active  — the visible step of a pinned section, which the engine
+                     never observes (it is always in the viewport, only its
+                     content swaps). Without this the pinned icons stayed at
+                     dashoffset 1 — invisible — forever. */
+  :global(html.reveal-ready .reveal.in) .brandicon > :global(*),
+  :global(html.reveal-ready .is-active) .brandicon > :global(*) {
+    stroke-dashoffset: 0;
+  }
+
+  /* Parts draw in sequence, so a glyph assembles instead of appearing. */
+  .brandicon > :global(*:nth-child(2)) { transition-delay: 0.13s; }
+  .brandicon > :global(*:nth-child(3)) { transition-delay: 0.26s; }
+  .brandicon > :global(*:nth-child(4)) { transition-delay: 0.39s; }
+  .brandicon > :global(*:nth-child(5)) { transition-delay: 0.52s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.reveal-ready) .brandicon > :global(*) {
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+  }
+</style>

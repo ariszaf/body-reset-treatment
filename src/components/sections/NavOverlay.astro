@@ -1,0 +1,376 @@
+---
+/**
+ * NavOverlay — the site header, modelled on nikoskoulis.com.
+ *
+ * Two structural choices copied from that site:
+ *   · the logotype and the menu toggle are pinned to the SCREEN edges, not to
+ *     the content container — there is no max-width between them, only a small
+ *     edge gutter (his: 16px phone / 24px desktop, via --wrapper-padding);
+ *   · there is no inline navigation at any breakpoint. Desktop gets the same
+ *     hamburger as mobile, and opening it drops a full-screen panel in the page
+ *     colour (his drawer is `bg-light`, not a dark curtain) with a small, quiet
+ *     list of links that go italic on hover.
+ *
+ * The toggle sits above the panel and becomes a persistent X, so there is
+ * always one visible way out. Escape and backdrop-click close it too.
+ *
+ * Type note: his links run at 13px. Ours hold the factory's 17px floor — that
+ * rule is not negotiable for a site people book appointments from.
+ *
+ * Reads navigation.ts + site.ts. The CTA is appended as the closing menu link.
+ */
+import BrandMark from '@components/BrandMark.astro';
+import { site } from '@content/site';
+import { navigation } from '@content/navigation';
+import { booking } from '@lib/booking';
+
+interface Props {
+  /** bar ink BEFORE scroll — 'light' sits over the dark full-bleed hero */
+  tone?: 'light' | 'dark';
+}
+const { tone = 'light' } = Astro.props;
+
+const links: { label: string; href: string; cta?: boolean }[] = [
+  ...navigation,
+  { label: booking.label, href: booking.href, cta: true },
+];
+
+const norm = (p: string) => p.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => (norm(Astro.url.pathname) === norm(href) ? 'page' : undefined);
+
+const telHref = site.phone ? `tel:${site.phone.replace(/\s+/g, '')}` : '';
+const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<header class="navov" data-tone={tone}>
+  <div class="navov-bar">
+    <a class="navov-brand" href="/" aria-label={`${site.name} — Αρχική`}>
+      {/* draw: the mark re-forms on every page. Astro re-renders the header on
+          each navigation, so the CSS animation replays on its own — nothing
+          holds the page back waiting for it. */}
+      <BrandMark title="" draw class="navov-mark" />
+    </a>
+
+    <button
+      class="navov-toggle"
+      type="button"
+      aria-label="Μενού"
+      aria-expanded="false"
+      aria-controls={panelId}
+    >
+      <span class="navov-toggle-box" aria-hidden="true"><span></span><span></span></span>
+    </button>
+  </div>
+
+  <div class="navov-overlay" id={panelId}>
+    <nav class="navov-menu" aria-label="Κύριο μενού">
+      <ul class="navov-list">
+        {links.map((item, i) => (
+          <li class="navov-item" style={`--i:${i}`}>
+            <a
+              class="navov-link"
+              href={item.href}
+              data-cta={item.cta ? '' : undefined}
+              data-booking={item.cta && booking.useDialog ? '' : undefined}
+              target={item.cta && booking.external ? '_blank' : undefined}
+              rel={item.cta && booking.external ? 'noopener' : undefined}
+              aria-current={isCurrent(item.href)}
+            >{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {site.phone && (
+      <div class="navov-foot navov-item" style={`--i:${links.length}`}>
+        <span class="navov-contact-label">Ραντεβού</span>
+        <a class="navov-tel" href={telHref}>{site.phone}</a>
+      </div>
+    )}
+  </div>
+</header>
+
+<style>
+  :global(html.navov-lock) { overflow: hidden; }
+
+  /* The edge gutter — the ONLY thing between the logo/toggle and the screen
+     edge. Matches the reference (16px phone → 24px desktop). */
+  .navov {
+    --nav-edge: clamp(1rem, 1.6vw, 1.5rem);
+    /* Single source for the logo height — the bar sizes the mark from it and
+       the overlay reserves clearance from it. When these two drifted apart the
+       logotype physically covered the first menu link and swallowed its clicks. */
+    --nav-logo: clamp(4.5rem, 8.5vw, 7.5rem);
+    --nav-bar-h: calc(var(--nav-logo) + var(--nav-edge) * 2);
+  }
+
+  /* ---------------------------- slim fixed bar --------------------------- */
+  .navov-bar {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--stack-md);
+    padding: var(--nav-edge);
+    /* No surface of its own — ever. No background, no blur, no hairline: the
+       page runs uninterrupted underneath and only the logotype and the toggle
+       float on top. The one thing that changes is their COLOUR.
+       pointer-events is released on the strip itself so a transparent band
+       across the top does not swallow clicks meant for the content behind. */
+    pointer-events: none;
+    color: var(--color-text);
+    transition: color var(--transition-base);
+  }
+  .navov-bar > * { pointer-events: auto; }
+
+  /* Ink: page colour by default, white while the bar sits over the photograph.
+     `data-tone` is the server-rendered first paint (the homepage opens on the
+     hero); `tone-ready` marks the moment the observer takes over, so there is
+     no flash of the wrong colour before JS runs. */
+  .navov[data-tone='light'] .navov-bar { color: #fff; }
+  .navov.tone-ready .navov-bar { color: var(--color-text); }
+  .navov.tone-ready.over-media:not(.is-open) .navov-bar { color: #fff; }
+  /* Panel open: the curtain is the page colour, so the bar takes page ink. */
+  .navov.is-open .navov-bar { color: var(--color-text); }
+
+  /* ------------------------------ brand ---------------------------------- */
+  .navov-brand {
+    display: inline-flex;
+    align-items: center;
+    color: currentColor;              /* white over the hero, page ink once scrolled */
+    text-decoration: none;
+    padding-block: 0.375rem;
+    margin-block: -0.375rem;
+  }
+  /* The COMPLETE logotype. Sized up past the reference's bar scale because the
+     wordmark sits low in a tall composition: the slash alone spans 179 of the
+     artwork's 181 units, so "TREATMENT" is only 3% of the height. At 120px the
+     wordmark reads; TREATMENT would need ~230px to be properly legible, which
+     is a banner, not a bar. */
+  .navov-brand :global(.navov-mark) {
+    width: auto;
+    height: var(--nav-logo);
+  }
+  .navov-brand :global(.navov-mark svg) { width: auto; height: 100%; }
+  @media (hover: hover) {
+    .navov-brand { transition: opacity var(--transition-base); }
+    .navov-brand:hover { opacity: 0.65; }
+  }
+
+  /* ----------------------------- hamburger → X --------------------------- */
+  .navov-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin-inline-end: -0.625rem;     /* optical alignment, keeps the 44px target */
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+  }
+  .navov-toggle-box { position: relative; display: block; width: 2.25rem; height: 1rem; }
+  .navov-toggle-box span {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;                      /* px — hairline, matches the logo line weight */
+    background: currentColor;
+    transition: transform var(--transition-base);
+  }
+  .navov-toggle-box span:first-child { transform: translateY(calc(-50% - 0.28rem)); }
+  .navov-toggle-box span:last-child  { transform: translateY(calc(-50% + 0.28rem)); }
+  .navov.is-open .navov-toggle-box span:first-child { transform: translateY(-50%) rotate(45deg); }
+  .navov.is-open .navov-toggle-box span:last-child  { transform: translateY(-50%) rotate(-45deg); }
+
+  /* --------------------------- full-screen panel ------------------------- */
+  .navov-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;                      /* below the bar so the X stays clickable */
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(var(--nav-bar-h) + var(--stack-lg)) var(--nav-edge) var(--nav-edge);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-bg);      /* page colour, not a dark curtain */
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path var(--reveal-duration) var(--reveal-ease), visibility 0s linear var(--reveal-duration);
+  }
+  .navov.is-open .navov-overlay {
+    visibility: visible;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path var(--reveal-duration) var(--reveal-ease);
+  }
+
+  .navov-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.25rem; }
+
+  .navov-item {
+    opacity: 0;
+    transform: translateY(var(--reveal-distance));
+    transition: opacity var(--reveal-duration) var(--reveal-ease), transform var(--reveal-duration) var(--reveal-ease);
+    transition-delay: 0s;             /* closing: everything retracts together */
+  }
+  .navov.is-open .navov-item {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc((var(--i, 0) + 2) * var(--reveal-stagger));
+  }
+
+  /* ------------------------------ menu links ----------------------------- */
+  .navov-link {
+    display: inline-block;
+    font-family: var(--font-heading);
+    font-size: clamp(1.0625rem, 1vw + 0.8rem, 1.375rem);  /* 17 → 22px (17px floor) */
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    line-height: 1.3;
+    color: var(--color-text);
+    text-decoration: none;
+    padding-block: 0.6em;             /* ≥44px tap target at the clamp floor */
+    transition: font-style var(--transition-fast), opacity var(--transition-base);
+  }
+  .navov-link[aria-current='page'] { font-style: italic; }
+  .navov-link[data-cta] { color: var(--color-accent); }
+  @media (hover: hover) {
+    /* The reference's signature: links tilt into italic rather than moving. */
+    .navov-link:hover { font-style: italic; }
+  }
+
+  /* --------------------------- contact line (foot) ----------------------- */
+  .navov-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1.25rem;
+    margin-block-start: var(--stack-lg);
+    padding-block-start: var(--stack-md);
+    padding-block-end: max(0px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-border);
+  }
+  .navov-contact-label {
+    font-size: var(--text-label);     /* 17px floor */
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-muted);
+  }
+  .navov-tel {
+    font-size: var(--text-lead);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+    text-decoration: none;
+    display: inline-block;
+    padding-block: 0.6em;
+    margin-block: -0.6em;
+    transition: font-style var(--transition-fast);
+  }
+  @media (hover: hover) { .navov-tel:hover { font-style: italic; } }
+
+  /* ---------------------------- reduced motion --------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .navov-overlay,
+    .navov.is-open .navov-overlay,
+    .navov-item,
+    .navov.is-open .navov-item,
+    .navov-link,
+    .navov-tel,
+    .navov-toggle-box span,
+    .navov-bar { transition: none; transition-delay: 0s; }
+    .navov-item { transform: none; }
+  }
+</style>
+
+<script>
+  /**
+   * View-transition safe. The header is re-rendered on every navigation, so the
+   * document- and window-level listeners are registered ONCE at module scope and
+   * look the header up at call time. Registering them per header instance would
+   * leak a listener per navigation, each holding a detached element.
+   * Element-scoped listeners are wired per instance and die with the node.
+   */
+  const root = () => document.querySelector<HTMLElement>('.navov');
+
+  function setOpen(open: boolean) {
+    const r = root();
+    if (!r) return;
+    const btn = r.querySelector<HTMLButtonElement>('.navov-toggle');
+    r.classList.toggle('is-open', open);
+    btn?.setAttribute('aria-expanded', String(open));
+    btn?.setAttribute('aria-label', open ? 'Κλείσιμο μενού' : 'Μενού');
+    document.documentElement.classList.toggle('navov-lock', open);
+  }
+
+  function bind() {
+    const r = root();
+    if (!r || r.dataset.navBound) return;
+    r.dataset.navBound = '1';
+
+    const btn = r.querySelector<HTMLButtonElement>('.navov-toggle');
+    const overlay = r.querySelector<HTMLElement>('.navov-overlay');
+    if (!btn || !overlay) return;
+
+    btn.addEventListener('click', () => setOpen(!r.classList.contains('is-open')));
+
+    // Backdrop close: any press inside the panel that is not a link or button.
+    overlay.addEventListener('click', (e) => {
+      if (!(e.target instanceof Element) || !e.target.closest('a, button')) setOpen(false);
+    });
+    overlay.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+
+    watchMedia(r);
+  }
+
+  /**
+   * The bar has no background, so its ink has to follow what is physically
+   * behind it. A scroll threshold cannot know that: at 8px of scroll the hero
+   * photograph is still filling the strip, and dark ink on a dark photograph is
+   * invisible. So observe the hero instead, with the viewport shrunk from the
+   * top by the bar's own height — it stops intersecting exactly when its bottom
+   * edge clears the bar, which is the moment the colour must flip.
+   * Pages with no full-bleed media never get `over-media` and simply use page ink.
+   */
+  let mediaObserver: IntersectionObserver | undefined;
+  function watchMedia(r: HTMLElement) {
+    mediaObserver?.disconnect();
+    const media = document.querySelector('.hero');
+    r.classList.add('tone-ready');
+    if (!media) {
+      r.classList.remove('over-media');
+      return;
+    }
+    const bar = r.querySelector<HTMLElement>('.navov-bar');
+    const barH = Math.round(bar?.getBoundingClientRect().height ?? 96);
+    mediaObserver = new IntersectionObserver(
+      ([entry]) => r.classList.toggle('over-media', entry.isIntersecting),
+      { rootMargin: `-${barH}px 0px 0px 0px`, threshold: 0 },
+    );
+    mediaObserver.observe(media);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root()?.classList.contains('is-open')) {
+      setOpen(false);
+      root()?.querySelector<HTMLButtonElement>('.navov-toggle')?.focus();
+    }
+  });
+
+  // Never come back from bfcache, or land on a new page, with a stuck-open menu.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) setOpen(false); });
+  document.addEventListener('astro:before-swap', () => {
+    document.documentElement.classList.remove('navov-lock');
+  });
+
+  bind();
+  document.addEventListener('astro:after-swap', bind);
+</script>

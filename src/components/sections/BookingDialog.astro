@@ -1,0 +1,300 @@
+---
+/**
+ * BookingDialog — "request an appointment", not "call us".
+ *
+ * Lives in the Layout, so one instance serves every page. Anything with
+ * [data-booking] opens it; keep a real href on those triggers so the no-JS path
+ * still lands somewhere useful.
+ *
+ * Native <dialog>: the browser handles the modal backdrop, focus trap, inert
+ * background and Escape — all of which a hand-rolled modal gets subtly wrong.
+ *
+ * Four fields, no more. For this clientele, leaving a number and being called
+ * back is more discreet than having to ring — and unlike a tel: link, it is
+ * measurable.
+ *
+ * Posts to the Polarzee forms endpoint (same protocol as the starter's
+ * ContactForm: fetch a one-time token, POST it back with a honeypot).
+ * ⚠ Requires the domain to be registered at forms.polarzee.com first — see TODO.md.
+ */
+import { site } from '@content/site';
+
+const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
+---
+
+<dialog class="bk" aria-labelledby="bk-title">
+  <form class="bk-form" method="dialog" novalidate data-site-key={site.formSiteKey}>
+    <button class="bk-close" type="button" aria-label="Κλείσιμο">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+
+    <p class="text-eyebrow">Ραντεβού</p>
+    <h2 class="text-section-title bk-title" id="bk-title">Αφήστε μας τα στοιχεία σας</h2>
+    <p class="bk-lead text-card-body">
+      Θα σας καλέσουμε για να βρούμε μαζί την πρώτη διαθέσιμη ώρα. Ένα ραντεβού τη φορά,
+      χωρίς αναμονή.
+    </p>
+
+    <div class="bk-fields">
+      <div class="bk-field">
+        <label class="text-label" for="bk-name">Ονοματεπώνυμο</label>
+        <input id="bk-name" name="name" type="text" required autocomplete="name" maxlength="120" />
+      </div>
+      <div class="bk-field">
+        <label class="text-label" for="bk-phone">Τηλέφωνο</label>
+        <input id="bk-phone" name="phone" type="tel" required autocomplete="tel" maxlength="60" />
+      </div>
+      <div class="bk-field">
+        <label class="text-label" for="bk-email">Email</label>
+        <input id="bk-email" name="email" type="email" required autocomplete="email" maxlength="200" />
+      </div>
+      <div class="bk-field bk-field--wide">
+        <label class="text-label" for="bk-message">Τι σας απασχολεί<span class="bk-opt"> — προαιρετικά</span></label>
+        <textarea id="bk-message" name="message" rows="3" maxlength="5000"></textarea>
+      </div>
+    </div>
+
+    {/* honeypot — real visitors never see or fill this; bots that do are dropped */}
+    <input class="bk-hp" type="text" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+    <div class="bk-actions">
+      <button class="bk-submit text-button" type="submit">Αποστολή αιτήματος</button>
+      <a class="bk-tel text-caption" href={telHref}>ή τηλεφωνικά: {site.phone}</a>
+    </div>
+    <p class="bk-status text-caption" role="status" aria-live="polite"></p>
+  </form>
+</dialog>
+
+<style>
+  .bk {
+    width: min(38rem, calc(100% - 2rem));
+    max-height: min(90dvh, 48rem);
+    margin: auto;                      /* centre it — UA defaults do not, reliably */
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: var(--color-bg);
+    color: var(--color-text);
+    overflow: auto;
+  }
+  .bk::backdrop {
+    background: color-mix(in srgb, var(--color-primary-dark) 62%, transparent);
+    backdrop-filter: blur(3px);
+  }
+  /* Opening: the panel settles rather than pops. */
+  .bk[open] { animation: bkIn 0.5s var(--reveal-ease) both; }
+  .bk[open]::backdrop { animation: bkFade 0.4s ease both; }
+  @keyframes bkIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes bkFade { from { opacity: 0; } to { opacity: 1; } }
+
+  .bk-form {
+    position: relative;
+    display: grid;
+    gap: var(--stack-sm);
+    padding: clamp(1.75rem, 4vw, 2.75rem);
+  }
+  .bk-title { margin: 0; }
+  .bk-lead { color: var(--color-muted); margin: 0; max-width: 30rem; }
+
+  /* ------------------------------- close -------------------------------- */
+  .bk-close {
+    position: absolute;
+    top: 0.75rem;
+    inset-inline-end: 0.75rem;
+    width: 2.75rem;                    /* ≥44px tap target */
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--color-muted);
+  }
+  .bk-close span {
+    position: absolute;
+    width: 1rem;
+    height: 1px;                       /* px — hairline */
+    background: currentColor;
+  }
+  .bk-close span:first-child { transform: rotate(45deg); }
+  .bk-close span:last-child { transform: rotate(-45deg); }
+  @media (hover: hover) {
+    .bk-close { transition: color var(--transition-base); }
+    .bk-close:hover { color: var(--color-text); }
+  }
+
+  /* ------------------------------- fields ------------------------------- */
+  .bk-fields {
+    display: grid;
+    gap: var(--stack-sm);
+    margin-block-start: var(--stack-md);
+  }
+  @media (min-width: 34rem) {
+    .bk-fields { grid-template-columns: 1fr 1fr; gap: var(--stack-sm) var(--stack-md); }
+    .bk-field--wide { grid-column: 1 / -1; }
+  }
+  .bk-field { display: grid; gap: 0.4rem; }
+  .bk-opt { font-weight: 400; color: var(--color-muted); }
+  .bk input,
+  .bk textarea {
+    font: inherit;
+    font-size: var(--text-body);       /* 18px — never shrink form text */
+    padding: 0.6em 0.75em;
+    color: var(--color-text);
+    background: var(--color-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-base);
+  }
+  .bk input:focus-visible,
+  .bk textarea:focus-visible { border-color: var(--color-primary); }
+  .bk-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  /* ------------------------------ actions ------------------------------- */
+  .bk-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--stack-sm) var(--stack-md);
+    margin-block-start: var(--stack-md);
+  }
+  .bk-submit {
+    padding: 0.8em 1.9em;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border: 0;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+  }
+  .bk-submit[disabled] { opacity: 0.55; cursor: default; }
+  @media (hover: hover) {
+    .bk-submit { transition: background var(--transition-base); }
+    .bk-submit:not([disabled]):hover { background: var(--color-primary-light); }
+  }
+  .bk-tel { color: var(--color-muted); text-decoration: none; border-bottom: 1px solid var(--color-border); }
+  @media (hover: hover) {
+    .bk-tel { transition: color var(--transition-base); }
+    .bk-tel:hover { color: var(--color-text); }
+  }
+  .bk-status:empty { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bk[open], .bk[open]::backdrop { animation: none; }
+  }
+</style>
+
+<script>
+  import { logFormError } from '../../scripts/error-logger';
+
+  const ENDPOINT = 'https://forms.polarzee.com/';
+  const GENERIC =
+    'Δεν ήταν δυνατή η αποστολή αυτή τη στιγμή — δοκιμάστε ξανά ή καλέστε μας απευθείας.';
+
+  let token = '';
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  async function getToken() {
+    try {
+      const r = await fetch(ENDPOINT);
+      const d = await r.json();
+      if (d?.ok && d.token) token = d.token;
+    } catch { /* offline / blocked — retried on submit */ }
+  }
+
+  async function post(fields: Record<string, string>) {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...fields, _token: token }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { res, data };
+  }
+
+  /* Delegated so it survives view transitions: triggers live in swapped pages,
+     the dialog itself is in the persistent Layout. */
+  document.addEventListener('click', (e) => {
+    const trigger = (e.target as Element | null)?.closest('[data-booking]');
+    if (!trigger) return;
+    const dlg = document.querySelector<HTMLDialogElement>('.bk');
+    if (!dlg || typeof dlg.showModal !== 'function') return;   // no <dialog> → follow the href
+    e.preventDefault();
+    dlg.showModal();
+    if (!token) getToken();            // token is valid 2s–2h; a human takes longer to type
+  });
+
+  function bindDialog() {
+    const dlg = document.querySelector<HTMLDialogElement>('.bk');
+    const form = dlg?.querySelector<HTMLFormElement>('.bk-form');
+    if (!dlg || !form || dlg.dataset.bound) return;
+    dlg.dataset.bound = '1';
+
+    const status = form.querySelector<HTMLElement>('.bk-status');
+    const btn = form.querySelector<HTMLButtonElement>('.bk-submit');
+    const honeypot = form.querySelector<HTMLInputElement>('[name="company_url"]');
+    const siteKey = form.dataset.siteKey || '';
+
+    form.querySelector('.bk-close')?.addEventListener('click', () => dlg.close());
+    // Click on the backdrop (outside the form box) closes.
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+      if (!f.name || !f.phone || !f.email) {
+        if (status) status.textContent = 'Συμπληρώστε όνομα, τηλέφωνο και email.';
+        return;
+      }
+      const fields = {
+        site: siteKey,
+        name: f.name,
+        email: f.email,
+        phone: f.phone,
+        subject: 'Αίτημα ραντεβού',
+        message: f.message || '(χωρίς σημείωση)',
+        company_url: honeypot?.value || '',
+      };
+
+      if (btn) btn.disabled = true;
+      if (status) status.textContent = 'Αποστολή…';
+      try {
+        if (!token) await getToken();
+        let { res, data } = await post(fields);
+
+        // one retry on a token problem: too_fast → brief wait; else → fresh token
+        if (res.status === 422 && data?.error === 'invalid_token') {
+          if (data.reason === 'too_fast') await wait(2100);
+          else await getToken();
+          ({ res, data } = await post(fields));
+        }
+
+        if (res.ok && data?.ok) {
+          if (status) status.textContent = 'Το αίτημά σας εστάλη — θα επικοινωνήσουμε σύντομα.';
+          form.reset();
+          token = '';
+          getToken();
+        } else if (res.status === 429) {
+          if (status) status.textContent = 'Πολλές προσπάθειες — δοκιμάστε ξανά σε λίγο.';
+        } else if (res.status === 422 && data?.error === 'validation') {
+          if (status) status.textContent = 'Ελέγξτε τα στοιχεία σας και δοκιμάστε ξανά.';
+        } else if (res.status === 422 && data?.error === 'invalid_token') {
+          token = ''; getToken();
+          if (status) status.textContent = 'Η σύνδεση έληξε — υποβάλετε ξανά.';
+        } else {
+          logFormError('booking', `HTTP ${res.status} ${data?.error || ''}`.trim());
+          if (status) status.textContent = GENERIC;
+        }
+      } catch (err) {
+        logFormError('booking', err instanceof Error ? err.message : String(err));
+        if (status) status.textContent = GENERIC;
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+  }
+
+  bindDialog();
+  document.addEventListener('astro:after-swap', bindDialog);
+</script>

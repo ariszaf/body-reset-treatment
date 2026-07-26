@@ -1,0 +1,102 @@
+---
+/**
+ * Footer — 3-col → single-col mobile, social icons, dynamic year,
+ * legal-page links (ALWAYS — spec: legal.md), agency credit slot
+ * (visible only when site.agencyCredit === 'visible' — spec: attribution.md).
+ */
+import { site } from '../content/site';
+import { navigation, legalLinks } from '../content/navigation';
+import Container from './Container.astro';
+
+const year = new Date().getFullYear();
+const socials = Object.entries(site.social).filter(([, url]) => url);
+const clientDomain = new URL(site.url).hostname;
+---
+
+<footer class="site-footer">
+  <Container>
+    <div class="footer-grid py-section">
+      <div>
+        <p class="text-card-title">{site.name}</p>
+        <p class="text-caption space-stack-sm">{site.description}</p>
+      </div>
+
+      <nav aria-label="Πλοήγηση υποσέλιδου">
+        <p class="text-label">Σελίδες</p>
+        <ul>
+          {navigation.map((item) => <li><a class="footer-link" href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <div>
+        <p class="text-label">Επικοινωνία</p>
+        <ul>
+          <li><a class="footer-link" href={`tel:${site.phone}`}>{site.phone}</a></li>
+          <li><a class="footer-link" href={`mailto:${site.email}`}>{site.email}</a></li>
+          {/* Mobile service: there is no shop front, so the coverage area stands
+              in for a street address. */}
+          <li class="text-caption">{site.serviceArea}</li>
+          {site.hours && <li class="text-caption">{site.hours}</li>}
+        </ul>
+        {socials.length > 0 && (
+          <ul class="socials" aria-label="Social media">
+            {socials.map(([name, url]) => (
+              <li><a class="footer-link" href={url} rel="noopener" aria-label={name}>{name}</a></li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="text-caption">© {year} {site.name}. Με επιφύλαξη παντός δικαιώματος.</p>
+      <ul class="legal-links" aria-label="Νομικές σελίδες">
+        {legalLinks.map((l) => <li><a class="footer-link text-caption" href={l.href}>{l.label}</a></li>)}
+      </ul>
+      {site.agencyCredit === 'visible' && (
+        <p class="agency-credit text-caption">
+          Designed &amp; developed by
+          <a href={`https://polarzee.com/?utm_source=${clientDomain}&utm_medium=footer-credit&utm_campaign=agency-attribution`}
+             rel="noopener"
+             title="Polarzee — Web Development & Digital Marketing Agency, Athens">Polarzee</a>
+          — Web Development &amp; Digital Marketing Agency, Athens, Greece
+        </p>
+      )}
+    </div>
+  </Container>
+</footer>
+
+<style>
+  .site-footer { background: var(--color-alt); border-top: 1px solid var(--color-border); }
+  .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
+  .site-footer ul { list-style: none; margin: var(--stack-sm) 0 0; padding: 0; display: grid; gap: 0.5rem; }
+  .socials { display: flex !important; gap: var(--stack-sm); margin-top: var(--stack-md) !important; }
+
+  /* Hover: underline slides in (catalog: animate.md) */
+  .footer-link {
+    color: var(--color-muted); text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100%;
+    background-size: 0% 1px;
+    /* ≥40px tap target without shifting layout (padding offset by negative margin) */
+    display: inline-block;
+    padding-block: 0.6em;
+    margin-block: -0.6em;
+    background-position: 0 calc(100% - 0.6em);
+  }
+  @media (hover: hover) {
+    .footer-link { transition: background-size var(--transition-base), color var(--transition-base); }
+    .footer-link:hover { background-size: 100% 1px; color: var(--color-text); }
+  }
+
+  .footer-bottom {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--stack-sm) var(--stack-lg);
+    padding-block: var(--stack-md);
+    border-top: 1px solid var(--color-border);
+  }
+  .legal-links { display: flex !important; flex-wrap: wrap; gap: var(--stack-sm) var(--stack-md); margin: 0 !important; }
+  .agency-credit a { color: inherit; }
+
+  @media (max-width: 48rem) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>

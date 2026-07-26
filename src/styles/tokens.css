@@ -1,0 +1,225 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   SITE DESIGN TOKENS — single source of truth for ALL visual decisions.
+   Components use ONLY the semantic utilities/classes defined here — never
+   raw Tailwind sizes (text-3xl NEVER, text-section-title YES).
+   Standing rules (contract in foundation.md):
+   · body 18px (1.125rem) — HARD FLOOR 17px (1.0625rem), no text below
+   · spacing in rem · text-relative padding in em · fluid clamp(rem,vw,rem)
+   · px ONLY for borders/hairlines · vw only inside clamp()
+   · ONE section rhythm: every section uses py-section
+   ===================================================================== */
+
+/* ------------------------------------------------------------------ */
+/* BRAND BLOCK — Body Reset Treatment.                                 */
+/* Direction: LIGHT restrained luxury, taken from nikoskoulis.com.     */
+/* Values lifted from that theme's own CSS variables:                  */
+/*   --light #f6f3ee · --gray #edebe8 · --dark #1c1d1d                 */
+/* The page is warm off-white; the photography supplies all the depth. */
+/* The logo artwork inherits currentColor, so it is white over a photo */
+/* and dark ink on the page — one file, both surfaces.                 */
+/* ------------------------------------------------------------------ */
+@theme {
+  /* Fonts — both verified to ship a GREEK subset on Google Fonts (checked
+     against the css2 API; Montserrat/Poppins/Jost/Raleway do NOT and were
+     rejected for that reason). Manrope's light weights echo the logo
+     wordmark; Commissioner is humanist, so the two never read as one face. */
+  --font-heading: 'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Commissioner', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Colors — warm charcoal ink on warm off-white. Never pure #fff, never #000.
+     The ink is deliberately softened off the reference's #1c1d1d: on a cream
+     field a near-black reads hard. #33302c keeps 11.5:1 against the background
+     (AAA needs 7:1), so nothing is given up for the softer feel.
+     --color-primary-dark holds the true dark for surfaces that need the depth. */
+  --color-primary: #33302c;
+  --color-primary-light: #4a4640;
+  --color-primary-dark: #1c1d1d;
+  --color-secondary: #75644e;
+  --color-text: #33302c;
+  --color-muted: #6e6a64;      /* 4.9:1 — the lightest that still clears AA */
+  --color-bg: #f6f3ee;
+  --color-alt: #edebe8;
+  --color-border: #ddd8d1;
+
+  /* Accent — warm taupe: hairlines, indexes, micro-labels. Nothing else.
+     Darkened from #97846c, which measured 3.25:1 on the background — the
+     eyebrow labels and the menu's CTA link are real text and were failing AA.
+     #75644e clears 4.5:1 on BOTH the base and the alt band. */
+  --color-accent: #75644e;
+
+  /* Text colour ON a primary (dark) surface — buttons, skip-link. */
+  --color-on-primary: #f6f3ee;
+
+  /* Radius — brief: Καθόλου */
+  --radius-base: 0.125rem;
+  --radius-lg: 0.25rem;
+
+  /* Shadows (invariant) */
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-elevated: 0 10px 25px rgb(0 0 0 / 0.10), 0 4px 10px rgb(0 0 0 / 0.06);
+}
+
+/* ============ INVARIANT ARCHITECTURE (do not edit per site) ======== */
+:root {
+  /* Type scale — all rem, fluid via clamp(rem, vw, rem), floor 17px */
+  --text-floor: 1.0625rem;                                   /* 17px — NOTHING below this */
+  --text-body: 1.125rem;                                     /* 18px all breakpoints */
+  --text-caption: 1.0625rem;                                 /* 17px */
+  --text-label: 1.0625rem;                                   /* 17px */
+  --text-nav-link: 1.0625rem;                                /* 17px */
+  --text-button: 1.0625rem;                                  /* 17px */
+  --text-card-body: 1.125rem;                                /* 18px */
+  --text-card-title: clamp(1.1875rem, 0.4vw + 1.1rem, 1.3125rem);   /* 19→21px */
+  --text-lead: clamp(1.125rem, 0.5vw + 1.02rem, 1.3125rem);          /* 18→21px */
+  --text-section-title: clamp(1.4375rem, 1.2vw + 1.15rem, 1.8125rem);/* 23→29px */
+  --text-h1: clamp(1.5rem, 1.6vw + 1.15rem, 2.0625rem);              /* 24→33px (mobile ≥24px) */
+
+  /* Spacing — rem only; vw only inside clamp() */
+  /* Density: Airy — the restraint of the references comes from the empty space. */
+  --space-section: clamp(5.5rem, 10vw, 9rem);    /* THE section rhythm — one token sitewide */
+  --container-max: 64rem;
+  --space-container: clamp(1rem, 4vw, 2rem);
+  --stack-sm: 0.75rem;
+  --stack-md: 1.5rem;
+  --stack-lg: 2.5rem;
+  --stack-xl: 4rem;
+
+  /* Heading voice — Luxury: light weight, open tracking. Matches the logo wordmark. */
+  --heading-tracking: 0.04em;
+  --heading-weight: 300;
+
+  /* Signature tracking for uppercase micro-labels (eyebrows, indexes, the logo's own voice) */
+  --tracking-wide: 0.22em;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+
+  /* Reveal system (engine: src/scripts/animations.ts · catalog: animate.md) */
+  --reveal-distance: 1.6rem;
+  --reveal-duration: .7s;
+  --reveal-ease: cubic-bezier(.22, .61, .36, 1);
+  --reveal-blur: 10px;
+  --reveal-stagger: 90ms;
+}
+
+/* ---- Semantic type/layout utilities (use THESE, not raw sizes) ---- */
+@utility text-h1            { font-family: var(--font-heading); font-size: var(--text-h1); font-weight: var(--heading-weight, 700); letter-spacing: var(--heading-tracking, 0em); line-height: 1.2; }
+@utility text-section-title { font-family: var(--font-heading); font-size: var(--text-section-title); font-weight: var(--heading-weight, 700); letter-spacing: var(--heading-tracking, 0em); line-height: 1.25; }
+@utility text-card-title    { font-family: var(--font-heading); font-size: var(--text-card-title); font-weight: 600; line-height: 1.35; }
+@utility text-lead          { font-size: var(--text-lead); line-height: 1.55; }
+@utility text-card-body     { font-size: var(--text-card-body); line-height: 1.6; }
+@utility text-nav-link      { font-size: var(--text-nav-link); font-weight: 500; }
+@utility text-button        { font-size: var(--text-button); font-weight: 600; letter-spacing: 0.01em; }
+@utility text-label         { font-size: var(--text-label); font-weight: 600; }
+@utility text-caption       { font-size: var(--text-caption); color: var(--color-muted); }
+/* Signature micro-label: uppercase, widely tracked — the logo's typographic voice. */
+@utility text-eyebrow       { font-family: var(--font-body); font-size: var(--text-label); font-weight: 500; text-transform: uppercase; letter-spacing: var(--tracking-wide); color: var(--color-accent); line-height: 1.4; }
+@utility py-section         { padding-block: var(--space-section); }
+@utility space-stack-sm     { margin-block-start: var(--stack-sm); }
+@utility space-stack-md     { margin-block-start: var(--stack-md); }
+@utility space-stack-lg     { margin-block-start: var(--stack-lg); }
+@utility space-stack-xl     { margin-block-start: var(--stack-xl); }
+
+/* --------------------------- Base layer --------------------------- */
+@layer base {
+  html { scroll-behavior: smooth; }
+  /* Side-reveals (reveal-left/right) hold translateX offsets until revealed —
+     clip stops them widening the page on mobile. QA catches real overflow via
+     its per-element scan (scrollWidth is blind under clip). */
+  html, body { overflow-x: clip; }
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-bg);
+  }
+  h1, h2, h3, h4 { font-family: var(--font-heading); text-wrap: balance; }
+  img, video, svg { max-width: 100%; height: auto; }
+  * { border-color: var(--color-border); }
+
+  /* Focus — every interactive element gets a visible :focus-visible state */
+  :where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Skip-to-content link (a11y) */
+  .skip-link {
+    position: absolute; left: -9999px; top: 0; z-index: 100;
+    padding: 0.75em 1.25em;
+    background: var(--color-primary); color: var(--color-on-primary);
+    font-size: var(--text-body); border-radius: var(--radius-base);
+  }
+  .skip-link:focus { left: 0.5rem; top: 0.5rem; }
+}
+
+/* ---- Finish utilities (THEME-OPTIONS lists 16/18 — imagery & backgrounds) ---- */
+/* Duotone imagery: wrap the <img> in .img-duotone — desaturates the photo and
+   tints it toward the brand primary (token-driven, works on any palette). */
+.img-duotone { position: relative; overflow: hidden; }
+.img-duotone img { filter: grayscale(1) contrast(1.05); }
+.img-duotone::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: var(--color-primary); mix-blend-mode: color; opacity: .9;
+}
+/* Subtle grain/texture over any section (retro/organic moods) */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+/* Quiet top-down tint wash (alternative to flat bg/alt alternation) */
+.bg-gradient-subtle {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, transparent), transparent 45%);
+}
+
+/* ------------------- Reveal system base CSS ------------------------ */
+/* Gated on .reveal-ready so content is visible if JS fails.           */
+html.reveal-ready .reveal {
+  opacity: 0;
+  transition:
+    opacity var(--reveal-duration) var(--reveal-ease),
+    transform var(--reveal-duration) var(--reveal-ease),
+    filter var(--reveal-duration) var(--reveal-ease),
+    -webkit-mask-size var(--reveal-duration) var(--reveal-ease),
+    mask-size var(--reveal-duration) var(--reveal-ease);
+  transition-delay: calc(var(--i, 0) * var(--reveal-stagger));
+}
+html.reveal-ready .reveal.in { opacity: 1; transform: none; filter: none; }
+html.reveal-ready .reveal-up       { transform: translateY(var(--reveal-distance)); }
+html.reveal-ready .reveal-left     { transform: translateX(calc(-1 * var(--reveal-distance))); }
+html.reveal-ready .reveal-right    { transform: translateX(var(--reveal-distance)); }
+html.reveal-ready .reveal-zoom     { transform: scale(.92); }
+html.reveal-ready .reveal-blur     { filter: blur(var(--reveal-blur)); transform: translateY(14px); }
+/* Wipe reveals — a solid mask whose size grows from 0 to full.
+   NEVER hide a revealed element with clip-path: IntersectionObserver measures
+   the target AFTER clipping, so an element that clips itself away reports a
+   zero-area intersection, never satisfies the threshold, never gets `.in`, and
+   stays invisible forever. mask-size is paint-time, so the geometry the
+   observer sees is untouched — and unlike a clipped wrapper it needs no extra
+   element, so it works on a bare heading too.
+   Same fix is in the factory starter as of v1.6.1. */
+html.reveal-ready .reveal-clip,
+html.reveal-ready .reveal-mask-up {
+  -webkit-mask-image: linear-gradient(#000, #000);
+          mask-image: linear-gradient(#000, #000);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+}
+html.reveal-ready .reveal-clip { -webkit-mask-size: 0% 100%; mask-size: 0% 100%; }
+html.reveal-ready .reveal-mask-up {
+  -webkit-mask-position: 0 100%; mask-position: 0 100%;
+  -webkit-mask-size: 100% 0%;    mask-size: 100% 0%;
+  transform: translateY(.4em);
+}
+html.reveal-ready .reveal-clip.in,
+html.reveal-ready .reveal-mask-up.in { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+html.reveal-ready .reveal-tilt     { transform: perspective(800px) rotateX(8deg); transform-origin: bottom; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; }
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

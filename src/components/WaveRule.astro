@@ -1,0 +1,67 @@
+---
+/**
+ * WaveRule — the brand's own line, used as the site's rule.
+ *
+ * Instead of a neutral 1px hairline between sections, this is the wave lifted
+ * straight out of the logotype (src/assets/wave.svg, extracted by
+ * scratchpad/make-wave.py — it is the longest path in the export by a factor of
+ * seven, so identifying it is unambiguous). Nothing about it is redrawn.
+ *
+ * It wipes open left-to-right as it enters the viewport, so it reads as a line
+ * being drawn rather than a graphic fading in. The wave is a FILLED shape, not
+ * a stroke, so the reveal is a clip-path — there is no stroke to animate.
+ *
+ * Hooks into the starter's reveal engine (.reveal → .in). No-JS and
+ * reduced-motion both land on "fully drawn", never on a blank gap.
+ *
+ * Props:
+ *   width  'container' (default) — matches the text column
+ *          'wide'                — spills past it, for full-bleed breaks
+ *   tone   'default' | 'muted'
+ */
+import waveSvg from '../assets/wave.svg?raw';
+
+interface Props {
+  width?: 'container' | 'wide';
+  tone?: 'default' | 'muted';
+  class?: string;
+}
+const { width = 'container', tone = 'default', class: className } = Astro.props;
+---
+
+{/* reveal-clip is the engine's wipe (mask-based since starter v1.6.1 — a
+    clip-path here would deadlock the observer). Only the timing is overridden
+    below, so the line draws slower than a standard reveal. */}
+<div
+  class={`waverule reveal reveal-clip waverule--${width} waverule--${tone} ${className ?? ''}`}
+  set:html={waveSvg}
+/>
+
+<style>
+  .waverule {
+    display: block;
+    width: 100%;
+    margin-inline: auto;
+    color: var(--color-accent);
+    /* The wipe. Gated on .reveal-ready, so without JS it is simply drawn. */
+    line-height: 0;
+  }
+  .waverule--container { max-width: 34rem; }
+  .waverule--wide { max-width: 62rem; }
+  .waverule--muted { color: color-mix(in srgb, var(--color-accent) 45%, transparent); }
+
+  .waverule :global(svg) {
+    display: block;
+    width: 100%;
+    height: clamp(1.25rem, 2.2vw, 2rem);
+  }
+
+  /* Slower than a standard reveal, and no fade — the line should read as being
+     drawn by a hand, not as a graphic appearing. */
+  :global(html.reveal-ready) .waverule {
+    opacity: 1;
+    transition:
+      -webkit-mask-size 1.7s cubic-bezier(0.33, 0.85, 0.3, 1),
+      mask-size 1.7s cubic-bezier(0.33, 0.85, 0.3, 1);
+  }
+</style>
