@@ -145,6 +145,31 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     padding-block: 0.375rem;
     margin-block: -0.375rem;
   }
+
+  /* One logotype on screen at a time. While the bar floats over a hero that
+     carries the mark itself, the bar stands its copy down and takes it back as
+     the hero scrolls away.
+
+     Two selectors, because two different moments have to be covered:
+       :has()      FIRST PAINT, before any JavaScript — otherwise the bar's copy
+                   is painted and then yanked, which is worse than never showing
+       .over-hero  from then on, driven by the same observer as the ink
+
+     `visibility` rather than opacity alone: a link faded to zero is still
+     focusable, and tabbing into an invisible target is a trap. When the menu is
+     open the curtain covers the hero, so the mark comes back. */
+  .navov-brand {
+    transition:
+      opacity var(--transition-base),
+      transform var(--transition-base),
+      visibility var(--transition-base);
+  }
+  :global(body:has(.hero .hero-mark)) .navov:not(.tone-ready) .navov-brand,
+  .navov.hero-owns-brand.over-hero:not(.is-open) .navov-brand {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.4rem);
+  }
   /* The COMPLETE logotype. Sized up past the reference's bar scale because the
      wordmark sits low in a tall composition: the slash alone spans 179 of the
      artwork's 181 units, so "TREATMENT" is only 3% of the height. At 120px the
@@ -346,7 +371,7 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     const media = document.querySelector('.hero');
     r.classList.add('tone-ready');
     if (!media) {
-      r.classList.remove('over-media');
+      r.classList.remove('over-media', 'over-hero', 'hero-owns-brand');
       return;
     }
     const bar = r.querySelector<HTMLElement>('.navov-bar');
@@ -354,8 +379,14 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     // The hero declares the ink IT needs. A high-key photograph wants page ink,
     // so the bar must NOT flip to white just because it is over a picture.
     const wantsWhite = media.getAttribute('data-ink') !== 'dark';
+    // …and if the hero shows the logotype itself, the bar stands its own copy
+    // down while the two would otherwise be on screen together.
+    r.classList.toggle('hero-owns-brand', !!media.querySelector('.hero-mark'));
     mediaObserver = new IntersectionObserver(
-      ([entry]) => r.classList.toggle('over-media', entry.isIntersecting && wantsWhite),
+      ([entry]) => {
+        r.classList.toggle('over-hero', entry.isIntersecting);
+        r.classList.toggle('over-media', entry.isIntersecting && wantsWhite);
+      },
       { rootMargin: `-${barH}px 0px 0px 0px`, threshold: 0 },
     );
     mediaObserver.observe(media);

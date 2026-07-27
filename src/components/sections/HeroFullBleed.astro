@@ -108,7 +108,7 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
       <span class="sr-only">{title}</span>
       {/* Decorative: the h1 above already carries the accessible name, so the
           mark must not be announced a second time. */}
-      <span class="hero-mark"><BrandMark title="" /></span>
+      <span class="hero-mark"><BrandMark title="" draw /></span>
     </h1>
   </div>
 
@@ -131,9 +131,39 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     overflow: hidden;
     background: var(--color-primary-dark);
   }
+  /* The backdrop the opening plays against — and what shows through while the
+     photograph is still arriving, so it has to be the page's own colour. */
+  .hero[data-ink='dark'] { background: var(--color-bg); }
 
   /* ------------------------------ frames ------------------------------ */
   .hero-frames { position: absolute; inset: 0; }
+
+  /* ------------------------- the opening ------------------------------
+     The whole page opens here, and there is no veil over the top of it: the
+     hero starts as a plain field of page colour, the logotype draws itself in
+     the place it will stay, and the photograph then materialises behind it.
+
+     Sequence (no JavaScript, no listener — just delays):
+       0.35s  the mark begins to draw
+       1.10s  the photograph starts to arrive, while the wordmark is still
+              settling — overlapping reads as one gesture, not two
+       2.62s  the mark is whole and stays whole
+       3.20s  the photograph is fully there
+
+     This REPLACES the full-screen veil on this page rather than adding to it.
+     The veil held the screen for ~3.0s AND locked scrolling; this holds nothing
+     — the page is readable and scrollable from the first frame. */
+  .hero-frames { animation: heroPhotoIn 2.1s var(--reveal-ease) 1.1s both; }
+  .hero-scrim  { animation: heroScrimIn 2.1s var(--reveal-ease) 1.1s both; }
+
+  @keyframes heroPhotoIn {
+    from { opacity: 0; transform: scale(1.035); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes heroScrimIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
   .hero-frame { position: absolute; inset: 0; margin: 0; will-change: opacity; }
   .hero-frame img {
     width: 100%;
@@ -191,90 +221,21 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     );
   }
 
-  /* ------------------- the mark: forming, holding, leaving ---------------
-     One 11-second cycle, repeating forever:
+  /* --------------------- the mark: it forms, then it stays ----------------
+     The choreography is BrandMark's own `draw` — the same gesture the bar plays
+     on every page change — slowed down, because this copy is many times larger.
+     It runs ONCE and stops. No loop: a mark that keeps rebuilding itself pulls
+     the eye back every few seconds, which is the opposite of what this page is
+     for. `both` fill-mode is what makes it stay drawn afterwards.
 
-        0.0s   nothing on screen
-        2.0s   the wave opens, left → right          1.4s
-        2.9s   the slash traces downward             0.9s
-        3.6s   BODY RESET settles                    0.8s
-        4.1s   TREATMENT settles                     0.7s
-        4.8s   whole and still
-        9.8s   it leaves                             0.8s   ← 5s after forming
-       10.6s   gone — and forms again from the top
+     Nothing here keys off the veil any more — on a page with a hero there IS no
+     veil. That coupling also had a latent bug: `intro-ran` survives a view
+     transition, so arriving at the homepage FROM an inner page inherited a
+     3.3-second wait with no veil on screen to justify it. */
+  .hero-mark { --draw-speed: 1.6; --draw-delay: 0.35s; }
 
-     The percentages below ARE that clock: 18% of 11s is 2.0s, 89% is 9.8s.
-     Change --mark-cycle and the whole sequence scales together.
-
-     Each part restores its own geometry inside the invisible 96–100% window
-     rather than at 0%. Resetting a mask or a dash offset while the part is
-     still painted is what makes a looping draw snap; here there is nothing on
-     screen to snap.
-
-     On a first visit the intro veil is still clearing at 2s, so the first cycle
-     waits it out. The delay keys off `intro-ran`, which is permanent —
-     `preloader-active` is removed mid-flight, and a delay that vanishes while
-     it is being served makes the browser recompute elapsed time and jump
-     straight to the formed mark. */
-  .hero { --hero-in: 0.6s; }
-  html.intro-ran .hero { --hero-in: 3.5s; }
-
-  .hero-mark { --mark-cycle: 11s; --mark-delay: 0s; }
-  html.intro-ran .hero-mark { --mark-delay: 1.4s; }
-
-  /* :global reaches into the SVG injected by BrandMark — set:html content
-     carries no scope attribute. (Valid here: this block is scoped.) */
-  .hero-mark :global(.lg-wave) {
-    -webkit-mask-image: linear-gradient(#000, #000);
-            mask-image: linear-gradient(#000, #000);
-    -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-    animation: hmWave var(--mark-cycle) var(--reveal-ease) var(--mark-delay) infinite;
-  }
-  .hero-mark :global(.lg-slash line) {
-    stroke-dasharray: var(--slash-len, 217);
-    animation: hmSlash var(--mark-cycle) var(--reveal-ease) var(--mark-delay) infinite;
-  }
-  .hero-mark :global(.lg-word) {
-    animation: hmWord var(--mark-cycle) var(--reveal-ease) var(--mark-delay) infinite;
-  }
-  .hero-mark :global(.lg-sub) {
-    animation: hmSub var(--mark-cycle) var(--reveal-ease) var(--mark-delay) infinite;
-  }
-
-  /* The wave is a FILLED path with no stroke, so stroke-dashoffset cannot draw
-     it — a mask grows across it instead. The slash IS a stroked <line>, so it
-     gets a real trace. Two techniques, one gesture. */
-  @keyframes hmWave {
-    0%,  18% { -webkit-mask-size: 0% 100%;   mask-size: 0% 100%;   opacity: 1; }
-    31%, 89% { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; opacity: 1; }
-    96%      { -webkit-mask-size: 100% 100%; mask-size: 100% 100%; opacity: 0; }
-    100%     { -webkit-mask-size: 0% 100%;   mask-size: 0% 100%;   opacity: 0; }
-  }
-  @keyframes hmSlash {
-    0%,  26% { stroke-dashoffset: var(--slash-len, 217); opacity: 1; }
-    35%, 89% { stroke-dashoffset: 0; opacity: 1; }
-    96%      { stroke-dashoffset: 0; opacity: 0; }
-    100%     { stroke-dashoffset: var(--slash-len, 217); opacity: 0; }
-  }
-  @keyframes hmWord {
-    0%,  33% { opacity: 0; transform: translateY(6px); }
-    40%, 89% { opacity: 1; transform: none; }
-    96%      { opacity: 0; transform: none; }
-    100%     { opacity: 0; transform: translateY(6px); }
-  }
-  @keyframes hmSub {
-    0%,  37% { opacity: 0; transform: translateY(6px); }
-    44%, 89% { opacity: 1; transform: none; }
-    96%      { opacity: 0; transform: none; }
-    100%     { opacity: 0; transform: translateY(6px); }
-  }
-
-  /* The cue is the only thing left with a one-off entrance. */
-  .hero-cue {
-    animation: heroIn 1.9s var(--reveal-ease) both;
-    animation-delay: calc(var(--hero-in) + 0.96s);
-  }
+  /* The cue arrives once the photograph is there — it points into a picture. */
+  .hero-cue { animation: heroIn 1.9s var(--reveal-ease) 2.6s both; }
   @keyframes heroIn {
     from { opacity: 0; filter: blur(7px); transform: translateY(14px); }
     to   { opacity: 1; filter: none;      transform: none; }
@@ -383,13 +344,9 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     .hero-frame { opacity: 0 !important; }
     .hero-frame:first-child { opacity: 1 !important; }
     .hero-frame img { transform: none !important; }
-    /* The mark is simply there, whole and still — no loop to sit through.
-       Its resting state is already the un-animated one: the mask defaults to
-       full size, the dash offset to zero. */
-    .hero-mark :global(.lg-wave),
-    .hero-mark :global(.lg-slash line),
-    .hero-mark :global(.lg-word),
-    .hero-mark :global(.lg-sub) { animation: none !important; }
+    /* The photograph is simply there. BrandMark drops its own draw already. */
+    .hero-frames,
+    .hero-scrim,
     .hero-cue { animation: none !important; opacity: 1; filter: none; transform: none; }
   }
 </style>

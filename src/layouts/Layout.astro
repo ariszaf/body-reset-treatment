@@ -160,7 +160,12 @@ const localBusinessSchema = {
   <body>
     <!-- Designed & developed by Polarzee — Web Development & Digital Marketing Agency, Athens, Greece — https://polarzee.com -->
     {/* MUST stay the first body node: it gates itself before paint. */}
-    <BrandVeil />
+    {/* The homepage introduces the brand with its OWN hero: the logotype draws
+        itself in place and the photograph fades in behind it. A centred veil on
+        top of that would play the same mark twice, one after the other. When it
+        stands down it still marks the session, so a later inner page does not
+        replay an intro the visitor has already had. */}
+    <BrandVeil skip={slug === ''} />
     <a href="#main" class="skip-link">Μετάβαση στο περιεχόμενο</a>
     <Header />
     <main id="main">

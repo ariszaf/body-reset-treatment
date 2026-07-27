@@ -56,23 +56,35 @@ const svg = title
   /* The wave is a FILLED path with no stroke, so stroke-dashoffset cannot
      apply to it — it is drawn with a mask that grows. The slash IS a stroked
      <line>, so it gets a real trace. Two techniques, one gesture. */
+  /* Two knobs for the caller, so the choreography lives in ONE place and the
+     bar and the hero cannot drift into two different gestures:
+       --draw-delay  when the whole sequence starts (wait out an intro veil)
+       --draw-speed  multiplier on every duration AND offset — a mark ten times
+                     the size of the bar's wants the same gesture, slower.  */
+  .brandmark--draw {
+    --u: var(--draw-speed, 1);
+    --t0: var(--draw-delay, 0s);
+  }
   .brandmark--draw :global(.lg-wave) {
     -webkit-mask-image: linear-gradient(#000, #000);
             mask-image: linear-gradient(#000, #000);
     -webkit-mask-repeat: no-repeat;
             mask-repeat: no-repeat;
-    animation: bmWave 0.85s cubic-bezier(0.65, 0, 0.35, 1) both;
+    animation: bmWave calc(0.85s * var(--u)) cubic-bezier(0.65, 0, 0.35, 1) var(--t0) both;
   }
   .brandmark--draw :global(.lg-slash line) {
     stroke-dasharray: var(--slash-len, 217);
-    animation: bmSlash 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.42s both;
+    animation: bmSlash calc(0.6s * var(--u)) cubic-bezier(0.4, 0, 0.2, 1)
+               calc(var(--t0) + 0.42s * var(--u)) both;
   }
   .brandmark--draw :global(.lg-word) {
-    animation: bmWord 0.5s var(--reveal-ease) 0.72s both;
+    animation: bmWord calc(0.5s * var(--u)) var(--reveal-ease)
+               calc(var(--t0) + 0.72s * var(--u)) both;
   }
   /* "TREATMENT" lands last — it is the quietest line in the mark. */
   .brandmark--draw :global(.lg-sub) {
-    animation: bmWord 0.5s var(--reveal-ease) 0.92s both;
+    animation: bmWord calc(0.5s * var(--u)) var(--reveal-ease)
+               calc(var(--t0) + 0.92s * var(--u)) both;
   }
 
   @keyframes bmWave {

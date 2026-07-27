@@ -1,19 +1,26 @@
 /**
- * Sample the hero logotype loop at exact times.
+ * The homepage opening, verified rather than eyeballed.
  *
- * Not screenshots-and-eyeball: the four animations are paused and their
- * currentTime is SET, so every reading is deterministic — no waiting, no
- * flake, and a step that silently fails to move shows up as a flat column.
+ *   QA_BASE=http://localhost:4321 node scripts/probe-hero-mark.mjs
+ *
+ * The logotype's four animations are paused and their currentTime is SET, so
+ * every reading is deterministic — no waiting, no flake, and a step that
+ * silently fails to move shows up as a flat column.
+ *
+ * What it asserts, beyond the choreography:
+ *   · the mark forms ONCE and is still whole 30s later — no loop
+ *   · the photograph arrives on its own, after the mark has started
+ *   · the page keeps exactly one <h1>, real text, invisible on screen
+ *   · only one logotype is on screen at a time (the bar stands its copy down
+ *     over the hero, and takes it back on an inner page)
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.QA_BASE || 'http://localhost:4321';
-const TIMES = [0.5, 1.9, 2.0, 2.7, 3.2, 3.9, 4.6, 6.0, 9.5, 10.2, 10.9, 13.0];
+const TIMES = [0.0, 0.9, 1.5, 2.1, 2.7, 3.4, 30.0];
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-// Skip the intro veil so the pure loop is under test (its own delay is checked below).
-await page.addInitScript(() => sessionStorage.setItem('brt_intro_seen', '1'));
 await page.goto(BASE, { waitUntil: 'networkidle' });
 
 const read = await page.evaluate(async (times) => {
@@ -23,6 +30,7 @@ const read = await page.evaluate(async (times) => {
     slash: q('.hero-mark .lg-slash line'),
     word: q('.hero-mark .lg-word'),
     sub: q('.hero-mark .lg-sub'),
+    frames: q('.hero-frames'),
   };
   const missing = Object.entries(els).filter(([, e]) => !e).map(([k]) => k);
   if (missing.length) return { error: `δεν βρέθηκαν: ${missing.join(', ')}` };
@@ -30,7 +38,7 @@ const read = await page.evaluate(async (times) => {
   const anims = {};
   for (const [k, el] of Object.entries(els)) {
     const a = el.getAnimations()[0];
-    if (!a) return { error: `καμία κίνηση στο .lg-${k}` };
+    if (!a) return { error: `καμία κίνηση στο .${k}` };
     a.pause();
     anims[k] = a;
   }
@@ -40,22 +48,27 @@ const read = await page.evaluate(async (times) => {
     for (const a of Object.values(anims)) a.currentTime = t * 1000;
     await new Promise((r) => requestAnimationFrame(r));
     const cs = (el) => getComputedStyle(el);
-    // mask-size comes back as a PERCENTAGE here, not px — dividing it by a
-    // pixel width silently reports a constant ~28% for every sample.
+    // mask-size reports a PERCENTAGE here, not px — dividing it by a pixel
+    // width silently returns the same constant for every sample.
     const raw = (cs(els.wave).maskSize || cs(els.wave).webkitMaskSize).split(' ')[0];
     const boxW = els.wave.getBoundingClientRect().width;
-    const maskW = raw.endsWith('%') ? parseFloat(raw) : (parseFloat(raw) / (boxW || 1)) * 100;
     rows.push({
       t,
-      wave: Math.round(maskW),                                 // % of the wave revealed
-      raw,
-      waveOp: +cs(els.wave).opacity,
+      wave: Math.round(raw.endsWith('%') ? parseFloat(raw) : (parseFloat(raw) / (boxW || 1)) * 100),
       dash: Math.round(parseFloat(cs(els.slash).strokeDashoffset)),
       word: +(+cs(els.word).opacity).toFixed(2),
       sub: +(+cs(els.sub).opacity).toFixed(2),
+      photo: +(+cs(els.frames).opacity).toFixed(2),
     });
   }
-  return { rows, dashFull: Math.round(parseFloat(getComputedStyle(els.slash).strokeDasharray)) };
+  return {
+    rows,
+    dashFull: Math.round(parseFloat(getComputedStyle(els.slash).strokeDasharray)),
+    // The point of this round of changes: nothing may repeat.
+    iterations: Object.fromEntries(
+      Object.entries(els).map(([k, el]) => [k, getComputedStyle(el).animationIterationCount]),
+    ),
+  };
 }, TIMES);
 
 if (read.error) {
@@ -64,37 +77,39 @@ if (read.error) {
   process.exit(1);
 }
 
-console.log(`\n  ΒΡΟΧΟΣ 11s — μήκος κάθετου: ${read.dashFull} μονάδες\n`);
-console.log('   χρόνος │ κύμα    │ κάθετος        │ BODY RESET │ TREATMENT');
-console.log('  ────────┼─────────┼────────────────┼────────────┼───────────');
+console.log(`\n  ΤΟ ΑΝΟΙΓΜΑ — μήκος κάθετου: ${read.dashFull} μονάδες\n`);
+console.log('   χρόνος │ κύμα    │ κάθετος        │ BODY RESET │ TREATMENT │ φωτογραφία');
+console.log('  ────────┼─────────┼────────────────┼────────────┼───────────┼───────────');
 for (const r of read.rows) {
   const bar = (p) => '█'.repeat(Math.round(p / 14)).padEnd(7);
   const traced = Math.round((1 - r.dash / read.dashFull) * 100);
   console.log(
-    `  ${String(r.t).padStart(5)}s │ ${bar(r.wave)} │ ${bar(traced)} ${String(traced).padStart(3)}% │` +
-      `   ${r.word.toFixed(2)}     │   ${r.sub.toFixed(2)}` +
-      (r.waveOp < 1 ? `   (σβήνει: ${r.waveOp.toFixed(2)})` : '')
+    `  ${String(r.t.toFixed(1)).padStart(5)}s │ ${bar(r.wave)} │ ${bar(traced)} ${String(traced).padStart(3)}% │` +
+      `   ${r.word.toFixed(2)}     │   ${r.sub.toFixed(2)}    │   ${r.photo.toFixed(2)}`,
   );
 }
 
-// ---- assertions: the sequence the client asked for, stated as facts --------
 const at = (t) => read.rows.find((r) => r.t === t);
 const traced = (r) => Math.round((1 - r.dash / read.dashFull) * 100);
+const whole = (r) => r.wave >= 99 && traced(r) >= 99 && r.word === 1 && r.sub === 1;
+
 const checks = [
-  ['στα 0.5s δεν φαίνεται τίποτα', at(0.5).wave === 0 && traced(at(0.5)) === 0 && at(0.5).word === 0],
-  ['μέχρι τα 1.9s ΤΙΠΟΤΑ — η παύση των 2 δευτ. τηρείται', at(1.9).wave === 0],
-  ['στα 2.0s μόλις ξεκινά', at(2.0).wave > 0 && at(2.0).wave < 15],
-  ['στα 2.7s το κύμα είναι ΜΕΣΟΔΡΟΜΙΣ', at(2.7).wave > 10 && at(2.7).wave < 95],
-  ['η κάθετος ΑΚΟΛΟΥΘΕΙ, δεν συμπίπτει', traced(at(2.7)) < traced(at(3.2))],
-  ['στα 3.2s το κύμα προηγείται της κάθετου', at(3.2).wave > traced(at(3.2))],
-  ['το BODY RESET έρχεται μετά την κάθετο', at(3.9).word > 0 && at(3.2).word === 0],
-  ['το TREATMENT έρχεται τελευταίο', at(4.6).sub > 0 && at(4.6).sub < at(6.0).sub],
-  ['στα 6.0s είναι ολόκληρο', at(6.0).wave >= 99 && traced(at(6.0)) >= 99 && at(6.0).word === 1 && at(6.0).sub === 1],
-  ['στα 9.5s ακόμη ολόκληρο (5 δευτ. κράτημα)', at(9.5).word === 1 && at(9.5).waveOp === 1],
-  ['στα 10.2s φεύγει', at(10.2).waveOp < 1 && at(10.2).word < 1],
-  ['στα 10.9s έχει φύγει', at(10.9).waveOp === 0 && at(10.9).word === 0],
-  ['στα 13.0s ξαναρχίζει από την αρχή', at(13.0).wave > 0 && at(13.0).wave < 100 && at(13.0).word === 0],
+  ['στο 0.0s η οθόνη είναι κενή — ούτε σήμα ούτε φωτογραφία',
+    at(0.0).wave === 0 && traced(at(0.0)) === 0 && at(0.0).word === 0 && at(0.0).photo === 0],
+  ['το κύμα ανοίγει πρώτο', at(0.9).wave > 0 && traced(at(0.9)) === 0],
+  ['η κάθετος ΑΚΟΛΟΥΘΕΙ, δεν συμπίπτει', traced(at(1.5)) < traced(at(2.1))],
+  ['το κύμα προηγείται της κάθετου', at(1.5).wave > traced(at(1.5))],
+  ['η φωτογραφία ξεκινά ΑΦΟΥ έχει αρχίσει το σήμα', at(0.9).photo === 0 && at(1.5).photo > 0],
+  ['η φωτογραφία έρχεται σταδιακά, όχι απότομα', at(1.5).photo < 0.6 && at(1.5).photo > 0],
+  ['το BODY RESET έρχεται μετά την κάθετο', at(2.1).word > 0 && at(1.5).word === 0],
+  // "last" means it LAGS the wordmark, not that it finishes at a later sample —
+  // by 2.7s both have landed, so comparing end states proves nothing.
+  ['το TREATMENT έρχεται τελευταίο', at(2.1).sub > 0 && at(2.1).sub < at(2.1).word],
+  ['στα 3.4s όλα στη θέση τους', whole(at(3.4)) && at(3.4).photo === 1],
+  ['ΣΤΑ 30s ΕΞΑΚΟΛΟΥΘΕΙ ολόκληρο — δεν ξαναρχίζει', whole(at(30.0)) && at(30.0).photo === 1],
+  ['καμία κίνηση δεν επαναλαμβάνεται', Object.values(read.iterations).every((v) => v === '1')],
 ];
+
 console.log('');
 let bad = 0;
 for (const [name, ok] of checks) {
@@ -102,7 +117,7 @@ for (const [name, ok] of checks) {
   if (!ok) bad++;
 }
 
-// ---- the h1 survived the text removal -------------------------------------
+// ---- one h1, real text, not painted ---------------------------------------
 const h1 = await page.evaluate(() => {
   const hs = [...document.querySelectorAll('h1')];
   const box = hs[0]?.querySelector('.sr-only')?.getBoundingClientRect();
@@ -119,6 +134,33 @@ console.log(`  ${h1.text ? '✅' : '❌'} με πραγματικό κείμεν
 console.log(`  ${h1.invisible ? '✅' : '❌'} αόρατο στην οθόνη`);
 console.log(`  ${h1.markHidden ? '✅' : '❌'} το λογότυπο δεν διαβάζεται δεύτερη φορά`);
 if (h1.count !== 1 || !h1.text || !h1.invisible || !h1.markHidden) bad++;
+
+// ---- one logotype on screen at a time -------------------------------------
+const brandVisible = (p) =>
+  p.evaluate(() => {
+    const cs = getComputedStyle(document.querySelector('.navov-brand'));
+    return cs.visibility === 'visible' && +cs.opacity > 0.5;
+  });
+
+const atTop = await brandVisible(page);
+await page.evaluate(() =>
+  window.scrollTo(0, document.querySelector('.hero').getBoundingClientRect().height + 200));
+await page.waitForTimeout(700);
+const scrolled = await brandVisible(page);
+
+// an inner page has no hero — the bar must keep its mark there
+const about = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await about.goto(`${BASE}/poioi-eimaste`, { waitUntil: 'networkidle' });
+const inner = await brandVisible(about);
+// and no full-screen veil may survive on the homepage
+const veil = await page.evaluate(() => !!document.getElementById('brand-veil'));
+
+console.log('');
+console.log(`  ${!atTop ? '✅' : '❌'} στην κορυφή της Αρχικής η μπάρα ΔΕΝ δείχνει λογότυπο`);
+console.log(`  ${scrolled ? '✅' : '❌'} μετά το hero το λογότυπο επιστρέφει στη μπάρα`);
+console.log(`  ${inner ? '✅' : '❌'} σε εσωτερική σελίδα (χωρίς hero) φαίνεται κανονικά`);
+console.log(`  ${!veil ? '✅' : '❌'} καμία πλήρης οθόνη preload στην Αρχική`);
+if (atTop || !scrolled || !inner || veil) bad++;
 
 console.log(bad ? `\n  ❌ ${bad} αποτυχίες\n` : '\n  όλα πέρασαν\n');
 await browser.close();
