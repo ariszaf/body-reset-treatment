@@ -93,6 +93,14 @@
   /* Signature tracking for uppercase micro-labels (eyebrows, indexes, the logo's own voice) */
   --tracking-wide: 0.22em;
 
+  /* Nav bar geometry — ONE source, site-wide. The bar sizes the logotype from
+     it, the menu overlay reserves clearance from it, and the hero keeps its own
+     mark below it. These used to live inside NavOverlay; the hero could not see
+     them, so the clearance was a second, drifting number. */
+  --nav-edge: clamp(1rem, 1.6vw, 1.5rem);
+  --nav-logo: clamp(4.5rem, 8.5vw, 7.5rem);
+  --nav-bar-h: calc(var(--nav-logo) + var(--nav-edge) * 2);
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;

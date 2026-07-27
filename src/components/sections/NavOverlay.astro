@@ -25,10 +25,15 @@ import { navigation } from '@content/navigation';
 import { booking } from '@lib/booking';
 
 interface Props {
-  /** bar ink BEFORE scroll — 'light' sits over the dark full-bleed hero */
+  /**
+   * Bar ink at FIRST PAINT, before the observer takes over. 'dark' is page ink;
+   * 'light' is white, for a page that opens on a dark full-bleed photograph.
+   * Every page here — including the homepage, whose hero is high-key — wants
+   * page ink, so the default is 'dark' and nothing passes this today.
+   */
   tone?: 'light' | 'dark';
 }
-const { tone = 'light' } = Astro.props;
+const { tone = 'dark' } = Astro.props;
 
 const links: { label: string; href: string; cta?: boolean }[] = [
   ...navigation,
@@ -93,16 +98,11 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
 <style>
   :global(html.navov-lock) { overflow: hidden; }
 
-  /* The edge gutter — the ONLY thing between the logo/toggle and the screen
-     edge. Matches the reference (16px phone → 24px desktop). */
-  .navov {
-    --nav-edge: clamp(1rem, 1.6vw, 1.5rem);
-    /* Single source for the logo height — the bar sizes the mark from it and
-       the overlay reserves clearance from it. When these two drifted apart the
-       logotype physically covered the first menu link and swallowed its clicks. */
-    --nav-logo: clamp(4.5rem, 8.5vw, 7.5rem);
-    --nav-bar-h: calc(var(--nav-logo) + var(--nav-edge) * 2);
-  }
+  /* --nav-edge (the gutter between logo/toggle and the screen edge, 16px phone →
+     24px desktop), --nav-logo and --nav-bar-h are defined ONCE in tokens.css.
+     Do not redeclare them here: the bar, the overlay AND the hero all measure
+     off them, and when two copies drifted the logotype physically covered the
+     first menu link and swallowed its clicks. */
 
   /* ---------------------------- slim fixed bar --------------------------- */
   .navov-bar {
@@ -351,8 +351,11 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     }
     const bar = r.querySelector<HTMLElement>('.navov-bar');
     const barH = Math.round(bar?.getBoundingClientRect().height ?? 96);
+    // The hero declares the ink IT needs. A high-key photograph wants page ink,
+    // so the bar must NOT flip to white just because it is over a picture.
+    const wantsWhite = media.getAttribute('data-ink') !== 'dark';
     mediaObserver = new IntersectionObserver(
-      ([entry]) => r.classList.toggle('over-media', entry.isIntersecting),
+      ([entry]) => r.classList.toggle('over-media', entry.isIntersecting && wantsWhite),
       { rootMargin: `-${barH}px 0px 0px 0px`, threshold: 0 },
     );
     mediaObserver.observe(media);

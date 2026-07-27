@@ -25,6 +25,12 @@
  * Props:
  *   slides      ImageEntry[] — one entry for a still hero, two+ to sequence
  *   title       the h1 line (screen readers + search engines; not painted)
+ *   ink         'light' (white, over a dark photo) | 'dark' (page ink, over a
+ *               high-key one). Everything keys off this: the mark, the cue, the
+ *               scrim's direction, and the colour the nav bar takes while it
+ *               floats over the frame.
+ *   markY       where the logotype's centre sits, top-down. The photograph
+ *               decides this — it belongs wherever the frame is empty.
  *   holdSec     seconds each frame is held (default 7)
  *   nextAnchor  id the bottom cue scrolls to
  */
@@ -34,11 +40,13 @@ import BrandMark from '@components/BrandMark.astro';
 interface Props {
   slides: ImageEntry[];
   title: string;
+  ink?: 'light' | 'dark';
+  markY?: string;
   holdSec?: number;
   nextAnchor?: string;
 }
 
-const { slides, title, holdSec = 7, nextAnchor } = Astro.props;
+const { slides, title, ink = 'light', markY, holdSec = 7, nextAnchor } = Astro.props;
 
 const N = slides.length;
 const cycle = N * holdSec;
@@ -60,7 +68,11 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
 
 {!isStill && <style is:inline set:html={keyframes} />}
 
-<section class="hero">
+<section
+  class:list={['hero', markY && 'hero--placed']}
+  data-ink={ink}
+  style={markY ? `--mark-y:${markY}` : undefined}
+>
   <div class="hero-frames">
     {slides.map((img, i) => (
       <figure
@@ -130,11 +142,30 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     will-change: transform;
   }
 
-  /* Keeps the type legible without flattening the photograph. Weighted to the
-     two bands that actually carry content — the logotype at the top and the
-     type at the bottom — and left open through the middle so the room reads.
-     The lower stops are heavy on purpose: the treatment table is the brightest
-     object in the frame and it sits exactly behind the headline. */
+  /* A phone screen is far narrower than even the vertical crop, so `cover` still
+     trims the sides. Dead-centre cut the subject's head off at the left edge;
+     biasing the crop left keeps the head whole and spends the trim on the empty
+     right instead. Same media query as the <source> above, so it applies exactly
+     when that file is the one being shown. */
+  @media (orientation: portrait) {
+    .hero-frame img { object-position: 35% center; }
+  }
+
+
+  /* ------------------------------- ink -------------------------------- */
+  .hero { --hero-ink: #fff; --hero-ink-soft: rgb(255 255 255 / 0.72); }
+  .hero[data-ink='dark'] {
+    --hero-ink: var(--color-text);
+    --hero-ink-soft: var(--color-muted);
+  }
+
+  /* Keeps the marks legible without flattening the photograph. Weighted to the
+     two bands that actually carry something — the bar at the top and the cue at
+     the bottom — and left open through the middle so the room reads.
+
+     The scrim runs the SAME direction as the ink: over a dark photograph it
+     deepens the shadows so white reads; over a high-key one it lifts the frame
+     so page ink reads. A dark scrim under dark ink would bury it. */
   .hero-scrim {
     position: absolute;
     inset: 0;
@@ -146,6 +177,17 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
       rgb(0 0 0 / 0.40) 68%,
       rgb(0 0 0 / 0.66) 86%,
       rgb(0 0 0 / 0.74) 100%
+    );
+  }
+  .hero[data-ink='dark'] .hero-scrim {
+    background: linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.34) 0%,
+      rgb(255 255 255 / 0.10) 18%,
+      rgb(255 255 255 / 0) 38%,
+      rgb(255 255 255 / 0) 62%,
+      rgb(255 255 255 / 0.30) 88%,
+      rgb(255 255 255 / 0.46) 100%
     );
   }
 
@@ -239,6 +281,8 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
   }
 
   /* ------------------------------ content ----------------------------- */
+  /* --mark-y is the logotype's CENTRE line, top-down. Default sits it low, above
+     the cue; a photograph with a busy foreground overrides it. */
   .hero-content {
     position: absolute;
     inset-inline: 0;
@@ -249,15 +293,58 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     text-align: center;
     gap: var(--stack-sm);
     padding-inline: var(--space-container);
-    color: #fff;
+    color: var(--hero-ink);
+  }
+  /* markY is a wish, not a command: the mark never rides up under the bar. The
+     floor is computed from the SAME --nav-bar-h the bar itself uses, plus half
+     the mark's own height, so it holds at any viewport without a second number
+     to keep in sync. */
+  .hero--placed .hero-content {
+    top: max(var(--mark-y), calc(var(--nav-bar-h) + 1.75rem + var(--mark-h) / 2));
+    bottom: auto;
+    transform: translateY(-50%);
   }
   .hero-h1 { margin: 0; }
   /* Sized off the viewport, but capped: the mark is the quiet centre of the
-     frame, not a banner. The photograph still carries the scale. */
+     frame, not a banner. The photograph still carries the scale.
+     The height is DERIVED from the logo's own viewBox ratio (267.9 / 181.3), so
+     the placement floor above can reason about it before layout happens. */
+  .hero {
+    --mark-w: clamp(11rem, 26vw, 19rem);
+    --mark-h: calc(var(--mark-w) / 1.478);
+  }
   .hero-mark {
     display: block;
-    width: clamp(11rem, 26vw, 19rem);
+    width: var(--mark-w);
     max-width: 72vw;
+  }
+
+  /* A letterboxed window — a phone held sideways, or a short desktop window —
+     crops a landscape photograph straight through its middle, which is exactly
+     where the subject is. Bias the crop upward and shrink the mark, so the two
+     stay in the empty part of the frame instead of colliding in it.
+
+     Gated on the SHAPE of the window, not its width: a tall phone at 360×640 is
+     short too, but its crop is horizontal and needs none of this.
+
+     Must come AFTER the .hero rule above — same specificity, so source order
+     decides, and declaring it earlier silently loses. */
+  @media (min-aspect-ratio: 3 / 2) and (max-height: 46rem) {
+    .hero-frame img { object-position: center 20%; }
+    .hero { --mark-w: clamp(7.5rem, 14vw, 10.5rem); }
+    /* Biasing the crop upward pushes the darkest part of the photograph down
+       into the strip the cue sits in, so that end of the scrim has to work
+       harder here than it does in a full-height frame. */
+    .hero[data-ink='dark'] .hero-scrim {
+      background: linear-gradient(
+        to bottom,
+        rgb(255 255 255 / 0.30) 0%,
+        rgb(255 255 255 / 0.06) 20%,
+        rgb(255 255 255 / 0) 45%,
+        rgb(255 255 255 / 0.42) 82%,
+        rgb(255 255 255 / 0.72) 100%
+      );
+    }
   }
 
   /* ------------------------------ scroll cue --------------------------- */
@@ -273,7 +360,7 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     align-items: center;
     justify-content: flex-end;
     gap: 0.625rem;
-    color: rgb(255 255 255 / 0.72);
+    color: var(--hero-ink-soft);
     text-decoration: none;
   }
   .hero-cue-line {
@@ -284,7 +371,7 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
   }
   @media (hover: hover) {
     .hero-cue { transition: color var(--transition-base), transform var(--transition-base); }
-    .hero-cue:hover { color: #fff; transform: translateY(2px); }
+    .hero-cue:hover { color: var(--hero-ink); transform: translateY(2px); }
   }
 
   /* --------------------------- reduced motion --------------------------

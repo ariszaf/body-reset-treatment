@@ -7,3 +7,7 @@ dist/
 !.env.example
 qa-report/
 .DS_Store
+
+# Πρωτότυπες φωτογραφίες πελάτη — τεράστια αρχεία, δεν χρειάζονται στο build.
+# Τα παραδοτέα είναι τα WebP στο public/images/.
+raw/

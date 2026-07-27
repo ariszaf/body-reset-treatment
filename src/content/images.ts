@@ -11,12 +11,13 @@ export type ImageEntry = { src: string; alt: string; width: number; height: numb
 export const images: Record<string, ImageEntry> = {
   og: { src: '/images/general/og.jpg', alt: '', width: 1200, height: 630 }, // TODO: replace with brand og image
 
-  /* Hero — one still frame, art-directed by orientation. */
+  /* Hero — one still frame, art-directed by orientation. A HIGH-KEY photograph:
+     the hero renders in dark ink because of it (HeroFullBleed `ink` prop). */
   hero: {
-    src: '/images/hero/therapeftiko-masaz-body-reset-01.webp',
-    mobile: '/images/hero/therapeftiko-masaz-body-reset-01-mobile.webp',
-    alt: 'Κρεβάτι μασάζ σε χαμηλό φωτισμό — μασάζ κατ’ οίκον από το Body Reset Treatment',
-    width: 1920, height: 818,
+    src: '/images/hero/masaz-kat-oikon-athina-body-reset.webp',
+    mobile: '/images/hero/masaz-kat-oikon-athina-body-reset-mobile.webp',
+    alt: 'Γυναίκα ξαπλωμένη σε κρεβάτι μασάζ με λευκά λινά — μασάζ κατ’ οίκον στην Αθήνα, Body Reset Treatment',
+    width: 2400, height: 1600,
   },
 };
 
