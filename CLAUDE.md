@@ -36,7 +36,7 @@ accent σκούρυνε σε **`#75644e`** επειδή το προηγούμε�
 | `BrandVeil.astro` | Το intro (μία φορά ανά session) — **μόνο σε σελίδες χωρίς hero**. Στην Αρχική στέκεται στην άκρη (`skip`) και απλώς μαρκάρει τη συνεδρία. **ΔΕΝ** καλύπτει πλοήγηση |
 | `WaveRule.astro` | Το κύμα του λογότυπου ως διαχωριστικό, ανοίγει στο scroll |
 | `BrandIcon.astro` + `lib/icons.ts` | Εννέα γραμμικά σύμβολα, χαράζονται στο scroll |
-| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. **Κάνει το ίδιο το intro**: κρεμ οθόνη → το λογότυπο χαράζεται στη θέση του → η φωτογραφία εμφανίζεται από πίσω. Χωρίς ορατό κείμενο· ο h1 μένει ως `.sr-only`. `ink` prop → η φωτογραφία ορίζει μελάνη/scrim/χρώμα μπάρας |
+| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. **Κάνει το ίδιο το intro**: κρεμ οθόνη → το λογότυπο χαράζεται στη θέση του → η φωτογραφία εμφανίζεται από πίσω και μετά **αναπνέει** (zoom 20s μέσα/έξω, μόνο transform). Χωρίς ορατό κείμενο· ο h1 μένει ως `.sr-only`. `ink` prop → η φωτογραφία ορίζει μελάνη/scrim/χρώμα μπάρας |
 | `scripts/make-logo-parts.py` | Ξαναφτιάχνει το `logo-parts.svg` από το export του Illustrator — 4 **αδελφά** groups |
 | `scripts/probe-hero-mark.mjs` | Δειγματοληπτεί τον βρόχο του hero σε ακριβείς χρόνους (pause + `currentTime`) |
 | `NavOverlay.astro` | Διάφανη μπάρα, hamburger σε όλα τα breakpoints |

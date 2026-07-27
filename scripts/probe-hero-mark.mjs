@@ -64,10 +64,19 @@ const read = await page.evaluate(async (times) => {
   return {
     rows,
     dashFull: Math.round(parseFloat(getComputedStyle(els.slash).strokeDasharray)),
-    // The point of this round of changes: nothing may repeat.
+    // Nothing in the opening may repeat…
     iterations: Object.fromEntries(
       Object.entries(els).map(([k, el]) => [k, getComputedStyle(el).animationIterationCount]),
     ),
+    // …except the photograph's slow drift, which is the one thing that should.
+    drift: (() => {
+      const cs = getComputedStyle(q('.hero-frame img'));
+      return {
+        count: cs.animationIterationCount,
+        direction: cs.animationDirection,
+        seconds: parseFloat(cs.animationDuration),
+      };
+    })(),
   };
 }, TIMES);
 
@@ -107,7 +116,10 @@ const checks = [
   ['το TREATMENT έρχεται τελευταίο', at(2.1).sub > 0 && at(2.1).sub < at(2.1).word],
   ['στα 3.4s όλα στη θέση τους', whole(at(3.4)) && at(3.4).photo === 1],
   ['ΣΤΑ 30s ΕΞΑΚΟΛΟΥΘΕΙ ολόκληρο — δεν ξαναρχίζει', whole(at(30.0)) && at(30.0).photo === 1],
-  ['καμία κίνηση δεν επαναλαμβάνεται', Object.values(read.iterations).every((v) => v === '1')],
+  ['καμία κίνηση του ανοίγματος δεν επαναλαμβάνεται',
+    Object.values(read.iterations).every((v) => v === '1')],
+  [`η φωτογραφία αναπνέει συνεχώς (${read.drift.seconds}s ανά κατεύθυνση, ${read.drift.direction})`,
+    read.drift.count === 'infinite' && read.drift.direction === 'alternate' && read.drift.seconds >= 12],
 ];
 
 console.log('');

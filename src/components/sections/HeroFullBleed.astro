@@ -172,6 +172,28 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     will-change: transform;
   }
 
+  /* ------------------------- the slow breath ---------------------------
+     The frame drifts in and back out, 20 seconds each way. Slow enough that
+     you never catch it moving and only notice the picture is not frozen —
+     anything faster on a photograph this quiet reads as a screensaver.
+
+     It lives on the <img>, NOT on .hero-frames: that element owns the opening's
+     scale, and two animations fighting over one transform means the last one
+     declared silently wins. Separate elements compose instead.
+
+     Starts once the opening has finished, so the two never overlap. Transform
+     only, so it is composited — no layout, no repaint, per frame.
+
+     A multi-frame hero sets its own zoom inline (brtHeroZoom, for the
+     crossfade); inline styles outrank this rule, so that case is untouched. */
+  .hero-frame img {
+    animation: heroDrift 20s ease-in-out 3.2s infinite alternate;
+  }
+  @keyframes heroDrift {
+    from { transform: scale(1); }
+    to   { transform: scale(1.055); }
+  }
+
   /* A phone screen is far narrower than even the vertical crop, so `cover` still
      trims the sides. Dead-centre cut the subject's head off at the left edge;
      biasing the crop left keeps the head whole and spends the trim on the empty
