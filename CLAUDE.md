@@ -36,7 +36,9 @@ accent σκούρυνε σε **`#75644e`** επειδή το προηγούμε�
 | `BrandVeil.astro` | Το intro (μία φορά ανά session). **ΔΕΝ** καλύπτει πλοήγηση — αυτό προκαλούσε καθυστέρηση |
 | `WaveRule.astro` | Το κύμα του λογότυπου ως διαχωριστικό, ανοίγει στο scroll |
 | `BrandIcon.astro` + `lib/icons.ts` | Εννέα γραμμικά σύμβολα, χαράζονται στο scroll |
-| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος |
+| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. Χωρίς ορατό κείμενο: το λογότυπο σχηματίζεται σε βρόχο 11s· ο h1 μένει ως `.sr-only` |
+| `scripts/make-logo-parts.py` | Ξαναφτιάχνει το `logo-parts.svg` από το export του Illustrator — 4 **αδελφά** groups |
+| `scripts/probe-hero-mark.mjs` | Δειγματοληπτεί τον βρόχο του hero σε ακριβείς χρόνους (pause + `currentTime`) |
 | `NavOverlay.astro` | Διάφανη μπάρα, hamburger σε όλα τα breakpoints |
 | `BookingDialog.astro` | Native `<dialog>`, 4 πεδία, `[data-booking]` το ανοίγει |
 
@@ -51,6 +53,13 @@ accent σκούρυνε σε **`#75644e`** επειδή το προηγούμε�
    Γι' αυτό τα σύμβολα είναι σε `lib/icons.ts`.
 4. **Το ύψος του λογότυπου είναι μία μεταβλητή** (`--nav-logo`). Όταν ήταν δύο, η
    μπάρα κάλυπτε τον πρώτο σύνδεσμο του μενού και έτρωγε το κλικ.
+5. **`<g>…</g>` δεν πιάνεται με non-greedy `.*?`** — τα groups του Illustrator είναι
+   τριών επιπέδων, οπότε το πρώτο `</g>` κλείνει *εσωτερικό* group. Το παλιό script
+   παρήγαγε SVG με ανοιχτά tags· ο browser το «διόρθωνε» βάζοντας `.lg-slash` και
+   `.lg-word` **μέσα** στο `.lg-wave`, οπότε η μάσκα του κύματος έκοβε όλο το λογότυπο.
+6. **Ένα γραφικό δεν είναι επικεφαλίδα.** Το `aria-label` σε inline SVG δεν διαβάζεται
+   αξιόπιστα ως κείμενο h1 από τα crawlers — όταν φύγει το ορατό κείμενο του hero,
+   πρέπει να μείνει πραγματικό κείμενο σε `.sr-only`.
 
 ## Εντολές
 

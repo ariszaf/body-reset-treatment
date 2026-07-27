@@ -2,12 +2,15 @@
 /**
  * BrandMark — the client's logotype, used as-is.
  *
- * Source: raw/BODY RESET_logo_final.svg (Illustrator export). Nothing is
- * redrawn — the path data is byte-for-byte the source's. The build step
- * (scratchpad/make-logo-parts.py) removes the black backing rect, binds the
- * hard-coded #FFFFFF to currentColor, splits the four top-level children into
- * .lg-wave / .lg-slash / .lg-word, and carries the slash's measured length as
- * --slash-len. The viewBox (79 130.6 267.9 181.3) trims the empty margin only.
+ * Source: BODY RESET_logo_final.svg (Illustrator export). Nothing is redrawn —
+ * the path data is byte-for-byte the source's. `scripts/make-logo-parts.py`
+ * removes the black backing rect, binds the hard-coded #FFFFFF to currentColor,
+ * splits the four top-level children into SIBLING groups .lg-wave / .lg-slash /
+ * .lg-word / .lg-sub, and carries the slash's measured length as --slash-len.
+ * The viewBox (79 130.6 267.9 181.3) trims the empty margin only.
+ *
+ * Siblings matter: an earlier build left the last three nested INSIDE .lg-wave,
+ * so the wave's reveal mask clipped the entire logotype along with it.
  *
  * Inlined (?raw) rather than referenced with <img src>: an <img> is an isolated
  * document and would ignore currentColor, forcing two colour variants of the
@@ -67,6 +70,10 @@ const svg = title
   .brandmark--draw :global(.lg-word) {
     animation: bmWord 0.5s var(--reveal-ease) 0.72s both;
   }
+  /* "TREATMENT" lands last — it is the quietest line in the mark. */
+  .brandmark--draw :global(.lg-sub) {
+    animation: bmWord 0.5s var(--reveal-ease) 0.92s both;
+  }
 
   @keyframes bmWave {
     from { -webkit-mask-size: 0% 100%; mask-size: 0% 100%; }
@@ -84,6 +91,7 @@ const svg = title
   @media (prefers-reduced-motion: reduce) {
     .brandmark--draw :global(.lg-wave),
     .brandmark--draw :global(.lg-slash line),
-    .brandmark--draw :global(.lg-word) { animation: none; }
+    .brandmark--draw :global(.lg-word),
+    .brandmark--draw :global(.lg-sub) { animation: none; }
   }
 </style>
