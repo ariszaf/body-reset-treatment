@@ -46,6 +46,12 @@ const howItWorks = [
   },
 ];
 
+/* ⚠ ΠΡΟΣΩΡΙΝΟ — a working duplicate of the block above, waiting for its own
+   content. A real copy rather than a reference, so editing one cannot silently
+   change the other. Until the strings are replaced the page repeats the same
+   heading and the same three steps twice: that is a staging state, not a
+   design. Either fill it in, or delete this and its <PinnedSteps> below. */
+const howItWorksCopy = howItWorks.map((step) => ({ ...step }));
 ---
 
 <Layout slug="">
@@ -62,6 +68,14 @@ const howItWorks = [
     eyebrow="Πώς λειτουργεί"
     title="Η θεραπεία έρχεται σε εσάς"
     steps={howItWorks}
+  />
+
+  {/* ⚠ ΠΡΟΣΩΡΙΝΟ — the duplicate. No `id`: an anchor may exist only once, and
+      the hero's scroll cue already points at the original. */}
+  <PinnedSteps
+    eyebrow="Πώς λειτουργεί"
+    title="Η θεραπεία έρχεται σε εσάς"
+    steps={howItWorksCopy}
   />
 
   <WaveRule />
