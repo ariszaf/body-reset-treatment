@@ -85,12 +85,13 @@ const hasMedia = steps.some((s) => s.image);
             ))}
           </ol>
 
+          {/* Rules only — no numbering. The brand's whole identity is two
+              hairlines, and a row of 01…06 was the one place on the page
+              speaking a different language. Decorative: the step itself is
+              already announced, so a screen reader gains nothing here. */}
           <ol class="pinned-progress" aria-hidden="true">
             {steps.map((_, i) => (
-              <li class="pinned-tick" data-tick={i}>
-                <span class="pinned-num">{String(i + 1).padStart(2, '0')}</span>
-                <span class="pinned-bar"></span>
-              </li>
+              <li class="pinned-tick" data-tick={i}><span class="pinned-bar"></span></li>
             ))}
           </ol>
         </div>
@@ -214,24 +215,17 @@ const hasMedia = steps.some((s) => s.image);
     margin: var(--stack-xl) 0 0;
     padding: 0;
   }
-  .pinned-tick { display: flex; align-items: center; gap: 0.625rem; }
-  .pinned-num {
-    font-size: var(--text-label);          /* 17px floor */
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-muted);
-    transition: color var(--transition-base);
-  }
+  .pinned-tick { display: flex; align-items: center; }
   .pinned-bar {
     display: block;
     width: clamp(2rem, 5vw, 3.5rem);
     height: 1px;                            /* px — hairline */
     background: var(--color-border);
-    transform-origin: left;
-    transition: background var(--transition-base);
+    transition: background var(--transition-base), height var(--transition-base);
   }
-  .pinned-tick.is-active .pinned-num { color: var(--color-text); }
-  .pinned-tick.is-active .pinned-bar { background: var(--color-accent); }
+  /* The current one warms and thickens. Two device pixels is enough to read as
+     "this one" without becoming a bar. */
+  .pinned-tick.is-active .pinned-bar { background: var(--color-accent); height: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
     /* Never pin: the stacked list is the whole experience. */
