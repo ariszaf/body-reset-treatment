@@ -65,12 +65,7 @@ const showcase = services.map((s) => ({
 
   {/* The treatments take the pinned stage — first thing after the photograph,
       one at a time, each with its own frame from the shoot. */}
-  <PinnedSteps
-    id="ypiresies"
-    eyebrow="Οι θεραπείες"
-    title="Τέσσερις θεραπείες, μία φιλοσοφία"
-    steps={showcase}
-  />
+  <PinnedSteps id="ypiresies" eyebrow="Οι θεραπείες" steps={showcase} />
 
   {/* «How it works» keeps its content but changes shape: three across on a
       large screen, a swipeable rail below that. No `id` — an anchor may exist
@@ -83,10 +78,9 @@ const showcase = services.map((s) => ({
 
   <WaveRule />
 
-  {/* The same four, now in full: what each session involves and the length
-      options. ⚠ NEW COPY — the showcase above already says «Οι θεραπείες /
-      Τέσσερις θεραπείες, μία φιλοσοφία», so this heading had to change or the
-      page would say the same sentence twice. Needs a nod. */}
+  {/* The same six, now in full: what each session involves and the length
+      options. ⚠ NEW COPY — the showcase above already carries «Οι θεραπείες»,
+      so this one needed its own heading. Needs a nod. */}
   <TreatmentList
     title="Αναλυτικά"
     lead="Τι περιλαμβάνει κάθε θεραπεία και οι διαθέσιμες διάρκειες."

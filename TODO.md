@@ -12,6 +12,10 @@
 | **Διεύθυνση + ΤΚ + πόλη** | `src/content/site.ts` → `address` | Τώρα υποθετική **Αθήνα** — αν είναι άλλη πόλη αλλάζουν και τα SEO keywords |
 | **Ωράριο** | `src/content/site.ts` → `hours` | Τώρα «Δευ–Σαβ, κατόπιν ραντεβού» |
 | **Domain** | `astro.config.mjs` + `site.ts` → `url` | Τώρα `bodyresettreatment.gr` (υπόθεση). Πρέπει να ταιριάζουν τα δύο. |
+| **Κείμενα 3 θεραπειών** | `src/content/services.ts` (`@draft`) | Deep tissue · Θεραπευτικό μασάζ · Theragun therapy — ήρθαν ως ονόματα μόνο. Ό,τι γράφτηκε είναι δικό μας, χωρίς ισχυρισμό αποτελέσματος |
+| **Οι 6 κατηγορίες** | `src/content/services.ts` → `category` | Δικές μας λέξεις πάνω από κάθε όνομα |
+| **Φωτό Theragun** | `public/images/services/theragun-therapy-masaz-athina.webp` | **Δεν δείχνει τη συσκευή** — καμία λήψη δεν την έχει. Η μόνη ασυμφωνία εικόνας/περιεχομένου στο site |
+| **Διάρκειες** | `src/content/services.ts` → `durations` | 60′/80′ μόνο σε Σουηδικό + Sports massage. Ισχύουν αλλού; |
 | **OG εικόνα** | `public/images/general/og.jpg` | Ακόμη placeholder — αυτή βλέπει κάποιος όταν μοιράζεται τον σύνδεσμο σε Facebook/WhatsApp/Viber |
 
 ## ✅ Έτοιμο

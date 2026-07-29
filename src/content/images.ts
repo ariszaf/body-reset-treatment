@@ -35,24 +35,38 @@ export const heroSequence = [images.hero];
  * Three more frames from the shoot are unused and kept in raw/.
  */
 export const serviceImages: Record<string, ImageEntry> = {
-  'athlitiko-masaz': {
-    src: '/images/services/athlitiko-masaz-kat-oikon-athina.webp',
-    alt: 'Αθλητικό μασάζ κατ’ οίκον στην Αθήνα — στοχευμένη πίεση στην πλάτη',
-    width: 1200, height: 1800,
-  },
   'souidiko-masaz': {
     src: '/images/services/souidiko-masaz-kat-oikon-athina.webp',
     alt: 'Σουηδικό μασάζ κατ’ οίκον στην Αθήνα — συνεχείς ρυθμικές κινήσεις',
     width: 1200, height: 1800,
   },
-  'therapeia-prosopou-masaz': {
-    src: '/images/services/therapeia-prosopou-afhena-masaz-athina.webp',
-    alt: 'Θεραπεία προσώπου με μάλαξη αυχένα και ώμων, κατ’ οίκον στην Αθήνα',
+  'deep-tissue': {
+    src: '/images/services/deep-tissue-masaz-kat-oikon-athina.webp',
+    alt: 'Deep tissue μασάζ κατ’ οίκον στην Αθήνα — αργή πίεση σε βάθος',
     width: 1200, height: 1800,
   },
-  'therapeia-ventouzes-masaz': {
-    src: '/images/services/therapeia-ventouzes-masaz-athina.webp',
-    alt: 'Θεραπεία με βεντούζες σε συνδυασμό με μασάζ, κατ’ οίκον στην Αθήνα',
+  'therapeftiko-masaz': {
+    src: '/images/services/therapeftiko-masaz-kat-oikon-athina.webp',
+    alt: 'Θεραπευτικό μασάζ κατ’ οίκον στην Αθήνα — στοχευμένη δουλειά στην πλάτη',
+    width: 1200, height: 1800,
+  },
+  'sports-massage': {
+    src: '/images/services/sports-massage-kat-oikon-athina.webp',
+    alt: 'Sports massage κατ’ οίκον στην Αθήνα — αθλητικό μασάζ αποκατάστασης',
+    width: 1200, height: 1800,
+  },
+  'cupping-therapy': {
+    src: '/images/services/cupping-therapy-ventouzes-athina.webp',
+    alt: 'Cupping therapy — βεντούζες σε συνδυασμό με μασάζ, κατ’ οίκον στην Αθήνα',
+    width: 1200, height: 1800,
+  },
+  /* ⚠ PLACEHOLDER. No frame from the shoot shows the device, so this is a
+     manual-massage image standing in for a percussive treatment. It is the one
+     pairing here that is not honest about what it depicts — a photograph with
+     the Theragun in it is needed before launch. */
+  'theragun-therapy': {
+    src: '/images/services/theragun-therapy-masaz-athina.webp',
+    alt: 'Theragun therapy κατ’ οίκον στην Αθήνα — κρουστική θεραπεία με μάλαξη',
     width: 1200, height: 1800,
   },
 };

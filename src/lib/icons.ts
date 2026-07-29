@@ -17,7 +17,7 @@
 
 /* First group: how the service works. Second: the treatments themselves. */
 export type IconName = 'home' | 'table' | 'focus' | 'time' | 'one' | 'calendar'
-  | 'depth' | 'flow' | 'face' | 'cups';
+  | 'depth' | 'flow' | 'face' | 'cups' | 'sports' | 'pulse';
 
 export const ICON_PATHS: Record<IconName, string> = {
   // A house whose floor is the brand wave — the clearest statement that the
@@ -70,4 +70,18 @@ export const ICON_PATHS: Record<IconName, string> = {
   // Three cups set down in a line, diminishing.
   cups: `<circle cx="13" cy="22" r="7"/><circle cx="28" cy="24" r="5.5"/><circle cx="39" cy="25.5" r="4"/>
          <path d="M5 36 H43"/>`,
+
+  // A limb hinging, with the arc of its own travel — range of motion, which is
+  // what sports work is actually about. `depth` is the layered-pressure mark and
+  // belongs to deep tissue, so this one had to say something different.
+  sports: `<path d="M12 40 V22"/><path d="M12 22 L34 15"/>
+           <circle cx="12" cy="22" r="2.2"/>
+           <path d="M21 38 A 18 18 0 0 0 31.5 23"/>`,
+
+  // Percussion: a head above, two pulses widening as they travel, the body
+  // surface below. Open arcs only — the same vocabulary as the wave.
+  pulse: `<path d="M24 6 V15"/><path d="M19 15 H29"/>
+          <path d="M14.5 24 C 18.5 20, 29.5 20, 33.5 24"/>
+          <path d="M9.5 31 C 16 25, 32 25, 38.5 31"/>
+          <path d="M5 39 H43"/>`,
 };
