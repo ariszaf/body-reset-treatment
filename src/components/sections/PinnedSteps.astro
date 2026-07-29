@@ -19,7 +19,7 @@
  * Props:
  *   eyebrow  small label above the stage
  *   title    section heading
- *   steps    { icon?, category?, title, text, image? }[]
+ *   steps    { icon?, title, text, image? }[]
  */
 import Container from '@components/Container.astro';
 import BrandIcon from '@components/BrandIcon.astro';
@@ -32,14 +32,13 @@ interface Props {
   /** anchor target — the hero's scroll cue points at whatever comes first */
   id?: string;
   /**
-   * `category` and `image` are optional: with them a step becomes a showcase
-   * card (label, title, a line, a photograph); without them it stays the plain
-   * step it always was. One mechanism, two uses — the pin/progress logic is
-   * subtle enough that a second copy of it would drift within a month.
+   * `image` is optional: with one, a step becomes a showcase card — the name in
+   * the brand's accent, a line, a photograph. Without it, the plain step it
+   * always was. One mechanism, two uses — the pin/progress logic is subtle
+   * enough that a second copy of it would drift within a month.
    */
   steps: {
     icon?: IconName;
-    category?: string;
     title: string;
     text: string;
     image?: ImageEntry;
@@ -61,7 +60,6 @@ const hasMedia = steps.some((s) => s.image);
             {steps.map((s, i) => (
               <li class="pinned-step" data-step={i} aria-hidden={i === 0 ? undefined : 'true'}>
                 <div class="pinned-step-copy">
-                  {s.category && <p class="text-eyebrow pinned-cat">{s.category}</p>}
                   {s.icon && <BrandIcon name={s.icon} class="pinned-icon" />}
                   <h3 class="text-card-title pinned-step-title">{s.title}</h3>
                   <p class="pinned-step-text">{s.text}</p>
@@ -118,8 +116,13 @@ const hasMedia = steps.some((s) => s.image);
   .pinned-progress { display: none; }
 
   /* ------------------------- showcase (with a photo) ------------------------ */
-  .pinned-cat { margin: 0; }
-  .pinned-cat + .pinned-step-title { margin-block-start: var(--stack-sm); }
+  /* The accent used to sit on a small category label above the name. The label
+     is gone; the colour moved onto the name itself, which is now the only warm
+     thing on the page and reads as the mark of a treatment. */
+  .pinned-steps[data-media] .pinned-step-title {
+    color: var(--color-accent);
+    margin-block-start: 0;
+  }
   /* A short line reads better next to a picture than a wide one. */
   .pinned-steps[data-media] .pinned-step-text {
     font-size: var(--text-card-body);

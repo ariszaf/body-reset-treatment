@@ -1,8 +1,7 @@
 ---
 /**
  * Homepage.
- * hero → the treatments (pinned showcase) → how it works (rail) → the
- * treatments in full (accordion).
+ * hero → the treatments (pinned showcase) → how it works (rail).
  * The appointment block lives in the footer, on every page.
  * The wave rule (the logo's own line) marks the joints.
  *
@@ -16,7 +15,6 @@
 import Layout from '@layouts/Layout.astro';
 import WaveRule from '@components/WaveRule.astro';
 import HeroFullBleed from '@components/sections/HeroFullBleed.astro';
-import TreatmentList from '@components/sections/TreatmentList.astro';
 import PinnedSteps from '@components/sections/PinnedSteps.astro';
 import StepsRail from '@components/sections/StepsRail.astro';
 import { services } from '@content/services';
@@ -42,12 +40,13 @@ const howItWorks = [
   },
 ];
 
-/* The showcase: the treatments as they arrive on the pinned stage. Category,
-   name, the one-line version, and that treatment's own frame from the shoot.
-   Built from services.ts + images.ts so nothing is restated here — the accordion
-   further down and this section can never disagree about what is offered. */
+/* The showcase: the treatments as they arrive on the pinned stage. The name in
+   the brand's accent, the one-line version, and that treatment's own frame from
+   the shoot. The category label that used to sit above the name is gone — its
+   colour moved onto the name itself.
+   Built from services.ts + images.ts so nothing is restated here: this section
+   and the machine-readable llms.txt can never disagree about what is offered. */
 const showcase = services.map((s) => ({
-  category: s.category,
   title: s.title,
   text: s.short,
   image: serviceImages[s.slug],
@@ -76,15 +75,5 @@ const showcase = services.map((s) => ({
     steps={howItWorks}
   />
 
-  <WaveRule />
-
-  {/* The same six, now in full: what each session involves and the length
-      options. ⚠ NEW COPY — the showcase above already carries «Οι θεραπείες»,
-      so this one needed its own heading. Needs a nod. */}
-  <TreatmentList
-    title="Αναλυτικά"
-    lead="Τι περιλαμβάνει κάθε θεραπεία και οι διαθέσιμες διάρκειες."
-    items={services}
-  />
 
 </Layout>

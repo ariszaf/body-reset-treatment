@@ -4,7 +4,7 @@
  *
  * Every answer restates something the site already establishes: at-home service,
  * what the space needs, no packages, appointment only. Nothing is invented —
- * no credentials, no durations beyond the treatment names, no prices.
+ * no credentials, no durations, no prices — only the treatment names.
  *
  * ⚠ The coverage area and the space requirement are still assumptions (TODO.md),
  * and they appear here too — correcting them means correcting both places.
@@ -27,7 +27,7 @@ export const faq: FaqItem[] = [
   {
     question: 'Τι θεραπείες κάνετε;',
     answer:
-      'Προσφέρουμε τέσσερις βασικές υπηρεσίες: αθλητικό και σουηδικό μασάζ (και τα δύο με επιλογή διάρκειας 60 ή 80 λεπτών), θεραπεία προσώπου με μάλαξη, καθώς και θεραπεία με βεντούζες σε συνδυασμό με μασάζ.',
+      'Προσφέρουμε έξι θεραπείες: σουηδικό μασάζ, deep tissue, θεραπευτικό μασάζ, sports massage, cupping therapy και Theragun therapy. Ποια ταιριάζει κρίνεται στην αξιολόγηση, στην αρχή της συνεδρίας.',
   },
   {
     question: 'Πώς κλείνω ραντεβού;',
