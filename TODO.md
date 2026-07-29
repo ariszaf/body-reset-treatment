@@ -10,7 +10,7 @@
 | **Τηλέφωνο** | `src/content/site.ts` → `phone` | Τώρα `210 000 0000` |
 | **Email** | `src/content/site.ts` → `email` | Τώρα `info@bodyresettreatment.gr` |
 | **Διεύθυνση + ΤΚ + πόλη** | `src/content/site.ts` → `address` | Τώρα υποθετική **Αθήνα** — αν είναι άλλη πόλη αλλάζουν και τα SEO keywords |
-| **Ωράριο** | `src/content/site.ts` → `hours` | Τώρα «Δευ–Σαβ, κατόπιν ραντεβού» |
+
 | **Domain** | `astro.config.mjs` + `site.ts` → `url` | Τώρα `bodyresettreatment.gr` (υπόθεση). Πρέπει να ταιριάζουν τα δύο. |
 | **Κείμενα 3 θεραπειών** | `src/content/services.ts` (`@draft`) | Deep tissue · Θεραπευτικό μασάζ · Theragun therapy — ήρθαν ως ονόματα μόνο. Ό,τι γράφτηκε είναι δικό μας, χωρίς ισχυρισμό αποτελέσματος |
 | **Οι 6 κατηγορίες** | `src/content/services.ts` → `category` | Δικές μας λέξεις πάνω από κάθε όνομα |
@@ -89,17 +89,19 @@ script (`make-logo-svg.py`) κάνει **μόνο δύο** πράγματα — 
 
 | ομάδα | σύμβολα |
 |---|---|
-| πώς λειτουργεί | `home` · `table` · `focus` · `time` · `one` |
-| θεραπείες | `depth` (αθλητικό) · `flow` (σουηδικό) · `face` (πρόσωπο) · `cups` (βεντούζες) |
+| πώς λειτουργεί | `home` · `table` · `one` |
+| θεραπείες | `flow` (σουηδικό) · `depth` (deep tissue) · `focus` (θεραπευτικό) · `sports` (sports massage) · `cups` (cupping) · `pulse` (Theragun) |
+| αλλού | `time` · `calendar` |
 
-Ένα σύμβολο ανά θεραπεία — τέσσερα, όχι έξι.
+Ένα σύμβολο ανά θεραπεία — **έξι**. Το `face` έμεινε αχρησιμοποίητο όταν έφυγε η
+θεραπεία προσώπου· δεν διαγράφηκε, σε περίπτωση που επιστρέψει.
 
 ⚠ **Γιατί τα σχήματα είναι σε `.ts` και όχι μέσα στο component:** τα content αρχεία
 χρειάζονται τον τύπο `IconName`, και **δεν γίνεται import τύπου από αρχείο `.astro`** —
 ο bundler προσπαθεί να διαβάσει το markup σαν TypeScript και το build σκάει με
 παραπλανητικό μήνυμα («Unexpected "|"» σε γραμμή που δεν έχει καν `|`).
 
-**`TreatmentList.astro`** — οι έξι θεραπείες ως ήσυχο accordion. **Μηδέν JavaScript**:
+**`TreatmentList.astro`** — οι θεραπείες ως ήσυχο accordion. **Μηδέν JavaScript**:
 native `<details>`/`<summary>` κάνει όλη τη δουλειά, οπότε πληκτρολόγιο, screen readers
 και η **εύρεση στη σελίδα** του browser (που ανοίγει κλειστή ενότητα για να δείξει
 το αποτέλεσμα) δουλεύουν από μόνα τους. Χειροποίητο accordion χαλάει τουλάχιστον ένα
