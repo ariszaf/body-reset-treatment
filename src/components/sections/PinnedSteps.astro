@@ -129,10 +129,24 @@ const hasMedia = steps.some((s) => s.image);
     font-size: var(--text-card-body);
     max-width: 32ch;
   }
+  /* --------------------------- the photographs --------------------------
+     They are all 1200×1800 — a 2:3 portrait. Every box that holds one uses
+     THAT ratio, so `object-fit: cover` has nothing left to cut and the frame
+     arrives whole.
+
+     This is what was wrong on a phone: the box was 4:3, a landscape shape, and
+     covering it with a portrait photograph threw away two thirds of the height
+     — the therapist's head and most of the table.
+
+     Where vertical space is tight the box is sized by HEIGHT and its width
+     follows the ratio. That shrinks the picture instead of cropping it, which
+     is the whole point. --img-ratio keeps the number in one place: change the
+     shoot's format and only this line moves. */
+  .pinned-steps[data-media] { --img-ratio: 2 / 3; }
   .pinned-step-media {
     margin: var(--stack-lg) 0 0;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: var(--img-ratio);
     overflow: hidden;
   }
   .pinned-step-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -148,8 +162,9 @@ const hasMedia = steps.some((s) => s.image);
     }
     .pinned-steps[data-media] .pinned-step-media {
       margin: 0;
-      aspect-ratio: 3 / 4;
-      max-height: 58dvh;
+      height: 58dvh;
+      width: auto;
+      max-width: 100%;
       margin-inline-start: auto;
     }
   }
@@ -176,12 +191,17 @@ const hasMedia = steps.some((s) => s.image);
     gap: 0;
   }
   /* Pinned, one column: the stage is exactly one screen and the picture has to
-     leave room for the label, the title, the line and the progress ticks. The
-     stage clips its overflow, so anything taller would simply be cut. */
+     leave room for the label, the title, the line and the progress rules. The
+     stage clips its overflow, so anything taller would simply be cut off.
+
+     Height first, width second — the picture gets smaller as the screen gets
+     shorter, and stays whole the entire way down. */
   @media (max-width: 63.99rem) {
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
       margin-block-start: var(--stack-md);
-      max-height: 30dvh;
+      height: 46dvh;
+      width: auto;
+      max-width: 100%;
     }
   }
   /* All steps stack in the SAME grid cell, so the stage never changes height and
