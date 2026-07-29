@@ -1,7 +1,8 @@
 ---
 /**
  * Homepage.
- * hero → how it works → treatments → booking.
+ * hero → how it works (pinned) → the same three sideways → treatments.
+ * The appointment block lives in the footer, on every page.
  * The wave rule (the logo's own line) marks the joints.
  *
  * ONE photograph, in the hero only. The service is mobile — the therapist comes
@@ -12,19 +13,13 @@
  * No prices anywhere: every path leads to an appointment.
  */
 import Layout from '@layouts/Layout.astro';
-import Container from '@components/Container.astro';
-import Button from '@components/Button.astro';
 import WaveRule from '@components/WaveRule.astro';
-import BrandIcon from '@components/BrandIcon.astro';
 import HeroFullBleed from '@components/sections/HeroFullBleed.astro';
 import TreatmentList from '@components/sections/TreatmentList.astro';
 import PinnedSteps from '@components/sections/PinnedSteps.astro';
-import { site } from '@content/site';
-import { booking, bookingAttrs } from '@lib/booking';
+import StepsRail from '@components/sections/StepsRail.astro';
 import { services } from '@content/services';
 import { heroSequence } from '@content/images';
-
-const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
 
 /* What "at home" actually means in practice — the three things someone wants
    answered before they let a stranger into their flat. */
@@ -46,11 +41,10 @@ const howItWorks = [
   },
 ];
 
-/* ⚠ ΠΡΟΣΩΡΙΝΟ — a working duplicate of the block above, waiting for its own
-   content. A real copy rather than a reference, so editing one cannot silently
-   change the other. Until the strings are replaced the page repeats the same
-   heading and the same three steps twice: that is a staging state, not a
-   design. Either fill it in, or delete this and its <PinnedSteps> below. */
+/* ⚠ ΠΡΟΣΩΡΙΝΟ — the second block's content, still a copy of the first. A real
+   copy rather than a reference, so editing one cannot silently change the
+   other. Until the strings are replaced the page repeats the same heading and
+   the same three steps twice: that is a staging state, not a design. */
 const howItWorksCopy = howItWorks.map((step) => ({ ...step }));
 ---
 
@@ -70,9 +64,10 @@ const howItWorksCopy = howItWorks.map((step) => ({ ...step }));
     steps={howItWorks}
   />
 
-  {/* ⚠ ΠΡΟΣΩΡΙΝΟ — the duplicate. No `id`: an anchor may exist only once, and
-      the hero's scroll cue already points at the original. */}
-  <PinnedSteps
+  {/* The same three steps, sideways: three across on desktop, a swipeable rail
+      on a phone. No `id` — an anchor may exist only once on a page, and the
+      hero's scroll cue already points at the pinned one above. */}
+  <StepsRail
     eyebrow="Πώς λειτουργεί"
     title="Η θεραπεία έρχεται σε εσάς"
     steps={howItWorksCopy}
@@ -86,88 +81,9 @@ const howItWorksCopy = howItWorks.map((step) => ({ ...step }));
     items={services}
   />
 
-  <WaveRule />
-
-  <section id="epikoinonia" class="py-section booking">
-    <Container>
-      <p class="text-eyebrow reveal reveal-up">Ραντεβού</p>
-      <h2 class="text-section-title booking-title reveal reveal-up">{booking.heading}</h2>
-      <p class="text-lead booking-lead reveal reveal-up">{booking.lead}</p>
-
-      <dl class="booking-facts reveal reveal-up">
-        <div>
-          <dt class="text-eyebrow">Τηλέφωνο</dt>
-          <dd><a class="link-underline booking-tel" href={telHref}>{site.phone}</a></dd>
-        </div>
-        <div>
-          <dt class="text-eyebrow">Ωράριο</dt>
-          <dd class="text-card-body">{site.hours}</dd>
-        </div>
-        <div>
-          <dt class="text-eyebrow">Περιοχές εξυπηρέτησης</dt>
-          <dd class="text-card-body">{site.serviceArea}</dd>
-        </div>
-      </dl>
-
-      {/* Points at the online scheduler once site.bookingUrl is set; until then it
-          opens the enquiry dialog (src/lib/booking.ts). */}
-      <div class="booking-action reveal reveal-up">
-        <Button class="booking-btn" {...bookingAttrs}>
-          {booking.icon && <BrandIcon name={booking.icon} class="booking-btn-icon" />}
-          <span>{booking.label}</span>
-        </Button>
-        <p class="booking-hint text-caption">{booking.hint}</p>
-      </div>
-    </Container>
-  </section>
 </Layout>
 
 <style>
-  /* ---------------------------- booking ---------------------------- */
-  .booking-title { margin-block-start: var(--stack-md); max-width: 20ch; }
-  .booking-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }
-
-  .booking-facts {
-    display: grid;
-    gap: var(--stack-lg);
-    margin-block-start: var(--stack-xl);
-    padding-block-start: var(--stack-lg);
-    border-top: 1px solid var(--color-border);
-  }
-  .booking-facts dd { margin: 0; margin-block-start: 0.5rem; }
-  .booking-tel { font-size: var(--text-lead); letter-spacing: 0.04em; }
-  .booking-action { margin-block-start: var(--stack-xl); }
-  /* The mark sits inside the button so the affordance travels with it — a
-     scheduler link has to look different from "we will ring you". */
-  .booking-action :global(.booking-btn) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.7em;
-  }
-  .booking-action :global(.booking-btn-icon) {
-    width: 1.35em;
-    height: 1.35em;
-    color: currentColor;
-    flex: none;
-  }
-  .booking-hint { margin-block-start: var(--stack-sm); }
-
-  @media (min-width: 48rem) {
-    .booking-facts { grid-template-columns: repeat(3, 1fr); gap: var(--stack-md); }
-  }
-
-  /* Quiet link treatment: hairline that fills on hover. */
-  .link-underline {
-    color: var(--color-text);
-    text-decoration: none;
-    background: linear-gradient(currentColor, currentColor) no-repeat 0 100%;
-    background-size: 0% 1px;
-    display: inline-block;
-    padding-block: 0.6em;
-    margin-block: -0.6em;
-    background-position: 0 calc(100% - 0.6em);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
-  }
   @media (hover: hover) {
     .link-underline { transition: background-size var(--transition-base), border-color var(--transition-base); }
     .link-underline:hover { background-size: 100% 1px; border-bottom-color: transparent; }

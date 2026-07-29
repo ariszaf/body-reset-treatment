@@ -1,0 +1,208 @@
+---
+/**
+ * StepsRail — the same three steps, laid out sideways.
+ *
+ * Desktop (≥64rem): all three at once, three across, nothing to operate.
+ * Below that:       a rail you swipe, the next card deliberately part-way into
+ *                   frame, with dots underneath saying how many there are.
+ *
+ * Modelled on the reference's «Άρθρα / Από το blog μας» strip: 80%-wide slides,
+ * swipe on a phone, dots on mobile only, and a plain centred row from the large
+ * breakpoint up. The behaviour matches; the mechanism does not. The reference
+ * ships a carousel library — here CSS scroll-snap does the same job natively, so
+ * the swipe works before any JavaScript loads and keeps working if it fails. The
+ * only script is the ~15 lines that light the right dot.
+ *
+ * Three things this has to get right that a plain grid does not:
+ *
+ * 1. REVEAL. The site's scroll-reveal engine hides an element until it enters
+ *    the viewport. A card parked off to the right of a rail never enters it, so
+ *    it would sit at opacity 0 forever and the visitor would swipe onto a blank
+ *    card. Per-card reveal is therefore switched off at rail widths — the rail
+ *    arrives as one piece there — and only staggers on desktop, where every card
+ *    genuinely is on screen.
+ *
+ * 2. KEYBOARD. A scrollable region that cannot take focus is unreachable
+ *    without a mouse or a finger (WCAG 2.1.1). The list takes tabindex="0" and
+ *    shows a focus ring, so the arrow keys scroll it.
+ *
+ * 3. The dots are an INDICATOR, not a control: `aria-hidden`, never focusable.
+ *    The first is marked active server-side, so with no JavaScript they still
+ *    tell the truth at rest instead of all looking dead.
+ *
+ * Props: eyebrow · title · id (anchor) · steps
+ */
+import Container from '@components/Container.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import type { IconName } from '@lib/icons';
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  id?: string;
+  steps: { icon: IconName; title: string; text: string }[];
+}
+const { eyebrow, title, id, steps } = Astro.props;
+---
+
+<section class="rail" id={id}>
+  <Container>
+    {eyebrow && <p class="text-eyebrow reveal reveal-up">{eyebrow}</p>}
+    {title && <h2 class="text-section-title rail-title reveal reveal-up">{title}</h2>}
+
+    <ol class="rail-list reveal-stagger" tabindex="0" aria-label={title ?? 'Βήματα'}>
+      {steps.map((s, i) => (
+        <li class="rail-card reveal reveal-up">
+          <span class="rail-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <BrandIcon name={s.icon} class="rail-icon" />
+          <h3 class="text-card-title rail-card-title">{s.title}</h3>
+          <p class="text-card-body rail-text">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+
+    <div class="rail-dots" aria-hidden="true">
+      {steps.map((_, i) => <span class="rail-dot" data-dot={i} data-on={i === 0 ? '' : undefined} />)}
+    </div>
+  </Container>
+</section>
+
+<style>
+  .rail { padding-block: var(--space-section); }
+  .rail-title { margin-block-start: var(--stack-md); }
+
+  .rail-list {
+    list-style: none;
+    margin: var(--stack-xl) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--stack-lg);
+  }
+  .rail-list:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 6px;
+    border-radius: 2px;
+  }
+
+  .rail-card {
+    padding-block-start: var(--stack-md);
+    border-top: 1px solid var(--color-border);
+  }
+  .rail-num {
+    display: block;
+    font-size: var(--text-label);          /* 17px floor */
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+  }
+  .rail-card :global(.rail-icon) {
+    display: block;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-block-start: var(--stack-md);
+    color: var(--color-text);
+  }
+  .rail-card-title { margin-block-start: var(--stack-md); }
+  .rail-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
+
+  /* Declared BEFORE the media queries on purpose: same specificity, so source
+     order decides, and a base rule written underneath silently beats them. */
+  .rail-dots {
+    display: flex;
+    gap: 0.5rem;
+    margin-block-start: var(--stack-md);
+  }
+  .rail-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-text) 22%, transparent);
+    transition: background var(--transition-base), transform var(--transition-base);
+  }
+  .rail-dot[data-on] {
+    background: var(--color-accent);
+    transform: scale(1.35);
+  }
+
+  /* ---------------------- large screens: all three ---------------------- */
+  @media (min-width: 64rem) {
+    .rail-list { grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
+    .rail-dots { display: none; }         /* nothing to indicate */
+  }
+
+  /* ------------------------- narrower: a rail --------------------------- */
+  @media (max-width: 63.99rem) {
+    .rail-list {
+      /* Out of the text column and up to both screen edges, so the next card is
+         cut by the screen and not by the container's padding. */
+      margin-inline: calc(-1 * var(--space-container));
+      padding-inline: var(--space-container);
+      grid-auto-flow: column;
+      grid-auto-columns: 80%;             /* the next card is clearly started */
+      overflow-x: auto;
+      overscroll-behavior-x: contain;     /* swiping the rail must not drag the page */
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline-start: var(--space-container);
+      gap: var(--stack-md);
+      /* The peeking card and the dots are the affordance; the bar is noise. */
+      scrollbar-width: none;
+    }
+    .rail-list::-webkit-scrollbar { display: none; }
+    .rail-card { scroll-snap-align: start; }
+
+    /* See note 1 in the header: a card parked off-screen to the right never
+       satisfies the IntersectionObserver, so without this it would never be
+       revealed and the swipe would land on nothing. */
+    .rail-list :global(.reveal) {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail-list { scroll-behavior: auto; }
+    .rail-dot { transition: none; }
+  }
+</style>
+
+<script>
+  /**
+   * Light the dot for whichever card is showing.
+   *
+   * The observer's root is the RAIL, not the viewport, so "visible" means
+   * "scrolled to inside this strip" — a viewport-rooted observer would call
+   * every card visible at once, because the strip itself is fully on screen.
+   *
+   * querySelectorAll + a bound flag, never querySelector: this section is used
+   * more than once on a page, and a single-element lookup would leave every
+   * copy after the first with dead dots.
+   */
+  function bindRails() {
+    document.querySelectorAll<HTMLElement>('.rail').forEach((section) => {
+      if (section.dataset.railBound) return;
+      section.dataset.railBound = '1';
+
+      const list = section.querySelector<HTMLElement>('.rail-list');
+      const cards = [...section.querySelectorAll<HTMLElement>('.rail-card')];
+      const dots = [...section.querySelectorAll<HTMLElement>('.rail-dot')];
+      if (!list || dots.length !== cards.length) return;
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            const i = cards.indexOf(e.target as HTMLElement);
+            if (i < 0) continue;
+            dots.forEach((d, n) => d.toggleAttribute('data-on', n === i));
+          }
+        },
+        { root: list, threshold: 0.6 },
+      );
+      cards.forEach((card) => io.observe(card));
+    });
+  }
+
+  bindRails();
+  document.addEventListener('astro:after-swap', bindRails);
+</script>

@@ -212,7 +212,14 @@ const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
   }
 
   /* Delegated so it survives view transitions: triggers live in swapped pages,
-     the dialog itself is in the persistent Layout. */
+     the dialog itself is in the persistent Layout.
+
+     CAPTURE phase, not bubble. The view-transitions router also listens for
+     clicks on document, and it registers first — so in the bubble phase it had
+     already read the event as un-prevented and started navigating, and the
+     dialog never opened. It only looked fine on the homepage, where the
+     trigger's href (/#epikoinonia) is a same-page hash the router ignores.
+     Capturing puts this handler ahead of the router's. */
   document.addEventListener('click', (e) => {
     const trigger = (e.target as Element | null)?.closest('[data-booking]');
     if (!trigger) return;
@@ -221,7 +228,7 @@ const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
     e.preventDefault();
     dlg.showModal();
     if (!token) getToken();            // token is valid 2s–2h; a human takes longer to type
-  });
+  }, true);
 
   function bindDialog() {
     const dlg = document.querySelector<HTMLDialogElement>('.bk');

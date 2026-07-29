@@ -3,20 +3,70 @@
  * Footer — 3-col → single-col mobile, social icons, dynamic year,
  * legal-page links (ALWAYS — spec: legal.md), agency credit slot
  * (visible only when site.agencyCredit === 'visible' — spec: attribution.md).
+ *
+ * The booking block used to be a full section of its own on the homepage. It is
+ * folded in here instead, which also removes a duplication: the contact column
+ * was already repeating the phone, the hours and the coverage area.
+ *
+ * It carries `id="epikoinonia"` — the anchor every CTA on the site points at
+ * (site.cta.href). Because it lives in the footer it now exists on EVERY page,
+ * so the menu's "Κλείστε Ραντεβού" no longer has to bounce back to the homepage
+ * first. Still exactly one element with that id per page.
  */
 import { site } from '../content/site';
 import { navigation, legalLinks } from '../content/navigation';
+import { booking, bookingAttrs } from '../lib/booking';
 import Container from './Container.astro';
 import LangSwitch from './LangSwitch.astro';
+import Button from './Button.astro';
+import BrandIcon from './BrandIcon.astro';
 
 const year = new Date().getFullYear();
 const socials = Object.entries(site.social).filter(([, url]) => url);
 const clientDomain = new URL(site.url).hostname;
+const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" id="epikoinonia">
   <Container>
-    <div class="footer-grid py-section">
+    <div class="footer-book py-section">
+      <div class="footer-book-lead">
+        <p class="text-eyebrow">Ραντεβού</p>
+        <h2 class="text-section-title footer-book-title">{booking.heading}</h2>
+        <p class="text-card-body footer-book-text">{booking.lead}</p>
+
+        <div class="footer-book-action">
+          <Button class="footer-btn" {...bookingAttrs}>
+            {booking.icon && <BrandIcon name={booking.icon} class="footer-btn-icon" />}
+            <span>{booking.label}</span>
+          </Button>
+          <p class="footer-book-hint text-caption">{booking.hint}</p>
+        </div>
+      </div>
+
+      <dl class="footer-facts">
+        <div>
+          <dt class="text-eyebrow">Τηλέφωνο</dt>
+          <dd><a class="footer-link footer-tel" href={telHref}>{site.phone}</a></dd>
+        </div>
+        <div>
+          <dt class="text-eyebrow">Email</dt>
+          <dd><a class="footer-link" href={`mailto:${site.email}`}>{site.email}</a></dd>
+        </div>
+        <div>
+          <dt class="text-eyebrow">Ωράριο</dt>
+          <dd class="text-card-body">{site.hours}</dd>
+        </div>
+        <div>
+          {/* Mobile service: there is no shop front, so the coverage area stands
+              in for a street address. */}
+          <dt class="text-eyebrow">Περιοχές εξυπηρέτησης</dt>
+          <dd class="text-card-body">{site.serviceArea}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="footer-grid">
       <div>
         <p class="text-card-title">{site.name}</p>
         <p class="text-caption space-stack-sm">{site.description}</p>
@@ -30,21 +80,15 @@ const clientDomain = new URL(site.url).hostname;
       </nav>
 
       <div>
-        <p class="text-label">Επικοινωνία</p>
-        <ul>
-          <li><a class="footer-link" href={`tel:${site.phone}`}>{site.phone}</a></li>
-          <li><a class="footer-link" href={`mailto:${site.email}`}>{site.email}</a></li>
-          {/* Mobile service: there is no shop front, so the coverage area stands
-              in for a street address. */}
-          <li class="text-caption">{site.serviceArea}</li>
-          {site.hours && <li class="text-caption">{site.hours}</li>}
-        </ul>
         {socials.length > 0 && (
-          <ul class="socials" aria-label="Social media">
-            {socials.map(([name, url]) => (
-              <li><a class="footer-link" href={url} rel="noopener" aria-label={name}>{name}</a></li>
-            ))}
-          </ul>
+          <>
+            <p class="text-label">Ακολουθήστε μας</p>
+            <ul class="socials" aria-label="Social media">
+              {socials.map(([name, url]) => (
+                <li><a class="footer-link" href={url} rel="noopener" aria-label={name}>{name}</a></li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </div>
@@ -70,7 +114,44 @@ const clientDomain = new URL(site.url).hostname;
 
 <style>
   .site-footer { background: var(--color-alt); border-top: 1px solid var(--color-border); }
-  .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
+
+  /* ------------------------ booking, folded in ------------------------- */
+  .footer-book { display: grid; gap: var(--stack-xl); }
+  .footer-book-title { margin-block-start: var(--stack-md); max-width: 20ch; }
+  .footer-book-text {
+    margin-block-start: var(--stack-md);
+    max-width: 36rem;
+    color: var(--color-muted);
+  }
+  .footer-book-action { margin-block-start: var(--stack-lg); }
+  /* The mark sits inside the button so the affordance travels with it — a
+     scheduler link has to look different from "we will ring you". */
+  .footer-book-action :global(.footer-btn) { display: inline-flex; align-items: center; gap: 0.7em; }
+  .footer-book-action :global(.footer-btn-icon) {
+    width: 1.35em; height: 1.35em; color: currentColor; flex: none;
+  }
+  .footer-book-hint { margin-block-start: var(--stack-sm); }
+
+  .footer-facts { display: grid; gap: var(--stack-md); margin: 0; }
+  .footer-facts dd { margin: 0; margin-block-start: 0.4rem; }
+  .footer-tel { font-size: var(--text-lead); letter-spacing: 0.04em; }
+
+  @media (min-width: 48rem) {
+    /* Even halves, and min-width:0 so the facts may actually use their column —
+       a grid item defaults to min-content width, which was breaking the opening
+       hours onto four lines. */
+    .footer-book { grid-template-columns: 1fr 1fr; gap: var(--stack-xl); align-items: start; }
+    .footer-book > * { min-width: 0; }
+    .footer-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--stack-lg); }
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--stack-lg);
+    padding-block: var(--stack-xl);
+    border-top: 1px solid var(--color-border);
+  }
   .site-footer ul { list-style: none; margin: var(--stack-sm) 0 0; padding: 0; display: grid; gap: 0.5rem; }
   .socials { display: flex !important; gap: var(--stack-sm); margin-top: var(--stack-md) !important; }
 
