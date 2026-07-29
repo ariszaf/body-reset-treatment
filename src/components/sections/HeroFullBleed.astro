@@ -31,6 +31,11 @@
  *               floats over the frame.
  *   markY       where the logotype's centre sits, top-down. The photograph
  *               decides this — it belongs wherever the frame is empty.
+ *   markYPortrait
+ *               the same, for the vertical crop. A separate value because it is
+ *               a separate PHOTOGRAPH: the art direction switches by orientation
+ *               (see the <source> below), and the two frames are empty in
+ *               different places. Falls back to markY when not given.
  *   holdSec     seconds each frame is held (default 7)
  *   nextAnchor  id the bottom cue scrolls to
  */
@@ -42,11 +47,12 @@ interface Props {
   title: string;
   ink?: 'light' | 'dark';
   markY?: string;
+  markYPortrait?: string;
   holdSec?: number;
   nextAnchor?: string;
 }
 
-const { slides, title, ink = 'light', markY, holdSec = 7, nextAnchor } = Astro.props;
+const { slides, title, ink = 'light', markY, markYPortrait, holdSec = 7, nextAnchor } = Astro.props;
 
 const N = slides.length;
 const cycle = N * holdSec;
@@ -71,7 +77,10 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
 <section
   class:list={['hero', markY && 'hero--placed']}
   data-ink={ink}
-  style={markY ? `--mark-y:${markY}` : undefined}
+  style={[
+    markY && `--mark-y:${markY}`,
+    markYPortrait && `--mark-y-portrait:${markYPortrait}`,
+  ].filter(Boolean).join(';') || undefined}
 >
   <div class="hero-frames">
     {slides.map((img, i) => (
@@ -317,8 +326,16 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
      floor is computed from the SAME --nav-bar-h the bar itself uses, plus half
      the mark's own height, so it holds at any viewport without a second number
      to keep in sync. */
+  .hero--placed { --mark-y-used: var(--mark-y); }
+  /* Same media query as the <source>, so the position changes exactly when the
+     photograph does. A separate variable, not a self-referencing fallback:
+     `--mark-y: var(--mark-y-portrait, var(--mark-y))` is a cycle and the whole
+     declaration is thrown away. */
+  @media (orientation: portrait) {
+    .hero--placed { --mark-y-used: var(--mark-y-portrait, var(--mark-y)); }
+  }
   .hero--placed .hero-content {
-    top: max(var(--mark-y), calc(var(--nav-bar-h) + 1.75rem + var(--mark-h) / 2));
+    top: max(var(--mark-y-used), calc(var(--nav-bar-h) + 1.75rem + var(--mark-h) / 2));
     bottom: auto;
     transform: translateY(-50%);
   }

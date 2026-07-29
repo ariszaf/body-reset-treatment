@@ -85,15 +85,35 @@ const hasMedia = steps.some((s) => s.image);
             ))}
           </ol>
 
-          {/* Rules only — no numbering. The brand's whole identity is two
-              hairlines, and a row of 01…06 was the one place on the page
-              speaking a different language. Decorative: the step itself is
-              already announced, so a screen reader gains nothing here. */}
-          <ol class="pinned-progress" aria-hidden="true">
-            {steps.map((_, i) => (
-              <li class="pinned-tick" data-tick={i}><span class="pinned-bar"></span></li>
-            ))}
-          </ol>
+          <div class="pinned-foot">
+            {/* Rules only — no numbering. The brand's whole identity is two
+                hairlines, and a row of 01…06 was the one place on the page
+                speaking a different language. Decorative: the step itself is
+                already announced, so a screen reader gains nothing here. */}
+            <ol class="pinned-progress" aria-hidden="true">
+              {steps.map((_, i) => (
+                <li class="pinned-tick" data-tick={i}><span class="pinned-bar"></span></li>
+              ))}
+            </ol>
+
+            {/* Real buttons, not decoration. The section only advances when you
+                scroll, which is not obvious from a still frame — so as well as
+                SAYING "there is more", these do it: each one scrolls to the next
+                step's position. Anyone on a keyboard gets the same. Hidden
+                without JS, where there is nothing to page through. */}
+            <div class="pinned-nav">
+              <button class="pinned-arrow" type="button" data-dir="-1" aria-label="Προηγούμενη θεραπεία">
+                <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+                  <path d="M1 7L6 2L11 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+                </svg>
+              </button>
+              <button class="pinned-arrow" type="button" data-dir="1" aria-label="Επόμενη θεραπεία">
+                <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+                  <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </Container>
     </div>
@@ -114,7 +134,10 @@ const hasMedia = steps.some((s) => s.image);
     max-width: 34rem;
   }
   .pinned-title { margin-block-start: var(--stack-md); }
-  .pinned-progress { display: none; }
+  /* Both only exist in pinned mode — the stacked fallback is already a list you
+     read top to bottom, with nothing to page through. */
+  .pinned-progress,
+  .pinned-nav { display: none; }
 
   /* ------------------------- showcase (with a photo) ------------------------ */
   /* The accent used to sit on a small category label above the name. The label
@@ -162,7 +185,9 @@ const hasMedia = steps.some((s) => s.image);
     }
     .pinned-steps[data-media] .pinned-step-media {
       margin: 0;
-      height: 58dvh;
+      /* 58dvh is the look; the second term is the promise that it fits. Two
+         columns, so the chrome above and below is only about 14rem. */
+      height: min(58dvh, calc(100dvh - var(--nav-bar-h) - 14rem));
       width: auto;
       max-width: 100%;
       margin-inline-start: auto;
@@ -181,8 +206,17 @@ const hasMedia = steps.some((s) => s.image);
     top: 0;
     height: 100dvh;
     display: grid;
-    align-content: center;
+    /* SAFE centre. Plain `center` centres content that is taller than its box by
+       overflowing it EQUALLY — which pushed the eyebrow up underneath the fixed
+       bar on short screens. `safe` falls back to start the moment it would
+       overflow, so the top edge is never sacrificed. */
+    align-content: safe center;
     overflow: hidden;
+    /* The bar is fixed and stays over this section the whole way through. On a
+       phone its logotype and the stage's eyebrow both start at the container
+       gutter, so without this they print on top of each other. Same
+       --nav-bar-h the bar itself is built from. */
+    padding-block-start: var(--nav-bar-h);
   }
 
   :global(html.js-pinned) .pinned-steps {
@@ -196,14 +230,6 @@ const hasMedia = steps.some((s) => s.image);
 
      Height first, width second — the picture gets smaller as the screen gets
      shorter, and stays whole the entire way down. */
-  @media (max-width: 63.99rem) {
-    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
-      margin-block-start: var(--stack-md);
-      height: 46dvh;
-      width: auto;
-      max-width: 100%;
-    }
-  }
   /* All steps stack in the SAME grid cell, so the stage never changes height and
      the pin never jumps as the text length varies. */
   :global(html.js-pinned) .pinned-step {
@@ -228,12 +254,56 @@ const hasMedia = steps.some((s) => s.image);
   }
 
   /* ------------------------------ progress ---------------------------------- */
+  :global(html.js-pinned) .pinned-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--stack-md);
+    margin-block-start: var(--stack-xl);
+  }
   :global(html.js-pinned) .pinned-progress {
     display: flex;
     gap: var(--stack-md);
     list-style: none;
-    margin: var(--stack-xl) 0 0;
+    margin: 0;
     padding: 0;
+  }
+
+  /* ------------------------------- the arrows -------------------------------
+     Deliberately faint: they are for the visitor who has not realised the
+     section moves, not a control anyone else should notice. They warm on hover
+     and go quiet when there is nothing in that direction. */
+  :global(html.js-pinned) .pinned-nav { display: flex; flex-direction: column; }
+  .pinned-arrow {
+    /* 44×44 — a finger needs BOTH dimensions. 44×36 looked fine on screen and
+       the launch gate caught it as a tap target that is too small. */
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    color: color-mix(in srgb, var(--color-text) 40%, transparent);
+  }
+  .pinned-arrow[disabled] { opacity: 0.25; cursor: default; }
+  @media (hover: hover) {
+    .pinned-arrow { transition: color var(--transition-base); }
+    .pinned-arrow:not([disabled]):hover { color: var(--color-accent); }
+  }
+
+  /* The hint. While the visitor is still on the first step, the down arrow
+     breathes downward — the one gesture that says "this keeps going". JS drops
+     `data-hint` the moment the step changes, so it stops as soon as it has been
+     understood, and it never plays for someone already scrolling. */
+  .pinned[data-hint] .pinned-arrow[data-dir='1'] {
+    color: var(--color-accent);
+    animation: pinHint 2.2s ease-in-out infinite;
+  }
+  @keyframes pinHint {
+    0%, 55%, 100% { transform: none; }
+    72%           { transform: translateY(4px); }
   }
   .pinned-tick { display: flex; align-items: center; }
   .pinned-bar {
@@ -263,6 +333,40 @@ const hasMedia = steps.some((s) => s.image);
     }
     :global(html.js-pinned) .pinned-progress { display: none; }
   }
+  /* ------------------- pinned, one column: the phone --------------------
+     LAST in the file on purpose. Every rule here overrides a base rule of the
+     same specificity, and source order is what decides — the earlier attempt
+     sat above `.pinned-nav { flex-direction: column }` and silently lost.
+
+     Every gap is bought back and spent on the photograph. --chrome is the
+     MEASURED height of everything that is not the picture (label, copy, rules,
+     arrows and the gaps between them), so the width below is exactly what is
+     left over. Re-measure it if this layout changes. */
+  @media (max-width: 63.99rem) {
+    :global(html.js-pinned) .pinned-inner { --chrome: 17rem; }
+    :global(html.js-pinned) .pinned-steps { margin-block-start: var(--stack-md); }
+    :global(html.js-pinned) .pinned-foot { margin-block-start: var(--stack-md); }
+    /* Up and down side by side rather than stacked — saves ~28px of height and
+       a pager reads perfectly well in a row. */
+    :global(html.js-pinned) .pinned-nav { flex-direction: row; }
+    :global(html.js-pinned) .pinned-eyebrow { margin: 0; }
+    /* Six rules at desktop width plus two 44px buttons come to more than a
+       phone is wide, and the stage's `overflow: hidden` was quietly swallowing
+       the arrows off the right edge — present in the DOM, impossible to press.
+       Shorter rules and a tighter gap put the whole row back on screen. */
+    :global(html.js-pinned) .pinned-progress { gap: var(--stack-sm); }
+    :global(html.js-pinned) .pinned-bar { width: clamp(1.1rem, 4vw, 2rem); }
+
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
+      margin-block-start: var(--stack-md);
+      margin-inline: auto;                /* centred, as asked */
+      /* Sized by WIDTH so the 2:3 ratio derives the height and nothing is ever
+         cropped. Setting a height AND a max-width would fight each other and
+         the box would stop matching the photograph. */
+      width: min(100%, calc((100dvh - var(--nav-bar-h) - var(--chrome)) * 2 / 3));
+      height: auto;
+    }
+  }
 </style>
 
 <script>
@@ -284,7 +388,27 @@ const hasMedia = steps.some((s) => s.image);
       const track = section.querySelector<HTMLElement>('.pinned-track');
       const steps = [...section.querySelectorAll<HTMLElement>('.pinned-step')];
       const ticks = [...section.querySelectorAll<HTMLElement>('.pinned-tick')];
+      const arrows = [...section.querySelectorAll<HTMLButtonElement>('.pinned-arrow')];
       if (!track || steps.length < 2) return;
+
+      /* Where the page has to be for step `i` to be the active one — the inverse
+         of the progress sum below, aimed at the middle of that step's slice so a
+         click never lands on a boundary. */
+      const scrollTop = () => window.scrollY + track.getBoundingClientRect().top;
+      const positionOf = (i: number) => {
+        const travel = track.offsetHeight - window.innerHeight;
+        return scrollTop() + (travel * (i + 0.5)) / steps.length;
+      };
+      arrows.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const next = current + Number(btn.dataset.dir);
+          if (next < 0 || next >= steps.length) return;
+          section.removeAttribute('data-hint');
+          window.scrollTo({ top: positionOf(next), behavior: 'smooth' });
+        });
+      });
+      // The hint runs until the visitor moves off the first step.
+      section.setAttribute('data-hint', '');
 
       let current = -1;
       let queued = false;
@@ -308,6 +432,11 @@ const hasMedia = steps.some((s) => s.image);
           else el.setAttribute('aria-hidden', 'true');
         });
         ticks.forEach((el, i) => el.classList.toggle('is-active', i === index));
+        if (index > 0) section.removeAttribute('data-hint');
+        arrows.forEach((btn) => {
+          const dir = Number(btn.dataset.dir);
+          btn.disabled = dir < 0 ? index === 0 : index === steps.length - 1;
+        });
       };
 
       const onScroll = () => {
