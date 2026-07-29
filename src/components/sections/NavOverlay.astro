@@ -20,6 +20,7 @@
  * Reads navigation.ts + site.ts. The CTA is appended as the closing menu link.
  */
 import BrandMark from '@components/BrandMark.astro';
+import LangSwitch from '@components/LangSwitch.astro';
 import { site } from '@content/site';
 import { navigation } from '@content/navigation';
 import { booking } from '@lib/booking';
@@ -56,15 +57,18 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
       <BrandMark title="" draw class="navov-mark" />
     </a>
 
-    <button
-      class="navov-toggle"
-      type="button"
-      aria-label="Μενού"
-      aria-expanded="false"
-      aria-controls={panelId}
-    >
-      <span class="navov-toggle-box" aria-hidden="true"><span></span><span></span></span>
-    </button>
+    <div class="navov-right">
+      <LangSwitch tone="bar" />
+      <button
+        class="navov-toggle"
+        type="button"
+        aria-label="Μενού"
+        aria-expanded="false"
+        aria-controls={panelId}
+      >
+        <span class="navov-toggle-box" aria-hidden="true"><span></span><span></span></span>
+      </button>
+    </div>
   </div>
 
   <div class="navov-overlay" id={panelId}>
@@ -125,6 +129,14 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     transition: color var(--transition-base);
   }
   .navov-bar > * { pointer-events: auto; }
+
+  /* The language mark rides with the toggle at the right edge, so the bar keeps
+     its two-object composition instead of becoming three scattered things. */
+  .navov-right {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(0.85rem, 1.8vw, 1.5rem);
+  }
 
   /* Ink: page colour by default, white while the bar sits over the photograph.
      `data-tone` is the server-rendered first paint (the homepage opens on the

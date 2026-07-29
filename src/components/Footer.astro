@@ -7,6 +7,7 @@
 import { site } from '../content/site';
 import { navigation, legalLinks } from '../content/navigation';
 import Container from './Container.astro';
+import LangSwitch from './LangSwitch.astro';
 
 const year = new Date().getFullYear();
 const socials = Object.entries(site.social).filter(([, url]) => url);
@@ -53,6 +54,7 @@ const clientDomain = new URL(site.url).hostname;
       <ul class="legal-links" aria-label="Νομικές σελίδες">
         {legalLinks.map((l) => <li><a class="footer-link text-caption" href={l.href}>{l.label}</a></li>)}
       </ul>
+      <LangSwitch tone="footer" class="footer-lang" />
       {site.agencyCredit === 'visible' && (
         <p class="agency-credit text-caption">
           Designed &amp; developed by
@@ -95,6 +97,8 @@ const clientDomain = new URL(site.url).hostname;
   }
   .legal-links { display: flex !important; flex-wrap: wrap; gap: var(--stack-sm) var(--stack-md); margin: 0 !important; }
   .agency-credit a { color: inherit; }
+  /* Pushed to the far end of the rule, opposite the copyright. */
+  .footer-lang { margin-inline-start: auto; }
 
   @media (max-width: 48rem) {
     .footer-grid { grid-template-columns: 1fr; }

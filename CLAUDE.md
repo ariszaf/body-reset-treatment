@@ -39,7 +39,8 @@ accent σκούρυνε σε **`#75644e`** επειδή το προηγούμε�
 | `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. **Κάνει το ίδιο το intro**: κρεμ οθόνη → το λογότυπο χαράζεται στη θέση του → η φωτογραφία εμφανίζεται από πίσω και μετά **αναπνέει** (zoom 20s μέσα/έξω, μόνο transform). Χωρίς ορατό κείμενο· ο h1 μένει ως `.sr-only`. `ink` prop → η φωτογραφία ορίζει μελάνη/scrim/χρώμα μπάρας |
 | `scripts/make-logo-parts.py` | Ξαναφτιάχνει το `logo-parts.svg` από το export του Illustrator — 4 **αδελφά** groups |
 | `scripts/probe-hero-mark.mjs` | Δειγματοληπτεί τον βρόχο του hero σε ακριβείς χρόνους (pause + `currentTime`) |
-| `NavOverlay.astro` | Διάφανη μπάρα, hamburger σε όλα τα breakpoints |
+| `NavOverlay.astro` | Διάφανη μπάρα, hamburger σε όλα τα breakpoints· κρύβει το λογότυπό της πάνω από hero που δείχνει ήδη το σήμα |
+| `LangSwitch.astro` | ΕΛ / EN σε κεφαλίδα + υποσέλιδο. **Σήμανση, όχι λειτουργία** — το ανενεργό είναι `<span>`, όχι `href="#"` |
 | `BookingDialog.astro` | Native `<dialog>`, 4 πεδία, `[data-booking]` το ανοίγει |
 
 ## Παγίδες που κόστισαν bugs

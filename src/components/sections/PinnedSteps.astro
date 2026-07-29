@@ -28,12 +28,14 @@ import type { IconName } from '@lib/icons';
 interface Props {
   eyebrow?: string;
   title?: string;
+  /** anchor target — the hero's scroll cue points at whatever comes first */
+  id?: string;
   steps: { icon: IconName; title: string; text: string }[];
 }
-const { eyebrow, title, steps } = Astro.props;
+const { eyebrow, title, id, steps } = Astro.props;
 ---
 
-<section class="pinned" style={`--steps:${steps.length}`}>
+<section class="pinned" id={id} style={`--steps:${steps.length}`}>
   <div class="pinned-track">
     <div class="pinned-stage">
       <Container>

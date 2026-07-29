@@ -1,0 +1,69 @@
+---
+/**
+ * LangSwitch — the language choice, as a MARK ONLY.
+ *
+ * There is no English site yet. So this is deliberately not wired to anything:
+ * it states which language you are reading and shows that another is coming.
+ *
+ * The inactive language is a <span>, not an <a href="#">. A link that goes
+ * nowhere is worse than no link: the keyboard lands on it, a screen reader
+ * announces it as a link, and the QA gate counts it as a broken internal href.
+ * `aria-disabled` says out loud what the muted colour says visually.
+ *
+ * When the English pages exist, this becomes a real switch in one place: give
+ * LOCALES an href and render an <a> where `current` is false. Nothing else on
+ * the site needs to change — the header and the footer both come through here.
+ *
+ * Props:
+ *   tone   'bar' sits in the transparent header · 'footer' in the footer rule
+ */
+interface Props {
+  tone?: 'bar' | 'footer';
+  class?: string;
+}
+const { tone = 'bar', class: className } = Astro.props;
+
+const LOCALES = [
+  { code: 'el', label: 'ΕΛ', name: 'Ελληνικά', current: true },
+  { code: 'en', label: 'EN', name: 'English', current: false },
+];
+---
+
+<p class:list={['lang', `lang--${tone}`, className]} aria-label="Γλώσσα">
+  {LOCALES.map((l, i) => (
+    <>
+      {i > 0 && <span class="lang-sep" aria-hidden="true">/</span>}
+      <span
+        class="lang-opt"
+        lang={l.code}
+        data-current={l.current ? '' : undefined}
+        aria-current={l.current ? 'true' : undefined}
+        aria-disabled={l.current ? undefined : 'true'}
+        title={l.current ? l.name : `${l.name} — σύντομα`}
+      >{l.label}</span>
+    </>
+  ))}
+</p>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-label);        /* 17px floor — never smaller */
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .lang-opt { color: color-mix(in srgb, currentColor 45%, transparent); }
+  .lang-opt[data-current] { color: currentColor; }
+  .lang-sep { color: color-mix(in srgb, currentColor 28%, transparent); }
+
+  /* In the bar it inherits the bar's ink, which flips with the hero. */
+  .lang--bar { color: inherit; transition: color var(--transition-base); }
+  .lang--footer { color: var(--color-muted); }
+  .lang--footer .lang-opt[data-current] { color: var(--color-text); }
+</style>

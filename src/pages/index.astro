@@ -1,7 +1,7 @@
 ---
 /**
  * Homepage.
- * hero → statement → how it works → treatments → the session → booking.
+ * hero → how it works → treatments → booking.
  * The wave rule (the logo's own line) marks the joints.
  *
  * ONE photograph, in the hero only. The service is mobile — the therapist comes
@@ -46,25 +46,6 @@ const howItWorks = [
   },
 ];
 
-/* What happens in the hour — removing the anxiety of the unknown is the single
-   most useful thing a page like this can do before someone books. */
-const session = [
-  {
-    icon: 'focus' as const,
-    title: 'Αξιολόγηση',
-    text: 'Πού εστιάζεται ο πόνος, από πότε, τι τον επιδεινώνει. Αξιολογούμε τη στάση του σώματος και το εύρος κίνησης πριν ξεκινήσουμε τη θεραπεία.',
-  },
-  {
-    icon: 'flow' as const,
-    title: 'Θεραπεία',
-    text: 'Η τεχνική και η ένταση της πίεσης προσαρμόζονται απόλυτα στους ιστούς σας, μακριά από τυποποιημένα προγράμματα.',
-  },
-  {
-    icon: 'time' as const,
-    title: 'Συνέχεια',
-    text: 'Οδηγίες για το τι να προσέξετε μέχρι την επόμενη φορά — με το επόμενο ραντεβού να ορίζεται μόνο εφόσον κρίνεται πραγματικά απαραίτητο.',
-  },
-];
 ---
 
 <Layout slug="">
@@ -76,19 +57,12 @@ const session = [
     nextAnchor="proseggisi"
   />
 
-  <section id="proseggisi" class="py-section statement">
-    <Container>
-      <p class="text-eyebrow reveal reveal-up">Η προσέγγιση</p>
-      <h2 class="text-h1 statement-title reveal reveal-up">Καμία συνεδρία δεν είναι ίδια</h2>
-      <p class="text-lead statement-lead reveal reveal-up">
-        Κάθε συνεδρία ξεκινά με εξατομικευμένη αξιολόγηση, όχι με τυποποιημένα πρωτόκολλα
-        — και πραγματοποιείται στον δικό σας χώρο, εκεί όπου νιώθετε ήδη άνετα.
-        Δεχόμαστε αποκλειστικά κατόπιν ραντεβού.
-      </p>
-    </Container>
-  </section>
-
-  <PinnedSteps eyebrow="Πώς λειτουργεί" title="Η θεραπεία έρχεται σε εσάς" steps={howItWorks} />
+  <PinnedSteps
+    id="proseggisi"
+    eyebrow="Πώς λειτουργεί"
+    title="Η θεραπεία έρχεται σε εσάς"
+    steps={howItWorks}
+  />
 
   <WaveRule />
 
@@ -97,25 +71,6 @@ const session = [
     lead="Τέσσερις θεραπείες, μία φιλοσοφία: στοχευμένη δουλειά, χωρίς βιασύνη."
     items={services}
   />
-
-  <section class="py-section session">
-    <Container>
-      <p class="text-eyebrow reveal reveal-up">Η συνεδρία</p>
-      <h2 class="text-section-title session-title reveal reveal-up">Τι περιλαμβάνει ο χρόνος σας</h2>
-      <ol class="session-list reveal-stagger">
-        {session.map((step) => (
-          <li class="session-step reveal reveal-up">
-            <BrandIcon name={step.icon} class="session-icon" />
-            <h3 class="text-card-title session-step-title">{step.title}</h3>
-            <p class="text-card-body session-text">{step.text}</p>
-          </li>
-        ))}
-      </ol>
-      <p class="session-cta reveal reveal-up">
-        <a class="link-underline" href="/poioi-eimaste/">Ποιοι είμαστε</a>
-      </p>
-    </Container>
-  </section>
 
   <WaveRule />
 
@@ -154,40 +109,6 @@ const session = [
 </Layout>
 
 <style>
-  /* --------------------------- statement --------------------------- */
-  .statement-title {
-    margin-block-start: var(--stack-md);
-    max-width: 22ch;
-    text-transform: uppercase;
-    font-weight: 200;
-    letter-spacing: 0.1em;
-    line-height: 1.35;
-  }
-  .statement-lead {
-    margin-block-start: var(--stack-lg);
-    max-width: 44rem;
-    color: var(--color-muted);
-  }
-
-  /* ---------------------------- session ---------------------------- */
-  .session { background: var(--color-alt); }
-  .session-title { margin-block-start: var(--stack-md); }
-  .session-list {
-    list-style: none;
-    margin: var(--stack-xl) 0 0;
-    padding: 0;
-    display: grid;
-    gap: var(--stack-xl);
-  }
-  .session-step { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
-  .session-step-title { margin-block-start: var(--stack-md); }
-  .session-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
-  .session-cta { margin-block-start: var(--stack-xl); }
-
-  @media (min-width: 48rem) {
-    .session-list { grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
-  }
-
   /* ---------------------------- booking ---------------------------- */
   .booking-title { margin-block-start: var(--stack-md); max-width: 20ch; }
   .booking-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }

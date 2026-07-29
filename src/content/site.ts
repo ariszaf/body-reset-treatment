@@ -31,7 +31,7 @@ export const site = {
   serviceArea: 'Αθήνα και περίχωρα', // TODO: confirm the real coverage
   mapUrl: '',
 
-  hours: 'Δευτέρα – Σάββατο, αποκλειστικά κατόπιν ραντεβού',    // TODO: confirm
+  hours: 'Δευτέρα – Κυριακή, αποκλειστικά κατόπιν ραντεβού',
   social: {
     facebook: '',
     instagram: '',
