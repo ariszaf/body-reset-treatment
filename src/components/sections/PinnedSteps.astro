@@ -19,20 +19,34 @@
  * Props:
  *   eyebrow  small label above the stage
  *   title    section heading
- *   steps    { icon, title, text }[]
+ *   steps    { icon?, category?, title, text, image? }[]
  */
 import Container from '@components/Container.astro';
 import BrandIcon from '@components/BrandIcon.astro';
 import type { IconName } from '@lib/icons';
+import type { ImageEntry } from '@content/images';
 
 interface Props {
   eyebrow?: string;
   title?: string;
   /** anchor target — the hero's scroll cue points at whatever comes first */
   id?: string;
-  steps: { icon: IconName; title: string; text: string }[];
+  /**
+   * `category` and `image` are optional: with them a step becomes a showcase
+   * card (label, title, a line, a photograph); without them it stays the plain
+   * step it always was. One mechanism, two uses — the pin/progress logic is
+   * subtle enough that a second copy of it would drift within a month.
+   */
+  steps: {
+    icon?: IconName;
+    category?: string;
+    title: string;
+    text: string;
+    image?: ImageEntry;
+  }[];
 }
 const { eyebrow, title, id, steps } = Astro.props;
+const hasMedia = steps.some((s) => s.image);
 ---
 
 <section class="pinned" id={id} style={`--steps:${steps.length}`}>
@@ -43,12 +57,32 @@ const { eyebrow, title, id, steps } = Astro.props;
           {eyebrow && <p class="text-eyebrow pinned-eyebrow">{eyebrow}</p>}
           {title && <h2 class="text-section-title pinned-title">{title}</h2>}
 
-          <ol class="pinned-steps">
+          <ol class="pinned-steps" data-media={hasMedia ? '' : undefined}>
             {steps.map((s, i) => (
               <li class="pinned-step" data-step={i} aria-hidden={i === 0 ? undefined : 'true'}>
-                <BrandIcon name={s.icon} class="pinned-icon" />
-                <h3 class="text-card-title pinned-step-title">{s.title}</h3>
-                <p class="text-lead pinned-step-text">{s.text}</p>
+                <div class="pinned-step-copy">
+                  {s.category && <p class="text-eyebrow pinned-cat">{s.category}</p>}
+                  {s.icon && <BrandIcon name={s.icon} class="pinned-icon" />}
+                  <h3 class="text-card-title pinned-step-title">{s.title}</h3>
+                  <p class="pinned-step-text">{s.text}</p>
+                </div>
+
+                {/* The photograph lives INSIDE the step, not in a column of its
+                    own. That way it swaps with the step for free in pinned mode,
+                    and in the plain stacked fallback each step still keeps its
+                    own picture instead of all of them sharing one slot. */}
+                {s.image && (
+                  <figure class="pinned-step-media">
+                    <img
+                      src={s.image.src}
+                      alt={s.image.alt}
+                      width={s.image.width}
+                      height={s.image.height}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  </figure>
+                )}
               </li>
             ))}
           </ol>
@@ -73,9 +107,48 @@ const { eyebrow, title, id, steps } = Astro.props;
   .pinned-steps { list-style: none; margin: var(--stack-xl) 0 0; padding: 0; display: grid; gap: var(--stack-xl); }
   .pinned-step { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
   .pinned-step-title { margin-block-start: var(--stack-md); }
-  .pinned-step-text { margin-block-start: var(--stack-sm); color: var(--color-muted); max-width: 34rem; }
+  .pinned-step-text {
+    margin-block-start: var(--stack-sm);
+    font-size: var(--text-lead);
+    line-height: 1.55;
+    color: var(--color-muted);
+    max-width: 34rem;
+  }
   .pinned-title { margin-block-start: var(--stack-md); }
   .pinned-progress { display: none; }
+
+  /* ------------------------- showcase (with a photo) ------------------------ */
+  .pinned-cat { margin: 0; }
+  .pinned-cat + .pinned-step-title { margin-block-start: var(--stack-sm); }
+  /* A short line reads better next to a picture than a wide one. */
+  .pinned-steps[data-media] .pinned-step-text {
+    font-size: var(--text-card-body);
+    max-width: 32ch;
+  }
+  .pinned-step-media {
+    margin: var(--stack-lg) 0 0;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+  .pinned-step-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  @media (min-width: 64rem) {
+    /* Copy on the left, picture on the right — but only for steps that have one,
+       so the plain «how it works» stage is untouched. */
+    .pinned-steps[data-media] .pinned-step {
+      display: grid;
+      grid-template-columns: 1fr 0.78fr;
+      gap: var(--stack-xl);
+      align-items: center;
+    }
+    .pinned-steps[data-media] .pinned-step-media {
+      margin: 0;
+      aspect-ratio: 3 / 4;
+      max-height: 58dvh;
+      margin-inline-start: auto;
+    }
+  }
 
   /* --------------------------- pinned mode (JS on) -------------------------- */
   :global(html.js-pinned) .pinned { padding-block: 0; }
@@ -97,6 +170,15 @@ const { eyebrow, title, id, steps } = Astro.props;
     margin-block-start: var(--stack-lg);
     display: grid;
     gap: 0;
+  }
+  /* Pinned, one column: the stage is exactly one screen and the picture has to
+     leave room for the label, the title, the line and the progress ticks. The
+     stage clips its overflow, so anything taller would simply be cut. */
+  @media (max-width: 63.99rem) {
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
+      margin-block-start: var(--stack-md);
+      max-height: 30dvh;
+    }
   }
   /* All steps stack in the SAME grid cell, so the stage never changes height and
      the pin never jumps as the text length varies. */

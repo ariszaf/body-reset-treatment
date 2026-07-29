@@ -20,6 +20,10 @@ import type { IconName } from '@lib/icons';
 export type Service = {
   title: string;
   icon: IconName;        // the treatment's line mark (BrandIcon)
+  /* One or two words above the title in the showcase. ⚠ NEW COPY — not from the
+     client's edited round; each is lifted from that treatment's own approved
+     `short` line so nothing new is being claimed. Needs a nod before launch. */
+  category: string;
   slug: string;          // latin-transliterated, hyphenated
   durations?: string[];  // length options, e.g. ['60′', '80′'] — omit when fixed
   short: string;         // 1 sentence (list / preview)
@@ -30,6 +34,7 @@ export const services: Service[] = [
   {
     title: 'Αθλητικό Μασάζ',
     slug: 'athlitiko-masaz',
+    category: 'Αποκατάσταση',
     icon: 'depth',
     durations: ['60′', '80′'],
     short: 'Στοχευμένη δουλειά στις μυϊκές ομάδες που καταπονούνται από την προπόνηση — αποκατάσταση, όχι απλή χαλάρωση.',
@@ -39,6 +44,7 @@ export const services: Service[] = [
   {
     title: 'Σουηδικό Μασάζ',
     slug: 'souidiko-masaz',
+    category: 'Κλασική τεχνική',
     icon: 'flow',
     durations: ['60′', '80′'],
     short: 'Η κλασική τεχνική, σωστά εκτελεσμένη: συνεχής ροή, σταθερός ρυθμός.',
@@ -48,6 +54,7 @@ export const services: Service[] = [
   {
     title: 'Θεραπεία προσώπου και Μασάζ',
     slug: 'therapeia-prosopou-masaz',
+    category: 'Πρόσωπο & αυχένας',
     icon: 'face',
     short: 'Θεραπεία προσώπου σε συνδυασμό με αυχένα και ώμους — τα σημεία όπου συσσωρεύεται πρώτα η ένταση της ημέρας.',
     description:
@@ -56,6 +63,7 @@ export const services: Service[] = [
   {
     title: 'Θεραπεία με βεντούζες και μασάζ',
     slug: 'therapeia-ventouzes-masaz',
+    category: 'Επίμονη ένταση',
     icon: 'cups',
     short: 'Βεντούζες σε συνδυασμό με μασάζ, για περιοχές όπου η ένταση δεν υποχωρεί μόνο με την πίεση.',
     description:
