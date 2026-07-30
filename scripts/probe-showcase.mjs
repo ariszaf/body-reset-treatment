@@ -31,6 +31,7 @@ const TARGETS = [
   ['.pinned-step.is-active .pinned-step-text', 'κείμενο', 4.5],
   ['.pinned-arrow[data-dir="1"]', 'βελάκι', 3],
   ['.pinned-tick.is-active .pinned-bar', 'γραμμή', 3],
+  ['.pinned-step.is-active .pinned-more', 'σύνδεσμος', 4.5],
 ];
 
 const VIEWPORTS = [
@@ -118,13 +119,12 @@ for (const [name, width, height] of VIEWPORTS) {
       // against itself.
       const PAD = 5;
       const cx = Math.max(0, box.x - PAD), cy = Math.max(0, box.y - PAD);
-      const shot = await page.screenshot({
-        clip: {
-          x: cx, y: cy,
-          width: Math.min(box.width + PAD * 2, width - cx),
-          height: Math.min(box.height + PAD * 2, height - cy),
-        },
-      });
+      const cw = Math.min(box.width + PAD * 2, width - cx);
+      const ch = Math.min(box.height + PAD * 2, height - cy);
+      // An element parked off-screen has nothing to photograph — skip it rather
+      // than ask for a clip the browser cannot produce.
+      if (cw <= 1 || ch <= 1) continue;
+      const shot = await page.screenshot({ clip: { x: cx, y: cy, width: cw, height: ch } });
 
       const ratio = await page.evaluate(async ([data, colour]) => {
         const chan = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };

@@ -224,7 +224,11 @@ const hasMedia = steps.some((s) => s.image);
        so the plain «how it works» stage is untouched. */
     .pinned-steps[data-media] .pinned-step {
       display: grid;
-      grid-template-columns: 1fr 0.78fr;
+      /* The picture's column has to be wide enough for its own ratio at the
+         height below, or `max-width: 100%` squeezes the box narrower than 2:3
+         and `cover` starts cropping again — which is exactly what making the
+         photograph bigger caused, and only the probe saw it. */
+      grid-template-columns: 1fr 0.95fr;
       gap: 0 var(--stack-xl);
       align-items: center;
     }
@@ -372,7 +376,7 @@ const hasMedia = steps.some((s) => s.image);
        over a photograph it is darker or lighter frame by frame and there is no
        single value to hold to a contrast standard. This mixes to a real colour
        that is the same everywhere, and the halo below sits under it. */
-    color: color-mix(in srgb, var(--color-text) 74%, var(--color-bg));
+    color: color-mix(in srgb, var(--color-text) 82%, var(--color-bg));
   }
   .pinned-arrow[disabled] { opacity: 0.25; cursor: default; }
   @media (hover: hover) {
