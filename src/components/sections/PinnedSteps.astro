@@ -393,13 +393,21 @@ const hasMedia = steps.some((s) => s.image);
 
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
       position: absolute;
-      inset: 0;
+      /* Anchored to the TOP and taller than the screen, so the frame is scaled
+         up and its subject drops. The words and the therapist's face were
+         landing on the same band — no scrim geometry can both cover the text and
+         spare the face, because they were in the same place. Giving the picture
+         more height moves the face down out from under the words instead.
+
+         The cost is horizontal: a taller box crops more from the sides. --zoom
+         is the dial; the probe reports the crop so it can be watched. */
+      inset: 0 0 auto 0;
       z-index: 0;
       margin: 0;
       width: auto;
-      height: auto;
       aspect-ratio: auto;               /* fill the stage, not the ratio */
       max-width: none;
+      height: var(--zoom, 100%);        /* LAST — an `auto` after it would win */
     }
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media img {
       object-position: center;
@@ -421,15 +429,22 @@ const hasMedia = steps.some((s) => s.image);
       position: absolute;
       /* up to the top of the stage, past the label and the bar's clearance */
       inset-block-start: calc(-1 * (var(--nav-bar-h) + 3rem));
-      inset-block-end: -3.5rem;                 /* a tail to fade out in */
+      inset-block-end: -2rem;                   /* short tail: the face is right below */
       inset-inline: calc(-1 * var(--space-container));
       z-index: -1;
       pointer-events: none;
+      /* --scrim is the only number worth tuning here. It was 0.94, which lifted
+         the top of the frame by half its brightness and washed the therapist's
+         face out — the photograph stopped reading as full screen and started
+         reading as a cream band with a picture under it.
+
+         It does not need to be anywhere near that. The wall behind the subject
+         is already mid-grey; only the dark shirt and hair where they cross the
+         text need lifting, and the measurement says that takes about 0.6. */
       background: linear-gradient(
         to bottom,
-        rgb(246 243 238 / 0.94) 0%,
-        rgb(246 243 238 / 0.94) 78%,
-        rgb(246 243 238 / 0.55) 90%,
+        rgb(246 243 238 / var(--scrim, 0.96)) 0%,
+        rgb(246 243 238 / var(--scrim, 0.96)) 89%,
         rgb(246 243 238 / 0) 100%
       );
     }
@@ -440,15 +455,14 @@ const hasMedia = steps.some((s) => s.image);
     :global(html.js-pinned) .pinned-foot::before {
       content: '';
       position: absolute;
-      inset-block: -2.25rem calc(-1 * var(--stack-lg) - 1rem);
+      inset-block: -1.5rem calc(-1 * var(--stack-lg) - 1rem);
       inset-inline: calc(-1 * var(--space-container));
       z-index: -1;
       pointer-events: none;
       background: linear-gradient(
         to top,
-        rgb(246 243 238 / 0.96) 0%,
-        rgb(246 243 238 / 0.96) 66%,
-        rgb(246 243 238 / 0.5) 86%,
+        rgb(246 243 238 / var(--scrim, 0.96)) 0%,
+        rgb(246 243 238 / var(--scrim, 0.96)) 70%,
         rgb(246 243 238 / 0) 100%
       );
     }
@@ -459,7 +473,11 @@ const hasMedia = steps.some((s) => s.image);
        the bar with room to spare, and the section is quiet enough that it does
        not read as heavier. */
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text {
-      max-width: 26ch;
+      /* The full column, deliberately. A narrower measure reads better on
+         paper, but here it wraps the same sentence onto three lines instead of
+         two — and every extra line pushes the scrim further down the frame, on
+         to the therapist's face. Wide and short keeps the picture clear. */
+      max-width: none;
       color: var(--color-text);
     }
   }

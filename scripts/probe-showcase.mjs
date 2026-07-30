@@ -52,6 +52,7 @@ for (const [name, width, height] of VIEWPORTS) {
   let seen = new Set();
   let cropped = 0;
   let buried = 0;
+  let worstCrop = 0;
 
   for (let i = 0; i < 6; i++) {
     // Sample by PROGRESS, not by the track's raw height: progress is
@@ -78,10 +79,13 @@ for (const [name, width, height] of VIEWPORTS) {
         ok: onePhone
           ? box.width >= innerWidth - 1 && box.height >= innerHeight - 1
           : Math.abs(rendered - natural) < 0.01,
+        // how much of the frame's WIDTH the phone crop throws away
+        sideCrop: onePhone ? 1 - innerWidth / (box.height * natural) : 0,
         textOnTop: topmost === label || label.contains(topmost),
       };
     });
     seen.add(`${frame.title} · ${frame.src}`);
+    if (frame.sideCrop > worstCrop) worstCrop = frame.sideCrop;
     if (!frame.ok) cropped++;
     if (!frame.textOnTop) buried++;
 
@@ -173,7 +177,9 @@ for (const [name, width, height] of VIEWPORTS) {
 
   console.log(
     `  ${ok ? '✅' : '❌'} ${name.padEnd(11)}${String(width).padStart(5)}×${String(height).padEnd(5)}` +
-      ` ζεύγη ${seen.size}/6 · εικόνα ${cropped ? `❌ ${cropped}` : 'σωστή'} · κείμενο από πάνω ${buried ? `❌ ${buried}` : 'ναι'}` +
+      ` ζεύγη ${seen.size}/6 · εικόνα ${cropped ? `❌ ${cropped}` : 'σωστή'}` +
+      (worstCrop ? ` · πλάγια κοπή ${(worstCrop * 100).toFixed(0)}%` : '') +
+      ` · κείμενο από πάνω ${buried ? `❌ ${buried}` : 'ναι'}` +
       ` · οριακό ${tightest.label} ${tightest.ratio.toFixed(2)}:1 (όριο ${tightest.min})`,
   );
   if (failed.length) {
