@@ -352,6 +352,13 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     --mark-w: clamp(11rem, 26vw, 19rem);
     --mark-h: calc(var(--mark-w) / 1.478);
   }
+  /* A fifth larger on a phone. The vertical crop is a taller, emptier frame than
+     the landscape one, so the mark can carry more of it without crowding the
+     subject — and at arm's length a phone shows it smaller than the numbers
+     suggest. The placement floor below reads --mark-h, so it follows on its own. */
+  @media (orientation: portrait) {
+    .hero { --mark-w: clamp(13.2rem, 31.2vw, 22.8rem); }
+  }
   .hero-mark {
     display: block;
     width: var(--mark-w);

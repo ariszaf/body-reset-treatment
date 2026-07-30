@@ -31,6 +31,7 @@ const TARGETS = [
   ['.pinned-step.is-active .pinned-step-text', 'κείμενο', 4.5],
   ['.pinned-arrow[data-dir="1"]', 'βελάκι', 3],
   ['.pinned-tick.is-active .pinned-bar', 'γραμμή', 3],
+  ['.pinned-count', 'αρίθμηση', 4.5],
   ['.pinned-step.is-active .pinned-more', 'σύνδεσμος', 4.5],
 ];
 
@@ -75,7 +76,15 @@ for (const [name, width, height] of VIEWPORTS) {
       const rendered = box.width / box.height;
       const onePhone = innerWidth < 1024;
       const label = document.querySelector('#ypiresies .pinned-eyebrow');
-      const lb = label.getBoundingClientRect();
+      // The GLYPHS, not the box. The label is a block that runs the full width
+      // of the container while its word sits at the left, so the centre of its
+      // rectangle is empty space — and once the photograph was pinned to the
+      // full height of the stage, that empty space is over the picture. Probing
+      // there reported the label as buried on every desktop size while it was
+      // in fact perfectly clear. A Range gives the ink's own box.
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      const lb = range.getClientRects()[0] || label.getBoundingClientRect();
       const topmost = document.elementFromPoint(lb.x + lb.width / 2, lb.y + lb.height / 2);
       return {
         title: step.querySelector('h3').textContent.trim(),

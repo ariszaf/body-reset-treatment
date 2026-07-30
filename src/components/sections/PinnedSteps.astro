@@ -112,6 +112,12 @@ const hasMedia = steps.some((s) => s.image);
               ))}
             </ol>
 
+            {/* Phone only. Six rules across a 360px screen come out at 12px each
+                — too small to read as progress. A count says the same thing in
+                the space of three characters. Decorative: the step itself is
+                already announced, so a screen reader gains nothing from it. */}
+            <p class="pinned-count" aria-hidden="true"><span data-count>1</span>/{steps.length}</p>
+
             {/* Real buttons, not decoration. The section only advances when you
                 scroll, which is not obvious from a still frame — so as well as
                 SAYING "there is more", these do it: each one scrolls to the next
@@ -120,12 +126,12 @@ const hasMedia = steps.some((s) => s.image);
             <div class="pinned-nav">
               <button class="pinned-arrow" type="button" data-dir="-1" aria-label="Προηγούμενη θεραπεία">
                 <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
-                  <path d="M1 7L6 2L11 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M1 7L6 2L11 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
               </button>
               <button class="pinned-arrow" type="button" data-dir="1" aria-label="Επόμενη θεραπεία">
                 <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
-                  <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
               </button>
             </div>
@@ -153,7 +159,8 @@ const hasMedia = steps.some((s) => s.image);
   /* Both only exist in pinned mode — the stacked fallback is already a list you
      read top to bottom, with nothing to page through. */
   .pinned-progress,
-  .pinned-nav { display: none; }
+  .pinned-nav,
+  .pinned-count { display: none; }
 
   /* ------------------------- showcase (with a photo) ------------------------ */
   /* The accent used to sit on a small category label above the name. The label
@@ -232,12 +239,92 @@ const hasMedia = steps.some((s) => s.image);
       gap: 0 var(--stack-xl);
       align-items: center;
     }
-    /* The picture spans both rows; the link sits under the copy in column one.
-       The two text rows are pulled to the boundary between them (`end` then
-       `start`) instead of each being centred in its own row — otherwise the
-       picture's height stretches the rows apart and the link floats halfway
-       down the screen, unattached to the words it belongs to. */
-    .pinned-steps[data-media] .pinned-step-media { grid-area: 1 / 2 / 3 / 3; }
+    /* The picture is lifted OUT of the text grid and pinned to the full height
+       of the stage — top edge to bottom edge, past the label's row as well.
+       Inside the grid it could only ever be as tall as the rows the words
+       needed; against the stage it is as tall as the screen.
+
+       Its right edge lines up with the container, not the window: the stage is
+       full-bleed, so the inset has to reproduce the container's own side margin
+       or the picture runs off to the edge of a wide display. */
+    /* Full height, but never at the cost of the words. Boxed inside the 64rem
+       container the two are in direct competition: on a 1080px-tall screen the
+       picture wants 720px of width and the text column was left with 176px.
+
+       So the picture is allowed OUT of the container on the right — as far as
+       6rem from the window edge, and no further than 24rem past the container.
+       The stage is full-bleed anyway; the extra width comes from the empty
+       margin a centred container leaves behind on a wide display, which is
+       width nobody was using. Below 1024 + 12rem there is no margin to take and
+       the bleed is zero, so the picture lines up with the container exactly as
+       before.
+
+       That buys full height everywhere from a 1024×768 laptop to 2560×1440,
+       with the copy never under 20rem. Where the two still cannot both be had,
+       the HEIGHT gives way — the frame keeps its 2:3 and nothing is cropped. */
+    .pinned-inner {
+      --pin-bleed: clamp(0px, calc((100vw - var(--container-max)) / 2 - 6rem), 24rem);
+      --pin-copy-min: 20rem;
+      --pin-img-w: min(
+        calc(100svh * 2 / 3),
+        calc(
+          var(--container-max) - var(--space-container) - var(--pin-copy-min) -
+            var(--stack-xl) + var(--pin-bleed)
+        )
+      );
+      /* Measured from the container's INNER right edge, which is one
+         --space-container inside the box edge the picture is aligned to. */
+      --pin-copy-end: calc(
+        var(--pin-img-w) + var(--stack-xl) - var(--pin-bleed) - var(--space-container)
+      );
+    }
+    /* The picture is absolutely positioned and therefore paints over everything
+       around it, so the label, the heading and the rules underneath all have to
+       stop where it starts. Measured: the eyebrow's box ran the full width of
+       the container and the rules and arrows ended up UNDER the photograph —
+       the arrows were being read against skin instead of against paper. */
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-eyebrow,
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-title,
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-foot {
+      padding-inline-end: var(--pin-copy-end);
+    }
+    /* And the rules have to be able to GET smaller, or they overflow the space
+       reserved for them and end up back under the photograph — which is what
+       they did: 456px of hairlines inside a 296px row. The bar is the flex
+       basis now, so six of them share whatever the row has left. */
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-progress { min-width: 0; }
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-tick {
+      /* A definite WIDTH, not a flex-basis. With only a basis the tick's
+         intrinsic contribution came from its content — a bar at `width: 100%`,
+         which against an indefinite width contributes nothing — so the row
+         measured its own max-content as 120px of gaps and the six rules
+         collapsed to zero. Measured. A real width both sizes the row and gives
+         the percentage something to resolve against. */
+      width: clamp(2rem, 5vw, 3.5rem);
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-bar { width: 100%; }
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-nav { flex: none; }
+    .pinned-steps[data-media] .pinned-step-media {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: max(
+        var(--space-container),
+        calc((100% - var(--container-max)) / 2 - var(--pin-bleed))
+      );
+      block-size: min(100%, calc(var(--pin-img-w) * 1.5));
+      inline-size: auto;
+      margin: 0;
+      aspect-ratio: var(--img-ratio);
+    }
+    /* The words keep the left column and stop before the picture. Its width is
+       the stage's own height at 2:3, which is a number CSS can work out. */
+    .pinned-steps[data-media] .pinned-step {
+      grid-template-columns: minmax(0, 1fr);
+      padding-inline-end: var(--pin-copy-end);
+      align-content: center;
+    }
     .pinned-steps[data-media] .pinned-step-copy { grid-area: 1 / 1 / 2 / 2; align-self: end; }
     .pinned-steps[data-media] .pinned-more {
       grid-area: 2 / 1 / 3 / 2;
@@ -246,17 +333,8 @@ const hasMedia = steps.some((s) => s.image);
     }
     /* On a wide screen the label sits BESIDE the bar's logotype, not under it,
        so the stage does not need to clear the bar's full height the way a phone
-       does. Reclaiming that space is what lets the photograph be properly large
-       — it was 340px wide in a 1440px window, which is a thumbnail. */
+       does. The picture spans the whole stage, padding included. */
     :global(html.js-pinned) .pinned-stage { padding-block-start: var(--stack-lg); }
-    .pinned-steps[data-media] .pinned-step-media {
-      margin: 0;
-      /* The first term is the look, the second is the promise that it fits. */
-      height: min(74svh, calc(100svh - 15rem));
-      width: auto;
-      max-width: 100%;
-      margin-inline-start: auto;
-    }
   }
 
   /* --------------------------- pinned mode (JS on) -------------------------- */
@@ -489,8 +567,25 @@ const hasMedia = steps.some((s) => s.image);
        across 320px. They did not: flex pushed the arrows past the reserve and
        back under the call button by a few pixels. Both the rules and the gaps
        between them now scale with the screen instead of holding a fixed size. */
-    :global(html.js-pinned) .pinned-progress { gap: clamp(0.4rem, 2vw, 0.75rem); }
-    :global(html.js-pinned) .pinned-bar { width: clamp(0.75rem, 3.2vw, 2rem); }
+    /* The rules give way to a count on a phone — see the note in the markup. */
+    :global(html.js-pinned) .pinned-progress { display: none; }
+    :global(html.js-pinned) .pinned-count {
+      display: block;
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--text-label);      /* 17px floor — never smaller */
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      font-variant-numeric: tabular-nums;  /* the slash must not shift on 1→2 */
+      color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
+      /* Same tight halo as the rest of the type over a photograph. */
+      text-shadow:
+        0 0 12px rgb(246 243 238),
+        0 0 6px rgb(246 243 238),
+        0 0 3px rgb(246 243 238),
+        0 0 1.5px rgb(246 243 238);
+    }
+    :global(html.js-pinned) .pinned-count [data-count] { color: var(--color-accent); }
 
     /* The photograph fills the stage. It stays INSIDE its step, so it still
        cross-fades with the step for free; only its box changes.
@@ -602,6 +697,14 @@ const hasMedia = steps.some((s) => s.image);
    */
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /* Teardown for everything bound to `window`. The `dataset.pinBound` guard
+     lives on a DOM node, and the view-transitions router replaces those — the
+     window does not. Without this, every navigation back to a page with a
+     pinned section left ANOTHER scroll listener alive, holding a detached
+     track and calling getBoundingClientRect() on it every frame. It compounds
+     for as long as the visitor keeps browsing. */
+  const teardown: Array<() => void> = [];
+
   function bind() {
     const sections = document.querySelectorAll<HTMLElement>('.pinned');
     if (!sections.length || reduce) return;
@@ -612,19 +715,30 @@ const hasMedia = steps.some((s) => s.image);
       section.dataset.pinBound = '1';
 
       const track = section.querySelector<HTMLElement>('.pinned-track');
+      const stage = section.querySelector<HTMLElement>('.pinned-stage');
       const steps = [...section.querySelectorAll<HTMLElement>('.pinned-step')];
       const ticks = [...section.querySelectorAll<HTMLElement>('.pinned-tick')];
       const arrows = [...section.querySelectorAll<HTMLButtonElement>('.pinned-arrow')];
-      if (!track || steps.length < 2) return;
+      const count = section.querySelector<HTMLElement>('[data-count]');
+      if (!track || !stage || steps.length < 2) return;
 
       /* Where the page has to be for step `i` to be the active one — the inverse
          of the progress sum below, aimed at the middle of that step's slice so a
          click never lands on a boundary. */
       const scrollTop = () => window.scrollY + track.getBoundingClientRect().top;
-      const positionOf = (i: number) => {
-        const travel = track.offsetHeight - window.innerHeight;
-        return scrollTop() + (travel * (i + 0.5)) / steps.length;
-      };
+      /* The distance the page moves while the stage stays pinned — measured
+         from the STAGE, not from window.innerHeight.
+
+         Both the track and the stage are sized in `svh`. `window.innerHeight`
+         is the live visual viewport, which on a phone grows to roughly `lvh`
+         the moment the address bar hides. Subtracting one from the other mixes
+         units: `travel` came out short by an address-bar height, so `progress`
+         reached 1 before the stage actually unpinned and the last stretch of
+         the track changed nothing at all — a dead band sitting exactly on the
+         seam with the next section. Reading the stage keeps both sides in the
+         same unit, whatever the browser chrome is doing. */
+      const travelOf = () => track.offsetHeight - stage.offsetHeight;
+      const positionOf = (i: number) => scrollTop() + (travelOf() * (i + 0.5)) / steps.length;
       arrows.forEach((btn) => {
         btn.addEventListener('click', () => {
           const next = current + Number(btn.dataset.dir);
@@ -642,11 +756,11 @@ const hasMedia = steps.some((s) => s.image);
       const apply = () => {
         queued = false;
         const rect = track.getBoundingClientRect();
-        // Scrollable distance inside the track while the stage stays pinned.
-        const travel = track.offsetHeight - window.innerHeight;
+        const travel = travelOf();
         const progress = travel > 0 ? Math.min(Math.max(-rect.top / travel, 0), 1) : 0;
-        // The last step needs the same share as the others, hence the epsilon.
-        const index = Math.min(steps.length - 1, Math.floor(progress * steps.length - 1e-6 + 1e-6));
+        // The clamp is what keeps the last step in range at progress === 1.
+        // (An epsilon pair used to sit here that cancelled itself out exactly.)
+        const index = Math.min(steps.length - 1, Math.floor(progress * steps.length));
 
         if (index === current) return;
         current = index;
@@ -667,6 +781,7 @@ const hasMedia = steps.some((s) => s.image);
           el.toggleAttribute('inert', !on);
         });
         ticks.forEach((el, i) => el.classList.toggle('is-active', i === index));
+        if (count) count.textContent = String(index + 1);
         if (index > 0) section.removeAttribute('data-hint');
         arrows.forEach((btn) => {
           const dir = Number(btn.dataset.dir);
@@ -682,10 +797,19 @@ const hasMedia = steps.some((s) => s.image);
 
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll, { passive: true });
+      teardown.push(() => {
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+      });
       apply();
     });
   }
 
+  function unbind() {
+    while (teardown.length) teardown.pop()?.();
+  }
+
   bind();
   document.addEventListener('astro:after-swap', bind);
+  document.addEventListener('astro:before-swap', unbind);
 </script>

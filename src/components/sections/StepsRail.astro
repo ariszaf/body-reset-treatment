@@ -3,32 +3,39 @@
  * StepsRail — the same three steps, laid out sideways.
  *
  * Desktop (≥64rem): all three at once, three across, nothing to operate.
- * Below that:       a rail you swipe, the next card deliberately part-way into
+ * Below that:       a strip you swipe, the next card deliberately part-way into
  *                   frame, with dots underneath saying how many there are.
  *
- * Modelled on the reference's «Άρθρα / Από το blog μας» strip: 80%-wide slides,
- * swipe on a phone, dots on mobile only, and a plain centred row from the large
- * breakpoint up. The behaviour matches; the mechanism does not. The reference
- * ships a carousel library — here CSS scroll-snap does the same job natively, so
- * the swipe works before any JavaScript loads and keeps working if it fails. The
- * only script is the ~15 lines that light the right dot.
+ * WHY EMBLA AND NOT A CSS SCROLLER. This was a native `overflow-x: auto` rail
+ * with scroll-snap, and it broke scrolling on a phone in a way that took three
+ * attempts to pin down. Measured with real touch events on an iPhone profile:
  *
- * Three things this has to get right that a plain grid does not:
+ *   sideways component of the swipe   page moved   rail moved
+ *   0–40px                            360–422px    0
+ *   60px                              0            0
+ *   90px                              0            0
+ *
+ * `overflow-x: auto` with `overflow-y: visible` computes to a scroll container
+ * on BOTH axes. Past roughly 60px of sideways travel the browser awarded the
+ * gesture to the rail, the rest of the movement was vertical, and neither axis
+ * advanced. Embla never creates a scroll container — the viewport is
+ * `overflow: hidden` and the container is transformed — and it decides the axis
+ * itself, handing vertical drags straight back to the page.
+ *
+ * Three things this still has to get right that a plain grid does not:
  *
  * 1. REVEAL. The site's scroll-reveal engine hides an element until it enters
- *    the viewport. A card parked off to the right of a rail never enters it, so
- *    it would sit at opacity 0 forever and the visitor would swipe onto a blank
- *    card. Per-card reveal is therefore switched off at rail widths — the rail
- *    arrives as one piece there — and only staggers on desktop, where every card
- *    genuinely is on screen.
+ *    the viewport. A card parked off to the right never enters it, so it would
+ *    sit at opacity 0 forever and the swipe would land on nothing. Per-card
+ *    reveal is switched off at strip widths and only staggers on desktop.
  *
- * 2. KEYBOARD. A scrollable region that cannot take focus is unreachable
- *    without a mouse or a finger (WCAG 2.1.1). The list takes tabindex="0" and
- *    shows a focus ring, so the arrow keys scroll it.
+ * 2. NO-JAVASCRIPT. The base layout is a vertical stack — all three cards
+ *    readable, nothing hidden, no scroller. `is-embla`, added by the script,
+ *    is what turns it into a strip. The reference does the opposite and leaves
+ *    two thirds of its content unreachable when the library fails to load.
  *
- * 3. The dots are an INDICATOR, not a control: `aria-hidden`, never focusable.
- *    The first is marked active server-side, so with no JavaScript they still
- *    tell the truth at rest instead of all looking dead.
+ * 3. The dots are real buttons (Embla scrolls to the slide), and they only
+ *    exist once `is-embla` is on — a control that cannot work is not shown.
  *
  * Props: eyebrow · title · id (anchor) · steps
  */
@@ -50,19 +57,26 @@ const { eyebrow, title, id, steps } = Astro.props;
     {eyebrow && <p class="text-eyebrow reveal reveal-up">{eyebrow}</p>}
     {title && <h2 class="text-section-title rail-title reveal reveal-up">{title}</h2>}
 
-    <ol class="rail-list reveal-stagger" tabindex="0" aria-label={title ?? 'Βήματα'}>
-      {steps.map((s, i) => (
-        <li class="rail-card reveal reveal-up">
-          <span class="rail-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-          <BrandIcon name={s.icon} class="rail-icon" />
-          <h3 class="text-card-title rail-card-title">{s.title}</h3>
-          <p class="text-card-body rail-text">{s.text}</p>
-        </li>
-      ))}
-    </ol>
+    <div class="rail-embla" data-embla>
+      <div class="embla">
+        <ol class="embla__container reveal-stagger">
+          {steps.map((s, i) => (
+            <li class="embla__slide rail-card reveal reveal-up">
+              <span class="rail-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <BrandIcon name={s.icon} class="rail-icon" />
+              <h3 class="text-card-title rail-card-title">{s.title}</h3>
+              <p class="text-card-body rail-text">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
 
-    <div class="rail-dots" aria-hidden="true">
-      {steps.map((_, i) => <span class="rail-dot" data-dot={i} data-on={i === 0 ? '' : undefined} />)}
+      <div class="rail-dots">
+        {steps.map((s, i) => (
+          <button class="embla__dot" type="button" data-on={i === 0 ? '' : undefined}
+                  aria-current={i === 0 ? 'true' : 'false'} aria-label={s.title} />
+        ))}
+      </div>
     </div>
   </Container>
 </section>
@@ -71,19 +85,14 @@ const { eyebrow, title, id, steps } = Astro.props;
   .rail { padding-block: var(--space-section); }
   .rail-title { margin-block-start: var(--stack-md); }
 
-  .rail-list {
+  /* ---- base: a plain vertical stack. This is what renders without JS. ---- */
+  .embla__container {
     list-style: none;
     margin: var(--stack-xl) 0 0;
     padding: 0;
     display: grid;
     gap: var(--stack-lg);
   }
-  .rail-list:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 6px;
-    border-radius: 2px;
-  }
-
   .rail-card {
     padding-block-start: var(--stack-md);
     border-top: 1px solid var(--color-border);
@@ -105,111 +114,81 @@ const { eyebrow, title, id, steps } = Astro.props;
   .rail-card-title { margin-block-start: var(--stack-md); }
   .rail-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
 
-  /* Declared BEFORE the media queries on purpose: same specificity, so source
-     order decides, and a base rule written underneath silently beats them. */
-  .rail-dots {
-    display: flex;
-    gap: 0.5rem;
-    margin-block-start: var(--stack-md);
-  }
-  .rail-dot {
-    width: 0.4rem;
-    height: 0.4rem;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--color-text) 22%, transparent);
-    transition: background var(--transition-base), transform var(--transition-base);
-  }
-  .rail-dot[data-on] {
-    background: var(--color-accent);
-    transform: scale(1.35);
-  }
+  /* Nothing to indicate until there is something to swipe. */
+  .rail-dots { display: none; }
 
   /* ---------------------- large screens: all three ---------------------- */
   @media (min-width: 64rem) {
-    .rail-list { grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
-    .rail-dots { display: none; }         /* nothing to indicate */
+    .embla__container { grid-template-columns: repeat(3, 1fr); gap: var(--stack-lg); }
   }
 
-  /* ------------------------- narrower: a rail --------------------------- */
+  /* ------------------- narrower, WITH the script running ----------------
+     Everything here is behind `.is-embla`, which the carousel script adds once
+     it has taken over. Until then the stack above is what the visitor gets. */
   @media (max-width: 63.99rem) {
-    .rail-list {
-      /* Out of the text column and up to both screen edges, so the next card is
-         cut by the screen and not by the container's padding. */
+    /* Out of the text column and up to both screen edges, so the peeking card
+       is cut by the screen and not by the container's padding. */
+    .is-embla .embla {
+      overflow: hidden;                   /* NOT a scroll container */
       margin-inline: calc(-1 * var(--space-container));
       padding-inline: var(--space-container);
-      grid-auto-flow: column;
-      grid-auto-columns: 80%;             /* the next card is clearly started */
-      overflow-x: auto;
-      /* No `overscroll-behavior-x: contain` here. It stops the gesture reaching
-         the page, which is right for a full-screen carousel and wrong for a
-         strip inside an article — the page should keep moving if the finger
-         drifts off-axis. */
-      /* PROXIMITY, not mandatory. Mandatory forces a landing on every gesture,
-         which on a real phone turns a mostly-vertical swipe that starts on the
-         rail into a fight between the two axes. Proximity snaps when you meant
-         to, and gets out of the way when you did not. */
-      scroll-snap-type: x proximity;
-      scroll-padding-inline-start: var(--space-container);
-      gap: var(--stack-md);
-      /* The peeking card and the dots are the affordance; the bar is noise. */
-      scrollbar-width: none;
     }
-    .rail-list::-webkit-scrollbar { display: none; }
-    .rail-card { scroll-snap-align: start; }
+    .is-embla .embla__container {
+      display: flex;
+      gap: var(--stack-md);
+      align-items: stretch;
+    }
+    .is-embla .embla__slide {
+      flex: 0 0 80%;                      /* the next card is clearly started */
+      min-width: 0;
+    }
 
-    /* See note 1 in the header: a card parked off-screen to the right never
-       satisfies the IntersectionObserver, so without this it would never be
-       revealed and the swipe would land on nothing. */
-    .rail-list :global(.reveal) {
+    /* See note 1 in the header: a card parked off-screen never satisfies the
+       IntersectionObserver, so without this it would never be revealed. */
+    .is-embla .embla__container :global(.reveal) {
       opacity: 1;
       transform: none;
       filter: none;
     }
+
+    .is-embla .rail-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-block-start: var(--stack-lg);
+    }
+  }
+
+  .embla__dot {
+    /* A 6px mark inside a 44px target — the dot is the affordance, the padding
+       is for the finger. */
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    margin: -0.9rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .embla__dot::before {
+    content: '';
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-text) 22%, transparent);
+    transition: background var(--transition-base), transform var(--transition-base);
+  }
+  .embla__dot[data-on]::before {
+    background: var(--color-accent);
+    transform: scale(1.35);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .rail-list { scroll-behavior: auto; }
-    .rail-dot { transition: none; }
+    .embla__dot::before { transition: none; }
   }
 </style>
 
 <script>
-  /**
-   * Light the dot for whichever card is showing.
-   *
-   * The observer's root is the RAIL, not the viewport, so "visible" means
-   * "scrolled to inside this strip" — a viewport-rooted observer would call
-   * every card visible at once, because the strip itself is fully on screen.
-   *
-   * querySelectorAll + a bound flag, never querySelector: this section is used
-   * more than once on a page, and a single-element lookup would leave every
-   * copy after the first with dead dots.
-   */
-  function bindRails() {
-    document.querySelectorAll<HTMLElement>('.rail').forEach((section) => {
-      if (section.dataset.railBound) return;
-      section.dataset.railBound = '1';
-
-      const list = section.querySelector<HTMLElement>('.rail-list');
-      const cards = [...section.querySelectorAll<HTMLElement>('.rail-card')];
-      const dots = [...section.querySelectorAll<HTMLElement>('.rail-dot')];
-      if (!list || dots.length !== cards.length) return;
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (!e.isIntersecting) continue;
-            const i = cards.indexOf(e.target as HTMLElement);
-            if (i < 0) continue;
-            dots.forEach((d, n) => d.toggleAttribute('data-on', n === i));
-          }
-        },
-        { root: list, threshold: 0.6 },
-      );
-      cards.forEach((card) => io.observe(card));
-    });
-  }
-
-  bindRails();
-  document.addEventListener('astro:after-swap', bindRails);
+  import '../../scripts/carousel';
 </script>
