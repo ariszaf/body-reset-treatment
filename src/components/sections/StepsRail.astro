@@ -60,9 +60,8 @@ const { eyebrow, title, id, steps } = Astro.props;
     <div class="rail-embla" data-embla>
       <div class="embla">
         <ol class="embla__container reveal-stagger">
-          {steps.map((s, i) => (
+          {steps.map((s) => (
             <li class="embla__slide rail-card reveal reveal-up">
-              <span class="rail-num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
               <BrandIcon name={s.icon} class="rail-icon" />
               <h3 class="text-card-title rail-card-title">{s.title}</h3>
               <p class="text-card-body rail-text">{s.text}</p>
@@ -97,18 +96,10 @@ const { eyebrow, title, id, steps } = Astro.props;
     padding-block-start: var(--stack-md);
     border-top: 1px solid var(--color-border);
   }
-  .rail-num {
-    display: block;
-    font-size: var(--text-label);          /* 17px floor */
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-accent);
-  }
   .rail-card :global(.rail-icon) {
     display: block;
     width: 2.75rem;
     height: 2.75rem;
-    margin-block-start: var(--stack-md);
     color: var(--color-text);
   }
   .rail-card-title { margin-block-start: var(--stack-md); }

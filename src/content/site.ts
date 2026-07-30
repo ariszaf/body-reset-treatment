@@ -48,7 +48,7 @@ export const site = {
 
   /* Branding / integrations — ONE CTA sitewide: the appointment.
      Anchor (not a page) so it works from every page while the contact page is pending. */
-  cta: { label: 'Κλείστε Ραντεβού', href: '/#epikoinonia' },
+  cta: { label: 'Κλείστε ραντεβού online', href: '/#epikoinonia' },
 
   /* Online scheduler (Cal). THE MOMENT this is filled, every CTA on the site
      switches from "leave your details and we call you" to real self-service

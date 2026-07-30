@@ -71,11 +71,7 @@ const showcase = services.map((s) => ({
   {/* «How it works» keeps its content but changes shape: three across on a
       large screen, a swipeable rail below that. No `id` — an anchor may exist
       only once on a page, and the cue already points at the treatments. */}
-  <StepsRail
-    eyebrow="Πώς λειτουργεί"
-    title="Η θεραπεία έρχεται σε εσάς"
-    steps={howItWorks}
-  />
+  <StepsRail eyebrow="Πώς λειτουργεί" steps={howItWorks} />
 
 
 </Layout>
