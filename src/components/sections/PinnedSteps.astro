@@ -237,21 +237,28 @@ const hasMedia = steps.some((s) => s.image);
     border-top: 0;
     padding-block-start: 0;
     opacity: 0;
-    transform: translateY(1.25rem);
     visibility: hidden;
     transition:
       opacity 0.55s var(--reveal-ease),
-      transform 0.55s var(--reveal-ease),
       visibility 0s linear 0.55s;
   }
   :global(html.js-pinned) .pinned-step.is-active {
     opacity: 1;
-    transform: none;
     visibility: visible;
-    transition:
-      opacity 0.55s var(--reveal-ease),
-      transform 0.55s var(--reveal-ease);
+    transition: opacity 0.55s var(--reveal-ease);
   }
+  /* The slide lives on the COPY, not on the step.
+     A transform makes an element the containing block for anything absolutely
+     positioned inside it — so while it sat on the step, the phone's full-bleed
+     photograph was trapped inside the text's own little box (358×149 instead of
+     the whole screen). Moving it one level down keeps the motion and frees the
+     picture. The photograph cross-fades rather than slides, which is what a
+     full-screen image should do anyway. */
+  :global(html.js-pinned) .pinned-step-copy {
+    transform: translateY(1.25rem);
+    transition: transform 0.55s var(--reveal-ease);
+  }
+  :global(html.js-pinned) .pinned-step.is-active .pinned-step-copy { transform: none; }
 
   /* ------------------------------ progress ---------------------------------- */
   :global(html.js-pinned) .pinned-foot {
@@ -335,36 +342,125 @@ const hasMedia = steps.some((s) => s.image);
   }
   /* ------------------- pinned, one column: the phone --------------------
      LAST in the file on purpose. Every rule here overrides a base rule of the
-     same specificity, and source order is what decides — the earlier attempt
-     sat above `.pinned-nav { flex-direction: column }` and silently lost.
+     same specificity, and source order is what decides — an earlier attempt sat
+     above `.pinned-nav { flex-direction: column }` and silently lost.
 
-     Every gap is bought back and spent on the photograph. --chrome is the
-     MEASURED height of everything that is not the picture (label, copy, rules,
-     arrows and the gaps between them), so the width below is exactly what is
-     left over. Re-measure it if this layout changes. */
+     On a phone the photograph takes the whole screen and the words sit on top
+     of it. That works because of how `cover` chooses its scale: the frame is
+     2:3 and the screen is far narrower, so it scales to FILL THE HEIGHT and
+     trims the sides. The empty wall at the top of every frame therefore always
+     survives — which is exactly the band the label and the name land in. */
   @media (max-width: 63.99rem) {
-    :global(html.js-pinned) .pinned-inner { --chrome: 17rem; }
+    /* Content to the top; the rules and arrows are pushed to the bottom below. */
+    :global(html.js-pinned) .pinned-stage { align-content: stretch; }
+    :global(html.js-pinned) .pinned-stage > :global(.container) { display: flex; }
+    :global(html.js-pinned) .pinned-inner {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding-block-end: var(--stack-lg);
+    }
+    :global(html.js-pinned) .pinned-foot { margin-block-start: auto; }
     :global(html.js-pinned) .pinned-steps { margin-block-start: var(--stack-md); }
-    :global(html.js-pinned) .pinned-foot { margin-block-start: var(--stack-md); }
-    /* Up and down side by side rather than stacked — saves ~28px of height and
-       a pager reads perfectly well in a row. */
-    :global(html.js-pinned) .pinned-nav { flex-direction: row; }
     :global(html.js-pinned) .pinned-eyebrow { margin: 0; }
-    /* Six rules at desktop width plus two 44px buttons come to more than a
-       phone is wide, and the stage's `overflow: hidden` was quietly swallowing
-       the arrows off the right edge — present in the DOM, impossible to press.
-       Shorter rules and a tighter gap put the whole row back on screen. */
+    /* Up and down side by side rather than stacked — saves height, and a pager
+       reads perfectly well in a row. */
+    :global(html.js-pinned) .pinned-nav { flex-direction: row; }
+    /* Six desktop-width rules plus two 44px buttons come to more than a phone is
+       wide, and the stage's `overflow: hidden` was quietly swallowing the arrows
+       off the right edge — present in the DOM, impossible to press. */
     :global(html.js-pinned) .pinned-progress { gap: var(--stack-sm); }
     :global(html.js-pinned) .pinned-bar { width: clamp(1.1rem, 4vw, 2rem); }
 
+    /* The photograph fills the stage. It stays INSIDE its step, so it still
+       cross-fades with the step for free; only its box changes.
+
+       The words are LIFTED above it rather than the picture pushed below with a
+       negative z-index. That was the first attempt and it failed: the figure
+       comes after the copy in the DOM, and `z-index: -1` resolved against a
+       stacking context that left the image painting over the label — proved
+       with elementFromPoint, which returned the IMG where the label is. An
+       explicit z-index on the content cannot be argued with. */
+    :global(html.js-pinned) .pinned-step-copy,
+    :global(html.js-pinned) .pinned-foot { position: relative; z-index: 1; }
+    /* The label needs to sit ABOVE the copy, not merely above the picture. The
+       copy's own scrim reaches up past it, and with both on z-index 1 the copy
+       comes later in the DOM and won its scrim the right to paint over the
+       label. `pointer-events: none` on that scrim meant hit-testing still
+       reported the label on top — the check passed while the label was being
+       washed out on screen. */
+    :global(html.js-pinned) .pinned-eyebrow { position: relative; z-index: 2; }
+
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
-      margin-block-start: var(--stack-md);
-      margin-inline: auto;                /* centred, as asked */
-      /* Sized by WIDTH so the 2:3 ratio derives the height and nothing is ever
-         cropped. Setting a height AND a max-width would fight each other and
-         the box would stop matching the photograph. */
-      width: min(100%, calc((100dvh - var(--nav-bar-h) - var(--chrome)) * 2 / 3));
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      margin: 0;
+      width: auto;
       height: auto;
+      aspect-ratio: auto;               /* fill the stage, not the ratio */
+      max-width: none;
+    }
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media img {
+      object-position: center;
+    }
+    /* Words over a photograph need a floor under them. A scrim pinned to the
+       PICTURE was the first attempt and it failed the measurement: the copy is
+       a fixed number of pixels tall but the screen is not, so on a 640px phone
+       the third line landed below where the gradient had faded — 1.01:1.
+
+       So the scrim is pinned to the TEXT instead. It grows with the copy, ends
+       just below it, and reaches up past the label to the top of the screen.
+       Whatever the frame or the screen height, it is exactly as tall as the
+       words it has to carry.
+
+       It is the PAGE colour, not a grey wash, so the top of the screen still
+       reads as the same paper as the rest of the site. */
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-copy::before {
+      content: '';
+      position: absolute;
+      /* up to the top of the stage, past the label and the bar's clearance */
+      inset-block-start: calc(-1 * (var(--nav-bar-h) + 3rem));
+      inset-block-end: -3.5rem;                 /* a tail to fade out in */
+      inset-inline: calc(-1 * var(--space-container));
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgb(246 243 238 / 0.94) 0%,
+        rgb(246 243 238 / 0.94) 78%,
+        rgb(246 243 238 / 0.55) 90%,
+        rgb(246 243 238 / 0) 100%
+      );
+    }
+    /* Same trick for the rules and the arrows: anchored to the FOOT, so it is
+       wherever they are. A percentage of the picture drifts away from them the
+       moment the screen height changes — the active rule measured 2.10:1
+       against a gradient fixed to the image. */
+    :global(html.js-pinned) .pinned-foot::before {
+      content: '';
+      position: absolute;
+      inset-block: -2.25rem calc(-1 * var(--stack-lg) - 1rem);
+      inset-inline: calc(-1 * var(--space-container));
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(
+        to top,
+        rgb(246 243 238 / 0.96) 0%,
+        rgb(246 243 238 / 0.96) 66%,
+        rgb(246 243 238 / 0.5) 86%,
+        rgb(246 243 238 / 0) 100%
+      );
+    }
+
+    /* Reading over a photograph: a comfortable measure, and FULL ink rather
+       than the muted grey used on plain paper. Grey on a scrimmed photograph
+       measured 2.93:1 where the frames are darkest; the same words in ink clear
+       the bar with room to spare, and the section is quiet enough that it does
+       not read as heavier. */
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text {
+      max-width: 26ch;
+      color: var(--color-text);
     }
   }
 </style>
