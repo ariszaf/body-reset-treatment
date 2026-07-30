@@ -30,7 +30,6 @@ const TARGETS = [
   ['.pinned-step.is-active h3', 'τίτλος', 4.5],
   ['.pinned-step.is-active .pinned-step-text', 'κείμενο', 4.5],
   ['.pinned-arrow[data-dir="1"]', 'βελάκι', 3],
-  ['.pinned-tick.is-active .pinned-bar', 'γραμμή', 3],
   ['.pinned-count', 'αρίθμηση', 4.5],
   ['.pinned-step.is-active .pinned-more', 'σύνδεσμος', 4.5],
 ];
@@ -123,7 +122,7 @@ for (const [name, width, height] of VIEWPORTS) {
         const bold = parseInt(cs.fontWeight, 10) >= 700;
         return {
           x: r.x, y: r.y, width: r.width, height: Math.max(r.height, 2),
-          colour: s.includes('bar') ? cs.backgroundColor : cs.color,
+          colour: cs.color,
           large: size >= 24 || (size >= 18.66 && bold),
         };
       }, selector);

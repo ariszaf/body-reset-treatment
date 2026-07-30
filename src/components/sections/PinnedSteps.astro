@@ -128,20 +128,13 @@ const hasMedia = steps.some((s) => s.image);
           </ol>
 
           <div class="pinned-foot">
-            {/* Rules only — no numbering. The brand's whole identity is two
-                hairlines, and a row of 01…06 was the one place on the page
-                speaking a different language. Decorative: the step itself is
-                already announced, so a screen reader gains nothing here. */}
-            <ol class="pinned-progress" aria-hidden="true">
-              {steps.map((_, i) => (
-                <li class="pinned-tick" data-tick={i}><span class="pinned-bar"></span></li>
-              ))}
-            </ol>
-
-            {/* Phone only. Six rules across a 360px screen come out at 12px each
-                — too small to read as progress. A count says the same thing in
-                the space of three characters. Decorative: the step itself is
-                already announced, so a screen reader gains nothing from it. */}
+            {/* A COUNT, not a row of rules. Six hairlines across a 360px screen
+                came out at 12px each and stopped reading as progress at all,
+                which is why the phone got a count first; on a desktop the rules
+                worked but said less — "one of six" is a position, six marks are
+                a decoration you have to decode. One indicator now, everywhere.
+                Decorative: the step itself is already announced, so a screen
+                reader gains nothing from it. */}
             <p class="pinned-count" aria-hidden="true"><span data-count>1</span>/{steps.length}</p>
 
             {/* Real buttons, not decoration. The section only advances when you
@@ -184,7 +177,6 @@ const hasMedia = steps.some((s) => s.image);
   .pinned-title { margin-block-start: var(--stack-md); }
   /* Both only exist in pinned mode — the stacked fallback is already a list you
      read top to bottom, with nothing to page through. */
-  .pinned-progress,
   .pinned-nav,
   .pinned-count { display: none; }
 
@@ -319,23 +311,6 @@ const hasMedia = steps.some((s) => s.image);
         var(--container-max) / 2 - var(--stack-xl) - var(--space-container)
       );
     }
-    /* And the rules have to be able to GET smaller, or they overflow the column
-       and end up back under the photograph — which is what they did: 456px of
-       hairlines inside a 296px row. */
-    .pinned-inner:has(.pinned-steps[data-media]) .pinned-progress { min-width: 0; }
-    .pinned-inner:has(.pinned-steps[data-media]) .pinned-tick {
-      /* A definite WIDTH, not a flex-basis. With only a basis the tick's
-         intrinsic contribution came from its content — a bar at `width: 100%`,
-         which against an indefinite width contributes nothing — so the row
-         measured its own max-content as 120px of gaps and the six rules
-         collapsed to zero. Measured. A real width both sizes the row and gives
-         the percentage something to resolve against. */
-      width: clamp(2rem, 5vw, 3.5rem);
-      flex-shrink: 1;
-      min-width: 0;
-    }
-    .pinned-inner:has(.pinned-steps[data-media]) .pinned-bar { width: 100%; }
-    .pinned-inner:has(.pinned-steps[data-media]) .pinned-nav { flex: none; }
     .pinned-steps[data-media] .pinned-step {
       grid-template-columns: minmax(0, 1fr);
       align-content: center;
@@ -440,13 +415,21 @@ const hasMedia = steps.some((s) => s.image);
     gap: var(--stack-md);
     margin-block-start: var(--stack-xl);
   }
-  :global(html.js-pinned) .pinned-progress {
-    display: flex;
-    gap: var(--stack-md);
-    list-style: none;
+  /* The count. Same type as a label — the 17px floor holds here as everywhere
+     — with tabular figures so the slash does not shift as 1 becomes 2, and the
+     current number in the accent so the eye lands on the position rather than
+     on the total. */
+  :global(html.js-pinned) .pinned-count {
+    display: block;
     margin: 0;
-    padding: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-label);          /* 17px floor — never smaller */
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;    /* the slash must not shift on 1→2 */
+    color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
   }
+  :global(html.js-pinned) .pinned-count [data-count] { color: var(--color-accent); }
 
   /* ------------------------------- the arrows -------------------------------
      Deliberately faint: they are for the visitor who has not realised the
@@ -489,17 +472,6 @@ const hasMedia = steps.some((s) => s.image);
     0%, 55%, 100% { transform: none; }
     72%           { transform: translateY(4px); }
   }
-  .pinned-tick { display: flex; align-items: center; }
-  .pinned-bar {
-    display: block;
-    width: clamp(2rem, 5vw, 3.5rem);
-    height: 1px;                            /* px — hairline */
-    background: var(--color-border);
-    transition: background var(--transition-base), height var(--transition-base);
-  }
-  /* The current one warms and thickens. Two device pixels is enough to read as
-     "this one" without becoming a bar. */
-  .pinned-tick.is-active .pinned-bar { background: var(--color-accent); height: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
     /* Never pin: the stacked list is the whole experience. */
@@ -515,7 +487,6 @@ const hasMedia = steps.some((s) => s.image);
       border-top: 1px solid var(--color-border);
       padding-block-start: var(--stack-md);
     }
-    :global(html.js-pinned) .pinned-progress { display: none; }
   }
   /* ------------------- pinned, one column: the phone --------------------
      LAST in the file on purpose. Every rule here overrides a base rule of the
@@ -582,25 +553,16 @@ const hasMedia = steps.some((s) => s.image);
        across 320px. They did not: flex pushed the arrows past the reserve and
        back under the call button by a few pixels. Both the rules and the gaps
        between them now scale with the screen instead of holding a fixed size. */
-    /* The rules give way to a count on a phone — see the note in the markup. */
-    :global(html.js-pinned) .pinned-progress { display: none; }
+    /* On a phone the count sits ON the photograph, so it takes the same tight
+       halo as the rest of the type over a picture. Nowhere else needs it: on a
+       desktop it is on paper and the halo is page colour on page colour. */
     :global(html.js-pinned) .pinned-count {
-      display: block;
-      margin: 0;
-      font-family: var(--font-body);
-      font-size: var(--text-label);      /* 17px floor — never smaller */
-      font-weight: 400;
-      letter-spacing: 0.08em;
-      font-variant-numeric: tabular-nums;  /* the slash must not shift on 1→2 */
-      color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
-      /* Same tight halo as the rest of the type over a photograph. */
       text-shadow:
         0 0 12px rgb(246 243 238),
         0 0 6px rgb(246 243 238),
         0 0 3px rgb(246 243 238),
         0 0 1.5px rgb(246 243 238);
     }
-    :global(html.js-pinned) .pinned-count [data-count] { color: var(--color-accent); }
 
     /* The photograph fills the stage. It stays INSIDE its step, so it still
        cross-fades with the step for free; only its box changes.
@@ -679,12 +641,11 @@ const hasMedia = steps.some((s) => s.image);
         0 0 3px rgb(246 243 238),
         0 0 1.5px rgb(246 243 238);
     }
-    /* Same idea for the marks, which are strokes rather than glyphs. */
-    :global(html.js-pinned) .pinned-progress,
+    /* Same idea for the arrows, which are strokes rather than glyphs. */
     :global(html.js-pinned) .pinned-nav {
-      /* Four rings, not two. The rules were made narrower so the row would fit a
-         320px screen, and a smaller mark carries less of its own halo — the
-         active rule fell to 2.54:1 against the darkest frames. */
+      /* Four rings, not two. A stroke this thin carries less of its own halo
+         than a letter does — the marks fell to 2.54:1 against the darkest
+         frames with only the two the type uses. */
       filter:
         drop-shadow(0 0 14px rgb(246 243 238))
         drop-shadow(0 0 8px rgb(246 243 238))
@@ -732,7 +693,6 @@ const hasMedia = steps.some((s) => s.image);
       const track = section.querySelector<HTMLElement>('.pinned-track');
       const stage = section.querySelector<HTMLElement>('.pinned-stage');
       const steps = [...section.querySelectorAll<HTMLElement>('.pinned-step')];
-      const ticks = [...section.querySelectorAll<HTMLElement>('.pinned-tick')];
       const arrows = [...section.querySelectorAll<HTMLButtonElement>('.pinned-arrow')];
       const count = section.querySelector<HTMLElement>('[data-count]');
       if (!track || !stage || steps.length < 2) return;
@@ -795,7 +755,6 @@ const hasMedia = steps.some((s) => s.image);
              five sixths of itself switched off. */
           el.toggleAttribute('inert', !on);
         });
-        ticks.forEach((el, i) => el.classList.toggle('is-active', i === index));
         if (count) count.textContent = String(index + 1);
         if (index > 0) section.removeAttribute('data-hint');
         arrows.forEach((btn) => {
