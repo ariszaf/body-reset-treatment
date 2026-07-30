@@ -41,7 +41,61 @@ export const pages: PageMeta[] = [
     excerpt: 'Μια προσέγγιση που ξεκινά από το σώμα, όχι από το πρόγραμμα — στον δικό σας χώρο.',
     inNav: true,
   },
-  // Φάση 2: ypiresies, epikoinonia
+  {
+    slug: 'ypiresies',
+    nameEl: 'Υπηρεσίες',
+    keyword: 'θεραπείες μασάζ κατ’ οίκον',
+    descriptionHint: 'Έξι θεραπείες σώματος στον δικό σας χώρο — σουηδικό, deep tissue, θεραπευτικό, sports, βεντούζες, Theragun.',
+    excerpt: 'Οι έξι θεραπείες του Body Reset Treatment, αναλυτικά — τι περιλαμβάνει η καθεμία.',
+    inNav: true,
+  },
+
+  /* One page per treatment. `nameEl` is the treatment's own name, so the title,
+     the breadcrumb and the navigation all read the same without restating it.
+     Each keyword is DISTINCT: two pages competing for the same phrase is two
+     pages ranking for neither. */
+  {
+    slug: 'ypiresies/souidiko-masaz',
+    nameEl: 'Σουηδικό μασάζ',
+    keyword: 'σουηδικό μασάζ κατ’ οίκον',
+    descriptionHint: 'Η κλασική τεχνική, σωστά εκτελεσμένη: συνεχής ροή και σταθερός ρυθμός, στον δικό σας χώρο.',
+    inNav: false,
+  },
+  {
+    slug: 'ypiresies/deep-tissue',
+    nameEl: 'Deep tissue',
+    keyword: 'deep tissue μασάζ Αθήνα',
+    descriptionHint: 'Αργή δουλειά στα βαθύτερα στρώματα, εκεί όπου η επιφανειακή πίεση δεν φτάνει.',
+    inNav: false,
+  },
+  {
+    slug: 'ypiresies/therapeftiko-masaz',
+    nameEl: 'Θεραπευτικό μασάζ',
+    keyword: 'θεραπευτικό μασάζ Αθήνα',
+    descriptionHint: 'Συνεδρία χτισμένη γύρω από ένα συγκεκριμένο σημείο που σας απασχολεί, μετά από αξιολόγηση.',
+    inNav: false,
+  },
+  {
+    slug: 'ypiresies/sports-massage',
+    nameEl: 'Sports massage',
+    keyword: 'sports massage Αθήνα',
+    descriptionHint: 'Στοχευμένη δουλειά στις μυϊκές ομάδες που καταπονούνται από την προπόνηση — αποκατάσταση.',
+    inNav: false,
+  },
+  {
+    slug: 'ypiresies/cupping-therapy',
+    nameEl: 'Cupping therapy',
+    keyword: 'cupping therapy Αθήνα',
+    descriptionHint: 'Βεντούζες σε συνδυασμό με μασάζ, για περιοχές όπου η ένταση δεν υποχωρεί με την πίεση.',
+    inNav: false,
+  },
+  {
+    slug: 'ypiresies/theragun-therapy',
+    nameEl: 'Theragun therapy',
+    keyword: 'theragun therapy Αθήνα',
+    descriptionHint: 'Κρουστική συσκευή μαζί με δουλειά στα χέρια, για γρήγορη προετοιμασία ή αποφόρτιση.',
+    inNav: false,
+  },
 
   /* Legal page — ONE combined page (Όροι + Απόρρητο + Cookies), ALWAYS present, footer-linked (spec: legal.md) */
   { slug: 'oroi-xrisis-kai-politiki-aporritou', nameEl: 'Όροι Χρήσης & Πολιτική Απορρήτου', keyword: 'όροι χρήσης πολιτική απορρήτου', descriptionHint: 'Όροι χρήσης, πολιτική απορρήτου και cookies του ιστότοπου.', inNav: false },

@@ -8,6 +8,7 @@
 import '../styles/tokens.css';
 import Header from '../components/sections/NavOverlay.astro';
 import BrandVeil from '../components/sections/BrandVeil.astro';
+import PhoneFab from '../components/PhoneFab.astro';
 import BookingDialog from '../components/sections/BookingDialog.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../content/site';
@@ -166,6 +167,8 @@ const localBusinessSchema = {
         stands down it still marks the session, so a later inner page does not
         replay an intro the visitor has already had. */}
     <BrandVeil skip={slug === ''} />
+    {/* One sticky call button, every page — phone only (PhoneFab.astro). */}
+    <PhoneFab />
     <a href="#main" class="skip-link">Μετάβαση στο περιεχόμενο</a>
     <Header />
     <main id="main">

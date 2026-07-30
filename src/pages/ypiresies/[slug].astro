@@ -1,0 +1,163 @@
+---
+/**
+ * One page per treatment, generated from services.ts.
+ *
+ * A dynamic route rather than six hand-written files: six copies of the same
+ * layout would drift, and adding a seventh treatment would mean remembering to
+ * create a page as well as a data entry. Here the data IS the page list.
+ *
+ * `getStaticPaths` runs at build time — these are six real HTML files, with
+ * their own titles, canonicals and breadcrumbs. Nothing is rendered on request.
+ *
+ * Every page also emits a `Service` JSON-LD tied to the business, which is what
+ * lets a search engine or an assistant answer "do they do cupping?" with the
+ * page rather than with a guess.
+ */
+import Layout from '@layouts/Layout.astro';
+import Container from '@components/Container.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
+import Button from '@components/Button.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import WaveRule from '@components/WaveRule.astro';
+import { services } from '@content/services';
+import { serviceImages } from '@content/images';
+import { site } from '@content/site';
+import { booking, bookingAttrs } from '@lib/booking';
+
+export function getStaticPaths() {
+  return services.map((service, i) => ({
+    params: { slug: service.slug },
+    props: {
+      service,
+      // Neighbours, so a visitor who lands here from a search has somewhere to
+      // go that is not the back button.
+      prev: services[(i - 1 + services.length) % services.length],
+      next: services[(i + 1) % services.length],
+    },
+  }));
+}
+
+const { service, prev, next } = Astro.props;
+const photo = serviceImages[service.slug];
+const paragraphs = service.description.split('\n\n');
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: service.title,
+  serviceType: service.title,
+  description: service.short,
+  areaServed: site.serviceArea,
+  provider: { '@type': 'LocalBusiness', name: site.name, url: site.url },
+  url: new URL(`/ypiresies/${service.slug}/`, site.url).href,
+};
+---
+
+<Layout slug={`ypiresies/${service.slug}`}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
+
+  <section class="py-section svc">
+    <Container>
+      <Breadcrumbs trail={[{ name: 'Υπηρεσίες', href: '/ypiresies/' }, { name: service.title }]} />
+
+      <div class="svc-head">
+        <div class="svc-copy">
+          <BrandIcon name={service.icon} class="svc-icon reveal reveal-up" />
+          <h1 class="text-h1 svc-title reveal reveal-up">{service.title}</h1>
+          <p class="text-lead svc-short reveal reveal-up">{service.short}</p>
+        </div>
+
+        <figure class="svc-media reveal reveal-up">
+          <img
+            src={photo.src}
+            alt={photo.alt}
+            width={photo.width}
+            height={photo.height}
+            loading="eager"
+            fetchpriority="high"
+            decoding="sync"
+          />
+        </figure>
+      </div>
+
+      <div class="svc-body reveal reveal-up">
+        {paragraphs.map((p) => <p class="text-card-body svc-para">{p}</p>)}
+        {service.durations && (
+          <p class="svc-durations text-label">Διάρκειες: {service.durations.join(' · ')}</p>
+        )}
+      </div>
+
+      <div class="svc-cta reveal reveal-up">
+        <Button {...bookingAttrs}>{booking.label}</Button>
+        <p class="svc-hint text-caption">{booking.hint}</p>
+      </div>
+    </Container>
+  </section>
+
+  <WaveRule />
+
+  <section class="py-section svc-near">
+    <Container>
+      <p class="text-eyebrow reveal reveal-up">Και οι υπόλοιπες</p>
+      <ul class="svc-near-list reveal reveal-up">
+        <li><a class="svc-near-link" href={`/ypiresies/${prev.slug}/`} rel="prev">← {prev.title}</a></li>
+        <li><a class="svc-near-link" href="/ypiresies/">Όλες οι θεραπείες</a></li>
+        <li><a class="svc-near-link" href={`/ypiresies/${next.slug}/`} rel="next">{next.title} →</a></li>
+      </ul>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  .svc-head { display: grid; gap: var(--stack-lg); }
+  .svc-copy :global(.svc-icon) {
+    display: block;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--color-text);
+  }
+  .svc-title { margin-block-start: var(--stack-md); color: var(--color-accent); }
+  .svc-short { margin-block-start: var(--stack-md); max-width: 34rem; color: var(--color-muted); }
+
+  .svc-media {
+    margin: 0;
+    aspect-ratio: 2 / 3;              /* the photographs' own ratio — no crop */
+    overflow: hidden;
+    background: var(--color-alt);
+  }
+  .svc-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  .svc-body { margin-block-start: var(--stack-xl); max-width: 40rem; }
+  .svc-para + .svc-para { margin-block-start: var(--stack-md); }
+  .svc-durations { margin-block-start: var(--stack-lg); color: var(--color-accent); }
+  .svc-cta { margin-block-start: var(--stack-xl); }
+  .svc-hint { margin-block-start: var(--stack-sm); }
+
+  @media (min-width: 64rem) {
+    .svc-head { grid-template-columns: 1fr 0.72fr; gap: var(--stack-xl); align-items: center; }
+    .svc-media { max-height: 62dvh; height: 62dvh; width: auto; margin-inline-start: auto; }
+  }
+
+  /* ------------------------------ neighbours ---------------------------- */
+  .svc-near { background: var(--color-alt); }
+  .svc-near-list {
+    list-style: none;
+    margin: var(--stack-md) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--stack-sm) var(--stack-lg);
+  }
+  .svc-near-link {
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-label);      /* 17px floor */
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 25%, transparent);
+    display: inline-block;
+    padding-block: 0.5em;              /* ≥40px tap target */
+  }
+  @media (hover: hover) {
+    .svc-near-link { transition: color var(--transition-base), border-color var(--transition-base); }
+    .svc-near-link:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+  }
+</style>

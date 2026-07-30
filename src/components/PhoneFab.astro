@@ -1,0 +1,127 @@
+---
+/**
+ * PhoneFab — one sticky button, bottom corner, every page. Phone only.
+ *
+ * Modelled on the ContactFab in spitaki-tis-sokolatas, stripped to what this
+ * brand can carry. Three things from that one are deliberately NOT here:
+ *
+ *   · the panel — with a single channel it is a wasted tap. Straight link.
+ *   · the pulsing rings — that button is for a parent in a hurry. This one sits
+ *     under a site whose whole argument is that nothing is rushed.
+ *   · the saturated fill — soft grey, lit almost to white, so it reads as an
+ *     object resting on the page rather than a badge stuck to it.
+ *
+ * On a phone `tel:` dials. On a desktop it does nothing at all, so the click
+ * copies the number instead and says so — otherwise the button is a dead end
+ * for exactly the visitors most likely to be researching.
+ */
+import { site } from '../content/site';
+
+const raw = site.phone ?? '';
+const e164 = raw.trim().startsWith('+') ? raw.replace(/[^\d+]/g, '') : '+30' + raw.replace(/\D/g, '');
+---
+
+{raw && (
+  <a
+    class="fab"
+    href={`tel:${e164}`}
+    data-phone={raw}
+    aria-label={`Τηλέφωνο ${raw}`}
+  >
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+      <path
+        d="M7.6 5.2c.3-.6 1-.9 1.6-.7l1.7.5c.6.2 1 .9.8 1.5l-.5 1.9c-.1.5 0 1 .4 1.3l3 3c.4.4.9.5 1.4.4l1.9-.5c.6-.2 1.3.2 1.5.8l.5 1.7c.2.6-.1 1.3-.7 1.6-1.6.8-3.5.8-5.4-.1-2.4-1.1-4.7-3.4-5.8-5.8-.9-1.9-.9-3.8-.4-5.6Z"
+        fill="currentColor"
+      />
+    </svg>
+    <span class="fab-note text-caption" data-note hidden></span>
+  </a>
+)}
+
+<style>
+  .fab {
+    position: fixed;
+    inset-block-end: max(var(--fab-inset), env(safe-area-inset-bottom));
+    inset-inline-end: var(--fab-inset);
+    z-index: 60;                       /* under the menu overlay and the dialog */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    inline-size: var(--fab-size);
+    block-size: var(--fab-size);
+    justify-content: center;
+    border-radius: 50%;
+    /* Soft grey lifted almost to white, lit from the top left — the same light
+       the photographs are shot in. */
+    background: radial-gradient(circle at 32% 26%, #ffffff 0%, #f1eeea 46%, #e4e0da 100%);
+    border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+    color: var(--color-text);
+    box-shadow: 0 0.4rem 1.1rem rgb(51 48 44 / 0.10);
+    text-decoration: none;
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
+  }
+  @media (hover: hover) {
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0.6rem 1.5rem rgb(51 48 44 / 0.16);
+      border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+    }
+  }
+  .fab:active { transform: translateY(0); }
+
+  /* The copied-number confirmation, desktop only. It widens the button into a
+     pill for a moment rather than opening anything. */
+  .fab-note[hidden] { display: none; }
+  .fab:has(.fab-note:not([hidden])) {
+    inline-size: auto;
+    border-radius: 2rem;
+    padding-inline: 1rem;
+  }
+  .fab-note { white-space: nowrap; color: var(--color-text); }
+
+  /* Out of the way while the menu covers the screen — and it must never sit on
+     top of the booking dialog. */
+  :global(html.navov-lock) .fab {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.5rem);
+  }
+  @media print { .fab { display: none !important; } }
+  @media (prefers-reduced-motion: reduce) {
+    .fab { transition: none; }
+    .fab:hover { transform: none; }
+  }
+</style>
+
+<script>
+  function bindFab() {
+    const fab = document.querySelector<HTMLAnchorElement>('.fab');
+    const note = fab?.querySelector<HTMLElement>('[data-note]');
+    if (!fab || !note || fab.dataset.bound) return;
+    fab.dataset.bound = '1';
+
+    // `tel:` is a no-op on a desktop browser. Rather than leave the click doing
+    // nothing, put the number on the clipboard and say so.
+    const isDesktop = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    fab.addEventListener('click', async (e) => {
+      if (!isDesktop()) return;                 // phone or tablet: let it dial
+      e.preventDefault();
+      const value = fab.dataset.phone || '';
+      try {
+        await navigator.clipboard.writeText(value);
+        note.textContent = 'Αντιγράφηκε';
+      } catch {
+        note.textContent = value;               // no clipboard: show it instead
+      }
+      note.hidden = false;
+      setTimeout(() => { note.hidden = true; note.textContent = ''; }, 1800);
+    });
+  }
+
+  bindFab();
+  document.addEventListener('astro:after-swap', bindFab);
+</script>

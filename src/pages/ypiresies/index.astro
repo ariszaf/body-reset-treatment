@@ -1,0 +1,109 @@
+---
+/**
+ * Υπηρεσίες — the index of the six treatments.
+ *
+ * A plain list, not a second showcase: the homepage already presents them one
+ * at a time with a photograph, and repeating that here would make the two pages
+ * compete rather than lead into each other. This one exists so every treatment
+ * has a real address of its own — for the menu, for a link someone sends, and
+ * for Google, which cannot rank a scroll position.
+ *
+ * Everything is read from services.ts + images.ts. Nothing about a treatment is
+ * written twice anywhere on this site.
+ */
+import Layout from '@layouts/Layout.astro';
+import Container from '@components/Container.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
+import BrandIcon from '@components/BrandIcon.astro';
+import { services } from '@content/services';
+import { serviceImages } from '@content/images';
+---
+
+<Layout slug="ypiresies">
+  <section class="py-section svc">
+    <Container>
+      <Breadcrumbs />
+      <p class="text-eyebrow reveal reveal-up">Οι θεραπείες</p>
+      <h1 class="text-h1 svc-title reveal reveal-up">Έξι θεραπείες, στον δικό σας χώρο</h1>
+      <p class="text-lead svc-lead reveal reveal-up">
+        Ποια ταιριάζει κρίνεται στην αξιολόγηση, στην αρχή της συνεδρίας.
+      </p>
+
+      <ul class="svc-list reveal-stagger">
+        {services.map((s) => (
+          <li class="svc-item reveal reveal-up">
+            <a class="svc-link" href={`/ypiresies/${s.slug}/`}>
+              <figure class="svc-media">
+                <img
+                  src={serviceImages[s.slug].src}
+                  alt={serviceImages[s.slug].alt}
+                  width={serviceImages[s.slug].width}
+                  height={serviceImages[s.slug].height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+              <BrandIcon name={s.icon} class="svc-icon" />
+              <h2 class="text-card-title svc-name">{s.title}</h2>
+              <p class="text-card-body svc-short">{s.short}</p>
+              <span class="svc-more" aria-hidden="true">Αναλυτικά</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  .svc-title { margin-block-start: var(--stack-md); max-width: 20ch; }
+  .svc-lead { margin-block-start: var(--stack-md); max-width: 40rem; color: var(--color-muted); }
+
+  .svc-list {
+    list-style: none;
+    margin: var(--stack-xl) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--stack-xl);
+  }
+  @media (min-width: 48rem) { .svc-list { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) { .svc-list { grid-template-columns: repeat(3, 1fr); } }
+
+  /* The whole card is the link — a "read more" that is only a few words wide is
+     a small target on a phone and a poor one for anybody using a switch. */
+  .svc-link { display: block; color: inherit; text-decoration: none; }
+  .svc-media {
+    margin: 0;
+    aspect-ratio: 2 / 3;              /* the photographs' own ratio — no crop */
+    overflow: hidden;
+    background: var(--color-alt);
+  }
+  .svc-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .svc-link :global(.svc-icon) {
+    display: block;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-block-start: var(--stack-md);
+    color: var(--color-text);
+  }
+  .svc-name { margin-block-start: var(--stack-sm); color: var(--color-accent); }
+  .svc-short { margin-block-start: var(--stack-sm); color: var(--color-muted); }
+  .svc-more {
+    display: inline-block;
+    margin-block-start: var(--stack-md);
+    font-size: var(--text-label);      /* 17px floor */
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+    padding-block-end: 0.2em;
+  }
+  @media (hover: hover) {
+    .svc-media img { transition: transform 0.6s var(--reveal-ease); }
+    .svc-link:hover .svc-media img { transform: scale(1.03); }
+    .svc-more { transition: border-color var(--transition-base), color var(--transition-base); }
+    .svc-link:hover .svc-more { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .svc-link:hover .svc-media img { transform: none; }
+  }
+</style>

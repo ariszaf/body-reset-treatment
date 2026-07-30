@@ -42,6 +42,8 @@ interface Props {
     title: string;
     text: string;
     image?: ImageEntry;
+    /** where "Αναλυτικά" goes — omit and no link is rendered */
+    href?: string;
   }[];
 }
 const { eyebrow, title, id, steps } = Astro.props;
@@ -63,6 +65,14 @@ const hasMedia = steps.some((s) => s.image);
                   {s.icon && <BrandIcon name={s.icon} class="pinned-icon" />}
                   <h3 class="text-card-title pinned-step-title">{s.title}</h3>
                   <p class="pinned-step-text">{s.text}</p>
+                  {/* Only the visible step is reachable — the script marks the
+                      others `inert`, so there are never six stacked links under
+                      one finger or six stops on the tab key. */}
+                  {s.href && (
+                    <a class="pinned-more" href={s.href}>
+                      Αναλυτικά<span aria-hidden="true"> →</span>
+                    </a>
+                  )}
                 </div>
 
                 {/* The photograph lives INSIDE the step, not in a column of its
@@ -104,12 +114,12 @@ const hasMedia = steps.some((s) => s.image);
             <div class="pinned-nav">
               <button class="pinned-arrow" type="button" data-dir="-1" aria-label="Προηγούμενη θεραπεία">
                 <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
-                  <path d="M1 7L6 2L11 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+                  <path d="M1 7L6 2L11 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                 </svg>
               </button>
               <button class="pinned-arrow" type="button" data-dir="1" aria-label="Επόμενη θεραπεία">
                 <svg width="13" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
-                  <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+                  <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
                 </svg>
               </button>
             </div>
@@ -147,6 +157,24 @@ const hasMedia = steps.some((s) => s.image);
     color: var(--color-accent);
     margin-block-start: 0;
   }
+  /* Quiet on purpose: this is a way out for someone who wants more, not a
+     call to action competing with the appointment. */
+  .pinned-more {
+    display: inline-block;
+    margin-block-start: var(--stack-md);
+    font-size: var(--text-label);      /* 17px floor */
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+    padding-block: 0.5em 0.2em;        /* ≥40px tap target */
+  }
+  @media (hover: hover) {
+    .pinned-more { transition: color var(--transition-base), border-color var(--transition-base); }
+    .pinned-more:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+  }
+
   /* A short line reads better next to a picture than a wide one. */
   .pinned-steps[data-media] .pinned-step-text {
     font-size: var(--text-card-body);
@@ -211,6 +239,12 @@ const hasMedia = steps.some((s) => s.image);
        bar on short screens. `safe` falls back to start the moment it would
        overflow, so the top edge is never sacrificed. */
     align-content: safe center;
+    /* minmax(0, 1fr), not the implicit `auto`. A grid column sized `auto` refuses
+       to go below its content's min-content width, so on a 360px phone the stage
+       was laying out 387px wide and everything inside it — including the corner
+       the sticky call button lives in — was shifted 27px off. `overflow: hidden`
+       hid the symptom perfectly: no scrollbar, no clue, just misplaced boxes. */
+    grid-template-columns: minmax(0, 1fr);
     overflow: hidden;
     /* The bar is fixed and stays over this section the whole way through. On a
        phone its logotype and the stage's eyebrow both start at the container
@@ -292,7 +326,12 @@ const hasMedia = steps.some((s) => s.image);
     border: 0;
     background: none;
     cursor: pointer;
-    color: color-mix(in srgb, var(--color-text) 40%, transparent);
+    /* An OPAQUE mix toward the page colour, not ink faded with `transparent`.
+       A translucent glyph takes its final colour from whatever is behind it, so
+       over a photograph it is darker or lighter frame by frame and there is no
+       single value to hold to a contrast standard. This mixes to a real colour
+       that is the same everywhere, and the halo below sits under it. */
+    color: color-mix(in srgb, var(--color-text) 74%, var(--color-bg));
   }
   .pinned-arrow[disabled] { opacity: 0.25; cursor: default; }
   @media (hover: hover) {
@@ -358,9 +397,21 @@ const hasMedia = steps.some((s) => s.image);
       display: flex;
       flex-direction: column;
       width: 100%;
-      padding-block-end: var(--stack-lg);
+      padding-block-end: var(--stack-md);
     }
-    :global(html.js-pinned) .pinned-foot { margin-block-start: auto; }
+    /* No description on a phone. The screen is the photograph's, and the name
+       plus a way in is all that fits without eating into it. The sentence is
+       not lost — it opens the treatment's own page, one tap away. */
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text { display: none; }
+    :global(html.js-pinned) .pinned-foot {
+      margin-block-start: auto;
+      /* Room for the sticky call button, which is fixed in this same corner.
+         Reserved here rather than by moving the button, because the button is on
+         every page and this row is the only thing that ever reaches it. */
+      padding-inline-end: calc(
+        var(--fab-size) + var(--fab-inset) - var(--space-container) + var(--stack-md)
+      );
+    }
     :global(html.js-pinned) .pinned-steps { margin-block-start: var(--stack-md); }
     :global(html.js-pinned) .pinned-eyebrow { margin: 0; }
     /* Up and down side by side rather than stacked — saves height, and a pager
@@ -369,8 +420,12 @@ const hasMedia = steps.some((s) => s.image);
     /* Six desktop-width rules plus two 44px buttons come to more than a phone is
        wide, and the stage's `overflow: hidden` was quietly swallowing the arrows
        off the right edge — present in the DOM, impossible to press. */
-    :global(html.js-pinned) .pinned-progress { gap: var(--stack-sm); }
-    :global(html.js-pinned) .pinned-bar { width: clamp(1.1rem, 4vw, 2rem); }
+    /* Six rules + two 44px buttons + the button's reserved corner must all fit
+       across 320px. They did not: flex pushed the arrows past the reserve and
+       back under the call button by a few pixels. Both the rules and the gaps
+       between them now scale with the screen instead of holding a fixed size. */
+    :global(html.js-pinned) .pinned-progress { gap: clamp(0.4rem, 2vw, 0.75rem); }
+    :global(html.js-pinned) .pinned-bar { width: clamp(0.75rem, 3.2vw, 2rem); }
 
     /* The photograph fills the stage. It stays INSIDE its step, so it still
        cross-fades with the step for free; only its box changes.
@@ -457,24 +512,9 @@ const hasMedia = steps.some((s) => s.image);
         rgb(246 243 238 / 0) 100%
       );
     }
-    /* Same trick for the rules and the arrows: anchored to the FOOT, so it is
-       wherever they are. A percentage of the picture drifts away from them the
-       moment the screen height changes — the active rule measured 2.10:1
-       against a gradient fixed to the image. */
-    :global(html.js-pinned) .pinned-foot::before {
-      content: '';
-      position: absolute;
-      inset-block: -1.5rem calc(-1 * var(--stack-lg) - 1rem);
-      inset-inline: calc(-1 * var(--space-container));
-      z-index: -1;
-      pointer-events: none;
-      background: linear-gradient(
-        to top,
-        rgb(246 243 238 / var(--scrim, 0.34)) 0%,
-        rgb(246 243 238 / var(--scrim, 0.34)) 70%,
-        rgb(246 243 238 / 0) 100%
-      );
-    }
+    /* No scrim at the bottom. It was lightening the foot of every frame and the
+       picture stopped reaching the edge of the screen; the marks carry their own
+       halo (below), which is enough on its own — measured. */
 
     /* The halo. Three stacked shadows rather than one: a wide soft pool to lift
        a dark background, and two tight ones to keep the letter edges crisp
@@ -492,9 +532,13 @@ const hasMedia = steps.some((s) => s.image);
     /* Same idea for the marks, which are strokes rather than glyphs. */
     :global(html.js-pinned) .pinned-progress,
     :global(html.js-pinned) .pinned-nav {
+      /* Four rings, not two. The rules were made narrower so the row would fit a
+         320px screen, and a smaller mark carries less of its own halo — the
+         active rule fell to 2.54:1 against the darkest frames. */
       filter:
-        drop-shadow(0 0 10px rgb(246 243 238))
-        drop-shadow(0 0 5px rgb(246 243 238))
+        drop-shadow(0 0 14px rgb(246 243 238))
+        drop-shadow(0 0 8px rgb(246 243 238))
+        drop-shadow(0 0 4px rgb(246 243 238))
         drop-shadow(0 0 2px rgb(246 243 238));
     }
 
@@ -572,6 +616,15 @@ const hasMedia = steps.some((s) => s.image);
           // Only the visible step is exposed; the others are duplicates to a reader.
           if (on) el.removeAttribute('aria-hidden');
           else el.setAttribute('aria-hidden', 'true');
+          /* `inert` as well as aria-hidden, because of the link inside.
+             `visibility: hidden` does take an element out of the tab order — but
+             it is transitioned here with a 0.55s delay, so during every swap two
+             steps are briefly visible and BOTH their links are tabbable. A real
+             keyboard test found eleven reachable "Αναλυτικά" links where there
+             should have been one. `inert` is not transitioned and not negotiable.
+             Set from JS only: without it the plain stacked fallback would have
+             five sixths of itself switched off. */
+          el.toggleAttribute('inert', !on);
         });
         ticks.forEach((el, i) => el.classList.toggle('is-active', i === index));
         if (index > 0) section.removeAttribute('data-hint');

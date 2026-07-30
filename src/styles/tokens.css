@@ -101,6 +101,12 @@
   --nav-logo: clamp(4.5rem, 8.5vw, 7.5rem);
   --nav-bar-h: calc(var(--nav-logo) + var(--nav-edge) * 2);
 
+  /* Sticky call button geometry — ONE source. The button is fixed in the bottom
+     corner on every page; anything else that reaches that corner reserves space
+     from THESE, so the two can never overlap by a few pixels again. */
+  --fab-size: 3.25rem;
+  --fab-inset: 1.1rem;
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
@@ -177,6 +183,10 @@
     white-space: nowrap;
     border: 0;
   }
+}
+
+@media (min-width: 46rem) {
+  :root { --fab-size: 3.5rem; --fab-inset: 1.6rem; }
 }
 
 /* ---- Finish utilities (THEME-OPTIONS lists 16/18 — imagery & backgrounds) ---- */
