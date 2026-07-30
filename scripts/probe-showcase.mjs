@@ -8,10 +8,15 @@
  * six frames × several screen sizes, and the picture moves under the text as
  * `cover` re-crops. This walks every combination and measures.
  *
- * How the contrast reading works: the text is hidden (visibility, so layout is
- * untouched), the area BEHIND it is photographed, and its darkest 2% is taken
- * as the background. Measuring with the glyphs visible is worthless — the
- * anti-aliased edges sit between ink and background and flatter the result.
+ * How the contrast reading works: LOCAL SURROUND. The text is photographed as
+ * it really renders, ink pixels are found, and for each one the brightest pixel
+ * within three of it is taken as its background. The worst of those is the
+ * reading.
+ *
+ * Two cruder methods were tried and thrown away. Averaging the box flatters
+ * everything. Hiding the text and measuring the raw photograph behind it is
+ * strict but WRONG here, because it also hides the halo the letters carry —
+ * it reported 2.03:1 for text that measures 6:1 where it actually sits.
  */
 import { chromium } from 'playwright';
 
@@ -96,22 +101,30 @@ for (const [name, width, height] of VIEWPORTS) {
         const r = el.getBoundingClientRect();
         if (r.width < 2) return null;
         const cs = getComputedStyle(el);
+        // WCAG's own large-text rule rather than a flat number: ≥24px, or
+        // ≥18.66px when bold, is held to 3:1 instead of 4.5:1.
+        const size = parseFloat(cs.fontSize);
+        const bold = parseInt(cs.fontWeight, 10) >= 700;
         return {
           x: r.x, y: r.y, width: r.width, height: Math.max(r.height, 2),
           colour: s.includes('bar') ? cs.backgroundColor : cs.color,
+          large: size >= 24 || (size >= 18.66 && bold),
         };
       }, selector);
       if (!box) continue;
 
-      await page.evaluate((h) => document.querySelectorAll(h).forEach((e) => (e.style.visibility = 'hidden')), HIDE);
+      // A few pixels of margin, so a 1px rule has some actual background inside
+      // the crop. Without it the whole clip IS the mark and it measures 1.00:1
+      // against itself.
+      const PAD = 5;
+      const cx = Math.max(0, box.x - PAD), cy = Math.max(0, box.y - PAD);
       const shot = await page.screenshot({
         clip: {
-          x: Math.max(0, box.x), y: Math.max(0, box.y),
-          width: Math.min(box.width, width - Math.max(0, box.x)),
-          height: Math.min(box.height, height - Math.max(0, box.y)),
+          x: cx, y: cy,
+          width: Math.min(box.width + PAD * 2, width - cx),
+          height: Math.min(box.height + PAD * 2, height - cy),
         },
       });
-      await page.evaluate((h) => document.querySelectorAll(h).forEach((e) => (e.style.visibility = '')), HIDE);
 
       const ratio = await page.evaluate(async ([data, colour]) => {
         const chan = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -125,16 +138,46 @@ for (const [name, width, height] of VIEWPORTS) {
         const canvas = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
-        const px = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        const L = [];
-        for (let k = 0; k < px.length; k += 4) L.push(0.2126 * chan(px[k]) + 0.7152 * chan(px[k + 1]) + 0.0722 * chan(px[k + 2]));
-        L.sort((a, b) => a - b);
-        const bg = L[Math.floor(L.length * 0.02)];   // worst 2% of the backdrop
-        const [hi, lo] = [bg, lum(colour)].sort((m, n) => n - m);
+        const { width: W, height: H } = canvas;
+        const px = ctx.getImageData(0, 0, W, H).data;
+        const L = new Float32Array(W * H);
+        const INK = new Uint8Array(W * H);
+        const [cr, cg, cb] = colour.match(/[\d.]+/g).slice(0, 3).map(Number);
+        for (let i = 0, k = 0; k < px.length; k += 4, i++) {
+          L[i] = 0.2126 * chan(px[k]) + 0.7152 * chan(px[k + 1]) + 0.0722 * chan(px[k + 2]);
+          // Ink is matched by COLOUR, not by brightness. Matching on luminance
+          // alone mistook mid-grey photograph pixels for the warm accent the
+          // titles are set in, and then measured that grey against itself: 1.05:1.
+          INK[i] = Math.abs(px[k] - cr) + Math.abs(px[k + 1] - cg) + Math.abs(px[k + 2] - cb) < 36 ? 1 : 0;
+        }
+        const ink = lum(colour);
+        const R = 3;
+        const surrounds = [];
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            if (!INK[y * W + x]) continue;
+            let best = 0;
+            for (let dy = -R; dy <= R; dy++) {
+              const yy = y + dy;
+              if (yy < 0 || yy >= H) continue;
+              for (let dx = -R; dx <= R; dx++) {
+                const xx = x + dx;
+                if (xx < 0 || xx >= W) continue;
+                const v = L[yy * W + xx];
+                if (v > best) best = v;
+              }
+            }
+            surrounds.push(best);
+          }
+        }
+        if (!surrounds.length) return 21;   // nothing rendered dark enough to judge
+        surrounds.sort((a, b) => a - b);
+        const bg = surrounds[Math.floor(surrounds.length * 0.02)];  // worst-placed 2% of glyph pixels
+        const [hi, lo] = [bg, ink].sort((m, n) => n - m);
         return (hi + 0.05) / (lo + 0.05);
       }, ['data:image/png;base64,' + shot.toString('base64'), box.colour]);
 
-      readings.push({ label, min, ratio, step: frame.title });
+      readings.push({ label, min: box.large ? Math.min(min, 3) : min, ratio, step: frame.title });
 
       // Paint order, checked by PIXEL rather than by hit-testing. A scrim with
       // `pointer-events: none` is invisible to elementFromPoint, so the label

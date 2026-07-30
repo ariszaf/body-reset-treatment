@@ -389,7 +389,19 @@ const hasMedia = steps.some((s) => s.image);
        label. `pointer-events: none` on that scrim meant hit-testing still
        reported the label on top — the check passed while the label was being
        washed out on screen. */
-    :global(html.js-pinned) .pinned-eyebrow { position: relative; z-index: 2; }
+    :global(html.js-pinned) .pinned-eyebrow {
+      position: relative;
+      z-index: 2;
+      /* Ink, not accent. The gold tops out at 5.1:1 even on clean paper, and at
+         17px with wide tracking there is not enough of it per glyph for a halo
+         to carry over a photograph. The gold stays where it was asked for — on
+         the treatment's NAME. */
+      color: var(--color-text);
+    }
+    /* Bold over a photograph. It is also what lets the name be judged as large
+       text (≥18.66px bold → 3:1) instead of body copy, which is the honest
+       reading for a 19px semibold heading. */
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-title { font-weight: 700; }
 
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
       position: absolute;
@@ -412,18 +424,15 @@ const hasMedia = steps.some((s) => s.image);
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media img {
       object-position: center;
     }
-    /* Words over a photograph need a floor under them. A scrim pinned to the
-       PICTURE was the first attempt and it failed the measurement: the copy is
-       a fixed number of pixels tall but the screen is not, so on a 640px phone
-       the third line landed below where the gradient had faded — 1.01:1.
+    /* Legibility over the photograph, with the photograph left alone.
+       The scrim used to run at 0.96 and turned the top third of every frame
+       into a cream band — the picture stopped reading as full screen. It is now
+       barely there (0.34): enough to lift the darkest corners the text clips,
+       not enough to see.
 
-       So the scrim is pinned to the TEXT instead. It grows with the copy, ends
-       just below it, and reaches up past the label to the top of the screen.
-       Whatever the frame or the screen height, it is exactly as tall as the
-       words it has to carry.
-
-       It is the PAGE colour, not a grey wash, so the top of the screen still
-       reads as the same paper as the rest of the site. */
+       The work is done instead by a HALO on the glyphs themselves — a few
+       pixels of page colour around each letter. It costs nothing outside the
+       letterforms, so the frame behind stays a photograph. */
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-copy::before {
       content: '';
       position: absolute;
@@ -443,8 +452,8 @@ const hasMedia = steps.some((s) => s.image);
          text need lifting, and the measurement says that takes about 0.6. */
       background: linear-gradient(
         to bottom,
-        rgb(246 243 238 / var(--scrim, 0.96)) 0%,
-        rgb(246 243 238 / var(--scrim, 0.96)) 89%,
+        rgb(246 243 238 / var(--scrim, 0.34)) 0%,
+        rgb(246 243 238 / var(--scrim, 0.34)) 89%,
         rgb(246 243 238 / 0) 100%
       );
     }
@@ -461,17 +470,36 @@ const hasMedia = steps.some((s) => s.image);
       pointer-events: none;
       background: linear-gradient(
         to top,
-        rgb(246 243 238 / var(--scrim, 0.96)) 0%,
-        rgb(246 243 238 / var(--scrim, 0.96)) 70%,
+        rgb(246 243 238 / var(--scrim, 0.34)) 0%,
+        rgb(246 243 238 / var(--scrim, 0.34)) 70%,
         rgb(246 243 238 / 0) 100%
       );
     }
 
+    /* The halo. Three stacked shadows rather than one: a wide soft pool to lift
+       a dark background, and two tight ones to keep the letter edges crisp
+       against it. Page colour, so it reads as light rather than as a glow. */
+    :global(html.js-pinned) .pinned-eyebrow,
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-title,
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text {
+      text-shadow:
+        0 0 26px rgb(246 243 238),
+        0 0 16px rgb(246 243 238),
+        0 0 9px rgb(246 243 238),
+        0 0 4px rgb(246 243 238),
+        0 0 2px rgb(246 243 238);
+    }
+    /* Same idea for the marks, which are strokes rather than glyphs. */
+    :global(html.js-pinned) .pinned-progress,
+    :global(html.js-pinned) .pinned-nav {
+      filter:
+        drop-shadow(0 0 10px rgb(246 243 238))
+        drop-shadow(0 0 5px rgb(246 243 238))
+        drop-shadow(0 0 2px rgb(246 243 238));
+    }
+
     /* Reading over a photograph: a comfortable measure, and FULL ink rather
-       than the muted grey used on plain paper. Grey on a scrimmed photograph
-       measured 2.93:1 where the frames are darkest; the same words in ink clear
-       the bar with room to spare, and the section is quiet enough that it does
-       not read as heavier. */
+       than the muted grey used on plain paper. */
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text {
       /* The full column, deliberately. A narrower measure reads better on
          paper, but here it wraps the same sentence onto three lines instead of
