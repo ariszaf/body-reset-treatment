@@ -54,9 +54,12 @@ const e164 = raw.trim().startsWith('+') ? raw.replace(/[^\d+]/g, '') : '+30' + r
     /* Soft grey lifted almost to white, lit from the top left — the same light
        the photographs are shot in. */
     background: radial-gradient(circle at 32% 26%, #ffffff 0%, #f1eeea 46%, #e4e0da 100%);
-    border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-    color: var(--color-text);
-    box-shadow: 0 0.4rem 1.1rem rgb(51 48 44 / 0.10);
+    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    /* NOT full ink. A black glyph on a near-white disc is the loudest thing on
+       a page whose whole palette is warm off-white — softened to a grey that
+       still measures over 4:1 on the button's own surface. */
+    color: color-mix(in srgb, var(--color-text) 68%, var(--color-bg));
+    box-shadow: 0 0.4rem 1.1rem rgb(51 48 44 / 0.08);
     text-decoration: none;
     transition:
       transform var(--transition-base),
@@ -80,7 +83,7 @@ const e164 = raw.trim().startsWith('+') ? raw.replace(/[^\d+]/g, '') : '+30' + r
     border-radius: 2rem;
     padding-inline: 1rem;
   }
-  .fab-note { white-space: nowrap; color: var(--color-text); }
+  .fab-note { white-space: nowrap; color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg)); }
 
   /* Out of the way while the menu covers the screen — and it must never sit on
      top of the booking dialog. */

@@ -46,21 +46,26 @@ const LOCALES = [
 </p>
 
 <style>
+  /* Deliberately faint. The size cannot go below 17px — that floor is a project
+     rule and it holds for a language mark as much as for body copy — so the
+     quiet comes from everything else: normal weight instead of medium, ordinary
+     tracking instead of the signature 0.22em, and colour well off full ink.
+     Together they read far smaller than the number suggests. */
   .lang {
     display: inline-flex;
     align-items: center;
-    gap: 0.45em;
+    gap: 0.4em;
     margin: 0;
     font-family: var(--font-body);
     font-size: var(--text-label);        /* 17px floor — never smaller */
-    font-weight: 500;
-    letter-spacing: var(--tracking-wide);
+    font-weight: 400;
+    letter-spacing: 0.06em;
     line-height: 1;
     white-space: nowrap;
   }
-  .lang-opt { color: color-mix(in srgb, currentColor 45%, transparent); }
-  .lang-opt[data-current] { color: currentColor; }
-  .lang-sep { color: color-mix(in srgb, currentColor 28%, transparent); }
+  .lang-opt { color: color-mix(in srgb, currentColor 32%, transparent); }
+  .lang-opt[data-current] { color: color-mix(in srgb, currentColor 62%, transparent); }
+  .lang-sep { color: color-mix(in srgb, currentColor 20%, transparent); }
 
   /* In the bar it inherits the bar's ink, which flips with the hero. */
   .lang--bar { color: inherit; transition: color var(--transition-base); }

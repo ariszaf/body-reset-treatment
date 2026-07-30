@@ -65,15 +65,21 @@ const hasMedia = steps.some((s) => s.image);
                   {s.icon && <BrandIcon name={s.icon} class="pinned-icon" />}
                   <h3 class="text-card-title pinned-step-title">{s.title}</h3>
                   <p class="pinned-step-text">{s.text}</p>
-                  {/* Only the visible step is reachable — the script marks the
-                      others `inert`, so there are never six stacked links under
-                      one finger or six stops on the tab key. */}
-                  {s.href && (
-                    <a class="pinned-more" href={s.href}>
-                      Αναλυτικά<span aria-hidden="true"> →</span>
-                    </a>
-                  )}
                 </div>
+
+                {/* A sibling of the copy, not a child of it. On a phone it is
+                    positioned down by the arrows, and the copy carries
+                    `position: relative` for its own scrim — which would have
+                    made it the link's containing block and pinned the link to
+                    the top of the screen instead.
+                    Only the visible step is reachable: the script marks the
+                    others `inert`, so there are never six stacked links under
+                    one finger or six stops on the tab key. */}
+                {s.href && (
+                  <a class="pinned-more" href={s.href}>
+                    Περισσότερα για την υπηρεσία<span aria-hidden="true"> →</span>
+                  </a>
+                )}
 
                 {/* The photograph lives INSIDE the step, not in a column of its
                     own. That way it swaps with the step for free in pinned mode,
@@ -159,16 +165,27 @@ const hasMedia = steps.some((s) => s.image);
   }
   /* Quiet on purpose: this is a way out for someone who wants more, not a
      call to action competing with the appointment. */
+  /* Smaller in every way that is available. 17px is the project's hard floor and
+     it is not crossed — so the weight comes off, the uppercase and the 0.22em
+     tracking go, and the rule under it thins. It reads as an aside rather than
+     as a second call to action. */
   .pinned-more {
     display: inline-block;
     margin-block-start: var(--stack-md);
-    font-size: var(--text-label);      /* 17px floor */
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-    color: var(--color-text);
+    font-size: var(--text-label);      /* 17px floor — never smaller */
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
     text-decoration: none;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
-    padding-block: 0.5em 0.2em;        /* ≥40px tap target */
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+    /* The visual weight is light; the TARGET is not. Padding alone left it at
+       ~34px, which the launch gate caught. min-height plus a negative margin
+       gives a finger 44px without moving anything on screen. */
+    padding-block: 0.5em 0.15em;
+    min-block-size: 2.75rem;
+    display: inline-flex;
+    align-items: flex-end;
+    margin-block-end: -0.55rem;
   }
   @media (hover: hover) {
     .pinned-more { transition: color var(--transition-base), border-color var(--transition-base); }
@@ -208,14 +225,30 @@ const hasMedia = steps.some((s) => s.image);
     .pinned-steps[data-media] .pinned-step {
       display: grid;
       grid-template-columns: 1fr 0.78fr;
-      gap: var(--stack-xl);
+      gap: 0 var(--stack-xl);
       align-items: center;
     }
+    /* The picture spans both rows; the link sits under the copy in column one.
+       The two text rows are pulled to the boundary between them (`end` then
+       `start`) instead of each being centred in its own row — otherwise the
+       picture's height stretches the rows apart and the link floats halfway
+       down the screen, unattached to the words it belongs to. */
+    .pinned-steps[data-media] .pinned-step-media { grid-area: 1 / 2 / 3 / 3; }
+    .pinned-steps[data-media] .pinned-step-copy { grid-area: 1 / 1 / 2 / 2; align-self: end; }
+    .pinned-steps[data-media] .pinned-more {
+      grid-area: 2 / 1 / 3 / 2;
+      align-self: start;
+      justify-self: start;
+    }
+    /* On a wide screen the label sits BESIDE the bar's logotype, not under it,
+       so the stage does not need to clear the bar's full height the way a phone
+       does. Reclaiming that space is what lets the photograph be properly large
+       — it was 340px wide in a 1440px window, which is a thumbnail. */
+    :global(html.js-pinned) .pinned-stage { padding-block-start: var(--stack-lg); }
     .pinned-steps[data-media] .pinned-step-media {
       margin: 0;
-      /* 58dvh is the look; the second term is the promise that it fits. Two
-         columns, so the chrome above and below is only about 14rem. */
-      height: min(58dvh, calc(100dvh - var(--nav-bar-h) - 14rem));
+      /* The first term is the look, the second is the promise that it fits. */
+      height: min(74svh, calc(100svh - 15rem));
       width: auto;
       max-width: 100%;
       margin-inline-start: auto;
@@ -225,14 +258,22 @@ const hasMedia = steps.some((s) => s.image);
   /* --------------------------- pinned mode (JS on) -------------------------- */
   :global(html.js-pinned) .pinned { padding-block: 0; }
   :global(html.js-pinned) .pinned-track {
-    /* One viewport of scroll buys one step. */
-    height: calc(var(--steps) * 100dvh);
+    /* One viewport of scroll buys one step.
+
+       svh, NOT dvh. On a phone `dvh` changes as the address bar hides and
+       shows, so mid-scroll this track and the stage inside it were being
+       remeasured — the pin appeared to stick, then jump, exactly where the
+       browser chrome animates. `svh` is the SMALL viewport: it does not move,
+       so the geometry the progress maths reads stays still. The cost is a strip
+       of extra height while the bar is hidden; that is invisible here because
+       the stage is centred inside it. */
+    height: calc(var(--steps) * 100svh);
     position: relative;
   }
   :global(html.js-pinned) .pinned-stage {
     position: sticky;
     top: 0;
-    height: 100dvh;
+    height: 100svh;
     display: grid;
     /* SAFE centre. Plain `center` centres content that is taller than its box by
        overflowing it EQUALLY — which pushed the eyebrow up underneath the fixed
@@ -403,6 +444,28 @@ const hasMedia = steps.some((s) => s.image);
        plus a way in is all that fits without eating into it. The sentence is
        not lost — it opens the treatment's own page, one tap away. */
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text { display: none; }
+
+    /* The link moves to the bottom, just above the rules. Absolute against the
+       STAGE — the step is not positioned, so there is nothing in between — which
+       means all six stack in the same spot and only the active one is visible,
+       exactly like the photographs. */
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-more {
+      position: absolute;
+      /* The containing block is the STAGE, which is full-bleed — so the gutter
+         has to be added back by hand or the link sits flush against the screen
+         edge while every other line starts at the text column. */
+      inset-inline-start: var(--space-container);
+      inset-block-end: calc(var(--stack-md) + var(--fab-size) + var(--stack-sm));
+      margin: 0;
+      z-index: 1;
+      /* Same halo as the rest of the type over a photograph. */
+      text-shadow:
+        0 0 26px rgb(246 243 238),
+        0 0 16px rgb(246 243 238),
+        0 0 9px rgb(246 243 238),
+        0 0 4px rgb(246 243 238),
+        0 0 2px rgb(246 243 238);
+    }
     :global(html.js-pinned) .pinned-foot {
       margin-block-start: auto;
       /* Room for the sticky call button, which is fixed in this same corner.

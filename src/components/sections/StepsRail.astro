@@ -140,8 +140,15 @@ const { eyebrow, title, id, steps } = Astro.props;
       grid-auto-flow: column;
       grid-auto-columns: 80%;             /* the next card is clearly started */
       overflow-x: auto;
-      overscroll-behavior-x: contain;     /* swiping the rail must not drag the page */
-      scroll-snap-type: x mandatory;
+      /* No `overscroll-behavior-x: contain` here. It stops the gesture reaching
+         the page, which is right for a full-screen carousel and wrong for a
+         strip inside an article — the page should keep moving if the finger
+         drifts off-axis. */
+      /* PROXIMITY, not mandatory. Mandatory forces a landing on every gesture,
+         which on a real phone turns a mostly-vertical swipe that starts on the
+         rail into a fight between the two axes. Proximity snaps when you meant
+         to, and gets out of the way when you did not. */
+      scroll-snap-type: x proximity;
       scroll-padding-inline-start: var(--space-container);
       gap: var(--stack-md);
       /* The peeking card and the dots are the affordance; the bar is noise. */
