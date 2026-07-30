@@ -153,17 +153,21 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
      the place it will stay, and the photograph then materialises behind it.
 
      Sequence (no JavaScript, no listener — just delays):
-       0.35s  the mark begins to draw
-       1.10s  the photograph starts to arrive, while the wordmark is still
-              settling — overlapping reads as one gesture, not two
-       2.62s  the mark is whole and stays whole
-       3.20s  the photograph is fully there
+       0.25s  the mark begins to draw
+       0.75s  the photograph starts to arrive, while the mark is still forming —
+              overlapping reads as one gesture, not two
+       1.45s  the mark is whole and stays whole
+       2.25s  the photograph is fully there
+
+     It used to run at 1.6× this speed and finish at 3.2s. That was too slow to
+     wait through: the wave drew almost to the end before anything else moved,
+     which reads as the page having stalled rather than as an opening.
 
      This REPLACES the full-screen veil on this page rather than adding to it.
      The veil held the screen for ~3.0s AND locked scrolling; this holds nothing
      — the page is readable and scrollable from the first frame. */
-  .hero-frames { animation: heroPhotoIn 2.1s var(--reveal-ease) 1.1s both; }
-  .hero-scrim  { animation: heroScrimIn 2.1s var(--reveal-ease) 1.1s both; }
+  .hero-frames { animation: heroPhotoIn 1.5s var(--reveal-ease) 0.75s both; }
+  .hero-scrim  { animation: heroScrimIn 1.5s var(--reveal-ease) 0.75s both; }
 
   @keyframes heroPhotoIn {
     from { opacity: 0; transform: scale(1.035); }
@@ -263,10 +267,10 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
      veil. That coupling also had a latent bug: `intro-ran` survives a view
      transition, so arriving at the homepage FROM an inner page inherited a
      3.3-second wait with no veil on screen to justify it. */
-  .hero-mark { --draw-speed: 1.6; --draw-delay: 0.35s; }
+  .hero-mark { --draw-speed: 1; --draw-delay: 0.25s; }
 
   /* The cue arrives once the photograph is there — it points into a picture. */
-  .hero-cue { animation: heroIn 1.9s var(--reveal-ease) 2.6s both; }
+  .hero-cue { animation: heroIn 1.4s var(--reveal-ease) 1.9s both; }
   @keyframes heroIn {
     from { opacity: 0; filter: blur(7px); transform: translateY(14px); }
     to   { opacity: 1; filter: none;      transform: none; }

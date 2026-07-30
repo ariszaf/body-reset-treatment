@@ -17,7 +17,7 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.QA_BASE || 'http://localhost:4321';
-const TIMES = [0.0, 0.9, 1.5, 2.1, 2.7, 3.4, 30.0];
+const TIMES = [0.0, 0.45, 0.75, 1.05, 1.25, 2.4, 30.0];
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -105,16 +105,16 @@ const whole = (r) => r.wave >= 99 && traced(r) >= 99 && r.word === 1 && r.sub ==
 const checks = [
   ['στο 0.0s η οθόνη είναι κενή — ούτε σήμα ούτε φωτογραφία',
     at(0.0).wave === 0 && traced(at(0.0)) === 0 && at(0.0).word === 0 && at(0.0).photo === 0],
-  ['το κύμα ανοίγει πρώτο', at(0.9).wave > 0 && traced(at(0.9)) === 0],
-  ['η κάθετος ΑΚΟΛΟΥΘΕΙ, δεν συμπίπτει', traced(at(1.5)) < traced(at(2.1))],
-  ['το κύμα προηγείται της κάθετου', at(1.5).wave > traced(at(1.5))],
-  ['η φωτογραφία ξεκινά ΑΦΟΥ έχει αρχίσει το σήμα', at(0.9).photo === 0 && at(1.5).photo > 0],
-  ['η φωτογραφία έρχεται σταδιακά, όχι απότομα', at(1.5).photo < 0.6 && at(1.5).photo > 0],
-  ['το BODY RESET έρχεται μετά την κάθετο', at(2.1).word > 0 && at(1.5).word === 0],
+  ['το κύμα ανοίγει πρώτο', at(0.45).wave > 0 && traced(at(0.45)) === 0],
+  ['η κάθετος ΑΚΟΛΟΥΘΕΙ, δεν συμπίπτει', traced(at(0.75)) < traced(at(1.05))],
+  ['το κύμα προηγείται της κάθετου', at(0.75).wave > traced(at(0.75))],
+  ['η φωτογραφία ξεκινά ΑΦΟΥ έχει αρχίσει το σήμα', at(0.45).photo === 0 && at(1.05).photo > 0],
+  ['η φωτογραφία έρχεται σταδιακά, όχι απότομα', at(1.05).photo < 0.6 && at(1.05).photo > 0],
+  ['το BODY RESET έρχεται μετά την κάθετο', at(1.05).word > 0 && at(0.75).word === 0],
   // "last" means it LAGS the wordmark, not that it finishes at a later sample —
-  // by 2.7s both have landed, so comparing end states proves nothing.
-  ['το TREATMENT έρχεται τελευταίο', at(2.1).sub > 0 && at(2.1).sub < at(2.1).word],
-  ['στα 3.4s όλα στη θέση τους', whole(at(3.4)) && at(3.4).photo === 1],
+  // once both have landed, comparing end states proves nothing.
+  ['το TREATMENT έρχεται τελευταίο', at(1.05).sub > 0 && at(1.05).sub < at(1.05).word],
+  ['στα 2.4s όλα στη θέση τους', whole(at(2.4)) && at(2.4).photo === 1],
   ['ΣΤΑ 30s ΕΞΑΚΟΛΟΥΘΕΙ ολόκληρο — δεν ξαναρχίζει', whole(at(30.0)) && at(30.0).photo === 1],
   ['καμία κίνηση του ανοίγματος δεν επαναλαμβάνεται',
     Object.values(read.iterations).every((v) => v === '1')],
