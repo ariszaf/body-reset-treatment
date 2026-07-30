@@ -87,14 +87,40 @@ const hasMedia = steps.some((s) => s.image);
                     own picture instead of all of them sharing one slot. */}
                 {s.image && (
                   <figure class="pinned-step-media">
-                    <img
-                      src={s.image.src}
-                      alt={s.image.alt}
-                      width={s.image.width}
-                      height={s.image.height}
-                      loading={i === 0 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
+                    <picture>
+                      {/* A DIFFERENT CUT, not a bigger file. From 64rem up the
+                          picture fills half the window, and the 2:3 frame would
+                          lose a third of its height to `cover`, taken from the
+                          middle, which is where the heads are. The wide frame
+                          has that third removed on purpose — see
+                          make-wide-crops.py.
+
+                          The ASPECT test is not decoration. Which cut fits
+                          depends on the window's shape, because the box is half
+                          its width by all of its height: on a 4:3 laptop that
+                          box is 2:3 exactly and the original arrives whole,
+                          while the wide cut would lose a quarter of its sides.
+                          Measured: 25% at 1024×768, 0% with this test in place.
+                          3/2 is the crossover — above it the box is square
+                          enough that the wide cut is the one that survives. */}
+                      {s.image.wide && (
+                        <source
+                          media="(min-width: 64rem) and (min-aspect-ratio: 3/2)"
+                          srcset={s.image.wide.src}
+                          width={s.image.wide.width}
+                          height={s.image.wide.height}
+                        />
+                      )}
+                      <img
+                        src={s.image.src}
+                        alt={s.image.alt}
+                        width={s.image.width}
+                        height={s.image.height}
+                        loading={i === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        style={s.image.focus ? `--img-focus:${s.image.focus}` : undefined}
+                      />
+                    </picture>
                   </figure>
                 )}
               </li>
@@ -224,7 +250,16 @@ const hasMedia = steps.some((s) => s.image);
     aspect-ratio: var(--img-ratio);
     overflow: hidden;
   }
-  .pinned-step-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  /* The <picture> is a pass-through — the <img> stays the direct child of the
+     figure, so every rule below still lands on it whichever <source> won. */
+  .pinned-step-media picture { display: contents; }
+  .pinned-step-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--img-focus, 50% 50%);
+  }
 
   @media (min-width: 64rem) {
     /* Copy on the left, picture on the right — but only for steps that have one,
@@ -239,59 +274,54 @@ const hasMedia = steps.some((s) => s.image);
       gap: 0 var(--stack-xl);
       align-items: center;
     }
-    /* The picture is lifted OUT of the text grid and pinned to the full height
-       of the stage — top edge to bottom edge, past the label's row as well.
-       Inside the grid it could only ever be as tall as the rows the words
-       needed; against the stage it is as tall as the screen.
+    /* THE PICTURE IS THE RIGHT HALF OF THE WINDOW.
 
-       Its right edge lines up with the container, not the window: the stage is
-       full-bleed, so the inset has to reproduce the container's own side margin
-       or the picture runs off to the edge of a wide display. */
-    /* Full height, but never at the cost of the words. Boxed inside the 64rem
-       container the two are in direct competition: on a 1080px-tall screen the
-       picture wants 720px of width and the text column was left with 176px.
+       It was a whole 2:3 frame at full height, which on a 1080px-tall screen is
+       720px wide — 38% of the display — and everything to its right was paper.
+       It read as neither a picture nor a side; the client's word was that it
+       "does not sit in the space".
 
-       So the picture is allowed OUT of the container on the right — as far as
-       6rem from the window edge, and no further than 24rem past the container.
-       The stage is full-bleed anyway; the extra width comes from the empty
-       margin a centred container leaves behind on a wide display, which is
-       width nobody was using. Below 1024 + 12rem there is no margin to take and
-       the bleed is zero, so the picture lines up with the container exactly as
-       before.
+       Half the window, flush to three edges, is the shape that reads. The cost
+       is a crop, and the crop is NOT left to `cover`: from 64rem up a separate,
+       already-wider cut of each frame is served (see the <source> above), taken
+       off the top or the bottom by hand depending on where the therapist's head
+       is. What `cover` is left to do here is at most 11%.
 
-       That buys full height everywhere from a 1024×768 laptop to 2560×1440,
-       with the copy never under 20rem. Where the two still cannot both be had,
-       the HEIGHT gives way — the frame keeps its 2:3 and nothing is cropped. */
-    .pinned-inner {
-      --pin-bleed: clamp(0px, calc((100vw - var(--container-max)) / 2 - 6rem), 24rem);
-      --pin-copy-min: 20rem;
-      --pin-img-w: min(
-        calc(100svh * 2 / 3),
-        calc(
-          var(--container-max) - var(--space-container) - var(--pin-copy-min) -
-            var(--stack-xl) + var(--pin-bleed)
-        )
-      );
-      /* Measured from the container's INNER right edge, which is one
-         --space-container inside the box edge the picture is aligned to. */
-      --pin-copy-end: calc(
-        var(--pin-img-w) + var(--stack-xl) - var(--pin-bleed) - var(--space-container)
-      );
+       The cap is what keeps that promise. On a short wide window half the width
+       is a box wider than it is tall, and covering it would eat the height it
+       was given the wide cut to protect; capping the width at the stage's own
+       height holds the box at 1:1 or narrower. */
+    .pinned-steps[data-media] .pinned-step-media {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;              /* against the WINDOW — never a white strip */
+      inline-size: min(50%, 100svh);
+      block-size: 100%;
+      margin: 0;
+      aspect-ratio: auto;               /* the box no longer follows the frame */
     }
-    /* The picture is absolutely positioned and therefore paints over everything
-       around it, so the label, the heading and the rules underneath all have to
-       stop where it starts. Measured: the eyebrow's box ran the full width of
-       the container and the rules and arrows ended up UNDER the photograph —
-       the arrows were being read against skin instead of against paper. */
+    /* Heads are at the top of every frame in this shoot and the bottom is table
+       linen, so what little the box still has to give up comes off the bottom. */
+    .pinned-steps[data-media] .pinned-step-media img {
+      object-position: var(--img-focus, 50% 38%);
+    }
+
+    /* The words keep the left half. The width is a constant, and it falls out
+       of the arithmetic rather than being chosen: the copy runs from the
+       container's inner left edge to half the window, and the halves cancel —
+       what is left is container/2 − gap − gutter = 416px, on every screen from
+       1024 up. No vw, so no scrollbar to get wrong. */
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-eyebrow,
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-title,
+    .pinned-inner:has(.pinned-steps[data-media]) .pinned-step,
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-foot {
-      padding-inline-end: var(--pin-copy-end);
+      max-inline-size: calc(
+        var(--container-max) / 2 - var(--stack-xl) - var(--space-container)
+      );
     }
-    /* And the rules have to be able to GET smaller, or they overflow the space
-       reserved for them and end up back under the photograph — which is what
-       they did: 456px of hairlines inside a 296px row. The bar is the flex
-       basis now, so six of them share whatever the row has left. */
+    /* And the rules have to be able to GET smaller, or they overflow the column
+       and end up back under the photograph — which is what they did: 456px of
+       hairlines inside a 296px row. */
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-progress { min-width: 0; }
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-tick {
       /* A definite WIDTH, not a flex-basis. With only a basis the tick's
@@ -306,23 +336,8 @@ const hasMedia = steps.some((s) => s.image);
     }
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-bar { width: 100%; }
     .pinned-inner:has(.pinned-steps[data-media]) .pinned-nav { flex: none; }
-    .pinned-steps[data-media] .pinned-step-media {
-      position: absolute;
-      inset-block: 0;
-      inset-inline-end: max(
-        var(--space-container),
-        calc((100% - var(--container-max)) / 2 - var(--pin-bleed))
-      );
-      block-size: min(100%, calc(var(--pin-img-w) * 1.5));
-      inline-size: auto;
-      margin: 0;
-      aspect-ratio: var(--img-ratio);
-    }
-    /* The words keep the left column and stop before the picture. Its width is
-       the stage's own height at 2:3, which is a number CSS can work out. */
     .pinned-steps[data-media] .pinned-step {
       grid-template-columns: minmax(0, 1fr);
-      padding-inline-end: var(--pin-copy-end);
       align-content: center;
     }
     .pinned-steps[data-media] .pinned-step-copy { grid-area: 1 / 1 / 2 / 2; align-self: end; }

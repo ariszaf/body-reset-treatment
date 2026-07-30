@@ -86,16 +86,22 @@ for (const [name, width, height] of VIEWPORTS) {
       range.selectNodeContents(label);
       const lb = range.getClientRects()[0] || label.getBoundingClientRect();
       const topmost = document.elementFromPoint(lb.x + lb.width / 2, lb.y + lb.height / 2);
+      const stage = document.querySelector('#ypiresies .pinned-stage').getBoundingClientRect();
+      // What `cover` throws away on top of the crop already baked into the file.
+      const cover = rendered > natural ? 1 - natural / rendered : 1 - rendered / natural;
       return {
         title: step.querySelector('h3').textContent.trim(),
         src: img.currentSrc.split('/').pop(),
-        // On a phone it fills the screen (cropping is the point); elsewhere the
-        // box must match the frame's own ratio so nothing is cut.
+        // On a phone it fills the screen. On a desktop it is the RIGHT HALF of
+        // the window: flush to three edges — a white strip beside it was the
+        // whole complaint — full stage height, and cropping no more than a
+        // tenth, because a wider cut of the same frame is served up there and
+        // `cover` is only trimming the difference between two near shapes.
         ok: onePhone
           ? box.width >= innerWidth - 1 && box.height >= innerHeight - 1
-          : Math.abs(rendered - natural) < 0.01,
-        // how much of the frame's WIDTH the phone crop throws away
-        sideCrop: onePhone ? 1 - innerWidth / (box.height * natural) : 0,
+          : Math.abs(innerWidth - box.right) < 1 && box.height >= stage.height - 1 && cover <= 0.12,
+        // how much of the frame the crop throws away — the phone's is sideways
+        sideCrop: onePhone ? 1 - innerWidth / (box.height * natural) : cover,
         textOnTop: topmost === label || label.contains(topmost),
       };
     });

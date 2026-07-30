@@ -6,7 +6,26 @@
  * These are the client's real photographs (originals in raw/). They are used
  * as supplied — no grading, no duotone: they already sit exactly on the brief.
  */
-export type ImageEntry = { src: string; alt: string; width: number; height: number; mobile?: string };
+export type ImageEntry = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** portrait art-direction — served under `(orientation: portrait)` */
+  mobile?: string;
+  /**
+   * A SEPARATE, WIDER CUT of the same frame for large screens, with its own
+   * dimensions. Not a bigger version of `src` — a different crop.
+   *
+   * Where a photograph fills half a window it is asked to sit in a nearly
+   * square box, and a 2:3 portrait loses a third of its height to `cover`,
+   * blindly, from the centre. This is that third taken off deliberately, at
+   * the top or the bottom depending on the pose — see make-wide-crops.py.
+   */
+  wide?: { src: string; width: number; height: number };
+  /** `object-position` for when the residual crop must not be centred */
+  focus?: string;
+};
 
 export const images: Record<string, ImageEntry> = {
   og: { src: '/images/general/og.jpg', alt: '', width: 1200, height: 630 }, // TODO: replace with brand og image
@@ -39,26 +58,31 @@ export const serviceImages: Record<string, ImageEntry> = {
     src: '/images/services/souidiko-masaz-kat-oikon-athina.webp',
     alt: 'Σουηδικό μασάζ κατ’ οίκον στην Αθήνα — συνεχείς ρυθμικές κινήσεις',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/souidiko-masaz-wide.webp', width: 1600, height: 1800 },
   },
   'deep-tissue': {
     src: '/images/services/deep-tissue-masaz-kat-oikon-athina.webp',
     alt: 'Deep tissue μασάζ κατ’ οίκον στην Αθήνα — αργή πίεση σε βάθος',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/deep-tissue-wide.webp', width: 1600, height: 1800 },
   },
   'therapeftiko-masaz': {
     src: '/images/services/therapeftiko-masaz-kat-oikon-athina.webp',
     alt: 'Θεραπευτικό μασάζ κατ’ οίκον στην Αθήνα — στοχευμένη δουλειά στην πλάτη',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/therapeftiko-masaz-wide.webp', width: 1600, height: 1800 },
   },
   'sports-massage': {
     src: '/images/services/sports-massage-kat-oikon-athina.webp',
     alt: 'Sports massage κατ’ οίκον στην Αθήνα — αθλητικό μασάζ αποκατάστασης',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/sports-massage-wide.webp', width: 1600, height: 1800 },
   },
   'cupping-therapy': {
     src: '/images/services/cupping-therapy-ventouzes-athina.webp',
     alt: 'Cupping therapy — βεντούζες σε συνδυασμό με μασάζ, κατ’ οίκον στην Αθήνα',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/cupping-therapy-wide.webp', width: 1600, height: 1800 },
   },
   /* ⚠ PLACEHOLDER. No frame from the shoot shows the device, so this is a
      manual-massage image standing in for a percussive treatment. It is the one
@@ -68,5 +92,6 @@ export const serviceImages: Record<string, ImageEntry> = {
     src: '/images/services/theragun-therapy-masaz-athina.webp',
     alt: 'Theragun therapy κατ’ οίκον στην Αθήνα — κρουστική θεραπεία με μάλαξη',
     width: 1200, height: 1800,
+    wide: { src: '/images/services/theragun-therapy-wide.webp', width: 1600, height: 1800 },
   },
 };
