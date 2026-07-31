@@ -70,11 +70,25 @@ const { eyebrow, title, id, steps } = Astro.props;
         </ol>
       </div>
 
-      <div class="rail-dots">
-        {steps.map((s, i) => (
-          <button class="embla__dot" type="button" data-on={i === 0 ? '' : undefined}
-                  aria-current={i === 0 ? 'true' : 'false'} aria-label={s.title} />
-        ))}
+      {/* Dots say HOW MANY. They do not say "this moves sideways", and on a
+          phone that is the thing nobody works out from a still screen — the
+          peeking next card is a hint only once you already suspect it. The
+          chevron drifts right until the strip is first touched, then stops for
+          good (data-moved, set by the carousel script). Decorative: the dots
+          carry the state a screen reader needs. */}
+      <div class="rail-controls">
+        <div class="rail-dots">
+          {steps.map((s, i) => (
+            <button class="embla__dot" type="button" data-on={i === 0 ? '' : undefined}
+                    aria-current={i === 0 ? 'true' : 'false'} aria-label={s.title} />
+          ))}
+        </div>
+        <span class="rail-hint" aria-hidden="true">
+          <svg width="20" height="9" viewBox="0 0 20 9" fill="none">
+            <path d="M1 4.5h16M13 1l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
       </div>
     </div>
   </Container>
@@ -106,7 +120,24 @@ const { eyebrow, title, id, steps } = Astro.props;
   .rail-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
 
   /* Nothing to indicate until there is something to swipe. */
-  .rail-dots { display: none; }
+  .rail-dots,
+  .rail-hint { display: none; }
+
+  .rail-hint {
+    color: color-mix(in srgb, var(--color-text) 45%, var(--color-bg));
+    line-height: 0;
+    animation: railHint 2.4s var(--reveal-ease) infinite;
+  }
+  /* Stops for good once the strip has been touched. */
+  .is-embla[data-moved] .rail-hint { animation: none; opacity: 0; transition: opacity var(--transition-base); }
+
+  @keyframes railHint {
+    0%, 55%, 100% { transform: none; }
+    72%           { transform: translateX(5px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rail-hint { animation: none; }
+  }
 
   /* ---------------------- large screens: all three ---------------------- */
   @media (min-width: 64rem) {
@@ -142,11 +173,15 @@ const { eyebrow, title, id, steps } = Astro.props;
       filter: none;
     }
 
-    .is-embla .rail-dots {
+    .is-embla .rail-dots { display: flex; gap: 0.5rem; }
+    .is-embla .rail-controls {
       display: flex;
-      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--stack-md);
       margin-block-start: var(--stack-lg);
     }
+    .is-embla .rail-hint { display: block; }
   }
 
   .embla__dot {

@@ -336,16 +336,27 @@ const hasMedia = steps.some((s) => s.image);
        shows, so mid-scroll this track and the stage inside it were being
        remeasured — the pin appeared to stick, then jump, exactly where the
        browser chrome animates. `svh` is the SMALL viewport: it does not move,
-       so the geometry the progress maths reads stays still. The cost is a strip
-       of extra height while the bar is hidden; that is invisible here because
-       the stage is centred inside it. */
+       so the geometry the progress maths reads stays still. The strip of extra
+       height while the bar is hidden is covered by the stage, which is sized in
+       `lvh` for exactly that reason. */
     height: calc(var(--steps) * 100svh);
     position: relative;
   }
   :global(html.js-pinned) .pinned-stage {
     position: sticky;
     top: 0;
-    height: 100svh;
+    /* lvh, NOT svh — and the track above stays svh on purpose.
+       The two units answer different questions. The TRACK asks "how much scroll
+       is a step worth", and that must not move while the address bar animates,
+       so it is svh, the small viewport. The STAGE asks "how much screen do I
+       have to cover", and the answer is the LARGE viewport: the moment the bar
+       hides, the screen grows and a stage sized to the small viewport leaves a
+       strip of bare page along the bottom edge. On a phone, in a section whose
+       whole point is a full-screen photograph, that strip is the first thing
+       anyone sees. The content is kept inside the small viewport separately
+       (see the phone block), so nothing is pushed under the fold when the bar
+       comes back. Desktop is unaffected: no dynamic chrome, lvh == svh. */
+    height: 100lvh;
     display: grid;
     /* SAFE centre. Plain `center` centres content that is taller than its box by
        overflowing it EQUALLY — which pushed the eyebrow up underneath the fixed
@@ -499,9 +510,19 @@ const hasMedia = steps.some((s) => s.image);
      trims the sides. The empty wall at the top of every frame therefore always
      survives — which is exactly the band the label and the name land in. */
   @media (max-width: 63.99rem) {
-    /* Content to the top; the rules and arrows are pushed to the bottom below. */
-    :global(html.js-pinned) .pinned-stage { align-content: stretch; }
-    :global(html.js-pinned) .pinned-stage > :global(.container) { display: flex; }
+    /* Content to the top, inside the SMALL viewport. The stage is `lvh` so the
+       photograph covers the screen even with the address bar hidden; the words
+       and the controls live in the first `svh` of it, which is the band that is
+       visible in both states. Without this they would stretch to the bottom of
+       the large viewport and the arrows would sit under the bar. */
+    :global(html.js-pinned) .pinned-stage { align-content: start; }
+    :global(html.js-pinned) .pinned-stage > :global(.container) {
+      display: flex;
+      /* Minus the bar: the stage already reserves that much padding at the top
+         for the fixed logotype, so a plain 100svh here would push the arrows
+         exactly one bar-height below the fold. Measured at −80px before this. */
+      block-size: calc(100svh - var(--nav-bar-h));
+    }
     :global(html.js-pinned) .pinned-inner {
       display: flex;
       flex-direction: column;

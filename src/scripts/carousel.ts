@@ -60,6 +60,14 @@ function initCarousels() {
     embla.on('select', onSelect);
     embla.on('reInit', onSelect);
     onSelect();
+
+    /* The first time the strip is touched, mark the root. A swipe cue is for
+       someone who has not realised the row moves; once they have, it is noise.
+       `pointerDown` rather than `select` so it goes the moment a finger lands,
+       not when the slide lands. */
+    const markMoved = () => root.setAttribute('data-moved', '');
+    embla.on('pointerDown', markMoved);
+    embla.on('select', markMoved);
   });
 }
 
