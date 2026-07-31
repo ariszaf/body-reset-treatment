@@ -29,57 +29,109 @@ const usesPolarzee = endpoint === POLARZEE;
   data-token-flow={usesPolarzee ? '' : undefined}
 >
   <div class="field">
-    <label class="text-label" for="cf-name">Ονοματεπώνυμο</label>
+    <label for="cf-name">Ονοματεπώνυμο</label>
     <input id="cf-name" name="name" type="text" required autocomplete="name" maxlength="120" />
   </div>
   <div class="field">
-    <label class="text-label" for="cf-email">Email</label>
+    <label for="cf-email">Email</label>
     <input id="cf-email" name="email" type="email" required autocomplete="email" maxlength="200" />
   </div>
   <div class="field">
-    <label class="text-label" for="cf-phone">Τηλέφωνο</label>
+    <label for="cf-phone">Τηλέφωνο</label>
     <input id="cf-phone" name="phone" type="tel" autocomplete="tel" maxlength="60" />
   </div>
   <div class="field">
-    <label class="text-label" for="cf-message">Μήνυμα</label>
-    <textarea id="cf-message" name="message" rows="5" required maxlength="5000"></textarea>
+    <label for="cf-message">Μήνυμα</label>
+    <textarea id="cf-message" name="message" rows="4" required maxlength="5000"></textarea>
   </div>
-  {/* honeypot — real visitors never see or fill this; bots that do are dropped */}
+  {/* honeypot: real visitors never see or fill this; bots that do are dropped */}
   <input class="cf-hp" type="text" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true" />
   <button class="btn-submit text-button" type="submit">Αποστολή</button>
   <p class="form-status text-caption" role="status" aria-live="polite"></p>
 </form>
 
 <style>
-  .contact-form { display: grid; gap: var(--stack-md); max-width: 36rem; }
-  .field { display: grid; gap: 0.4rem; }
-  input, textarea {
-    font: inherit;
-    padding: 0.6em 0.8em;                 /* em — scales with the field's text */
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-base);
-    background: var(--color-bg);
+  /* RULED LINES, NOT BOXES. The default form look, a bordered rounded box per
+     field plus a filled button that lifts on hover, is the one place a site
+     stops speaking its own language and starts speaking the browser's. This
+     brand is built from hairlines and light weights, so the fields are hairlines
+     too: no box, no radius, no shadow, no fill.
+
+     Everything below is a token. Nothing here is a form style, it is the page
+     style applied to a form. */
+  .contact-form { display: grid; gap: var(--stack-lg); max-width: 34rem; }
+  .field { display: grid; gap: 0.5rem; }
+
+  label {
+    font-size: var(--text-label);          /* 17px floor */
+    font-weight: 400;                      /* not bold: it labels, it does not shout */
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
   }
-  input:focus, textarea:focus { border-color: var(--color-primary); }
-  /* honeypot — off-screen, never shown */
+
+  input,
+  textarea {
+    font: inherit;
+    font-size: var(--text-card-body);      /* 18px: what you type is body copy */
+    color: var(--color-text);
+    background: none;                      /* the page shows through */
+    border: 0;
+    border-block-end: 1px solid var(--color-border);
+    border-radius: 0;
+    /* Weighted to the bottom: what you type should sit just above its rule,
+       not float in the middle of a 44px box. The height stays for the finger. */
+    padding: 0.95em 0 0.45em;              /* em, so it tracks the field's text */
+    min-block-size: 2.75rem;               /* ≥44px for a finger */
+    appearance: none;
+    transition: border-color var(--transition-base);
+  }
+  textarea { resize: vertical; line-height: 1.55; }
+
+  /* The line warms and thickens on focus. Two device pixels is enough to read
+     as "here" without becoming a frame. */
+  input:focus,
+  textarea:focus {
+    outline: none;
+    border-block-end-color: var(--color-accent);
+    box-shadow: 0 1px 0 0 var(--color-accent);
+  }
+  input:focus-visible,
+  textarea:focus-visible { border-block-end-color: var(--color-accent); }
+
+  /* honeypot: off-screen, never shown */
   .cf-hp { position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+  /* The button is a word with a rule under it, like every other link on the
+     site. It is the only control here, so it does not need weight to be found. */
   .btn-submit {
     justify-self: start;
-    padding: 0.7em 1.8em;
-    background: var(--color-primary); color: #fff;
-    border: 0; border-radius: var(--radius-base); cursor: pointer;
+    margin-block-start: var(--stack-sm);
+    font-size: var(--text-label);          /* 17px floor */
+    font-weight: 400;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text);
+    background: none;
+    border: 0;
+    border-block-end: 1px solid var(--color-accent);
+    border-radius: 0;
+    padding: 0.6em 0 0.35em;
+    min-block-size: 2.75rem;
+    cursor: pointer;
+    transition: color var(--transition-base), border-color var(--transition-base);
   }
-  .btn-submit[disabled] { opacity: 0.6; cursor: default; }
+  .btn-submit[disabled] { color: var(--color-muted); border-block-end-color: var(--color-border); cursor: default; }
   @media (hover: hover) {
-    .btn-submit { transition: transform var(--transition-base), box-shadow var(--transition-base); }
-    .btn-submit:not([disabled]):hover { transform: translateY(-2px); box-shadow: var(--shadow-elevated); }
+    .btn-submit:not([disabled]):hover { color: var(--color-accent); }
   }
+
+  .form-status:empty { display: none; }
 </style>
 
 <script>
   import { logFormError } from '../scripts/error-logger';
 
-  const GENERIC = 'Δεν ήταν δυνατή η αποστολή του μηνύματος αυτή τη στιγμή — δοκιμάστε ξανά αργότερα ή επικοινωνήστε μαζί μας απευθείας.';
+  const GENERIC = 'Δεν ήταν δυνατή η αποστολή του μηνύματος αυτή τη στιγμή. Δοκιμάστε ξανά αργότερα ή επικοινωνήστε μαζί μας απευθείας.';
 
   const form = document.querySelector<HTMLFormElement>('.contact-form');
   // Where to post and whether that address issues one-time tokens. Both come

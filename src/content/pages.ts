@@ -54,8 +54,8 @@ export const pages: PageMeta[] = [
     slug: 'epikoinonia',
     nameEl: 'Επικοινωνία',
     keyword: 'ραντεβού μασάζ κατ’ οίκον Αθήνα',
-    descriptionHint: 'Τηλέφωνο, online κράτηση ή μήνυμα — κλείστε ραντεβού για θεραπεία στον δικό σας χώρο.',
-    excerpt: 'Τηλέφωνο, online κράτηση ή μήνυμα — διαλέξτε ό,τι σας βολεύει.',
+    descriptionHint: 'Τηλέφωνο, online κράτηση ή μήνυμα. Κλείστε ραντεβού για θεραπεία στον δικό σας χώρο.',
+    excerpt: 'Τηλέφωνο, online κράτηση ή μήνυμα. Διαλέξτε ό,τι σας εξυπηρετεί.',
     /* NOT in the menu. Every «Κλείστε ραντεβού» button on the site already
        lands here, and a second entry saying the same thing one line above the
        menu's own appointment item was the menu repeating itself. The page is

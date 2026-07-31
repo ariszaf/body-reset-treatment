@@ -35,7 +35,7 @@ export const booking: BookingMode = {
   href: '/epikoinonia/',
   label: site.cta.label,
   heading: 'Κλείστε την πρώτη σας συνεδρία',
-  lead: 'Τηλέφωνο, online κράτηση ή μήνυμα — διαλέξτε ό,τι σας βολεύει.',
+  lead: 'Τηλέφωνο, online κράτηση ή μήνυμα. Διαλέξτε ό,τι σας εξυπηρετεί.',
 };
 
 /** Spread onto an <a>/<Button>: `{...bookingAttrs}` */
