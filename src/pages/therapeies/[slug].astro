@@ -60,13 +60,24 @@ const schema = {
       <Breadcrumbs trail={[{ name: 'Θεραπείες', href: '/therapeies/' }, { name: service.title }]} />
 
       <div class="svc-head">
+        {/* Title AND description in the first column, beside the photograph.
+            The description used to sit in a full-width band under the whole
+            grid, which left the title alone next to a tall picture and pushed
+            the words that explain it below the fold. Together they read as one
+            introduction.
+
+            `short` is not here: it is compressed from this very description
+            and would be the same sentence twice, seconds apart. It earns its
+            place on the showcase and the cards, where the full text is nowhere
+            near it. */}
         <div class="svc-copy">
           <h1 class="text-h1 svc-title reveal reveal-up">{service.title}</h1>
-          {/* No one-liner under the title. `short` is now compressed from the
-              description, and the description is the very next thing on the
-              page — the two would be the same sentence twice, seconds apart.
-              It still earns its place on the showcase and the cards, where the
-              full text is nowhere near it. */}
+          <div class="svc-body reveal reveal-up">
+            {paragraphs.map((p) => <p class="text-card-body svc-para">{p}</p>)}
+            {service.durations && (
+              <p class="svc-durations text-label">Διάρκειες: {service.durations.join(' · ')}</p>
+            )}
+          </div>
         </div>
 
         <figure class="svc-media reveal reveal-up">
@@ -80,13 +91,6 @@ const schema = {
             decoding="sync"
           />
         </figure>
-      </div>
-
-      <div class="svc-body reveal reveal-up">
-        {paragraphs.map((p) => <p class="text-card-body svc-para">{p}</p>)}
-        {service.durations && (
-          <p class="svc-durations text-label">Διάρκειες: {service.durations.join(' · ')}</p>
-        )}
       </div>
 
       {/* Three blocks, always in this order and never behind a control.
@@ -174,7 +178,7 @@ const schema = {
   }
   .svc-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
-  .svc-body { margin-block-start: var(--stack-xl); max-width: 40rem; }
+  .svc-body { margin-block-start: var(--stack-lg); max-width: 40rem; }
   .svc-para + .svc-para { margin-block-start: var(--stack-md); }
   .svc-durations { margin-block-start: var(--stack-lg); color: var(--color-accent); }
 
@@ -207,7 +211,10 @@ const schema = {
   .svc-cta { margin-block-start: var(--stack-xl); }
 
   @media (min-width: 64rem) {
-    .svc-head { grid-template-columns: 1fr 0.72fr; gap: var(--stack-xl); align-items: center; }
+    /* Top-aligned, not centred: the copy now starts at the title and runs
+       down, so it should begin level with the top of the frame rather than
+       float in the middle of it. */
+    .svc-head { grid-template-columns: 1fr 0.72fr; gap: var(--stack-xl); align-items: start; }
     .svc-media { max-height: 62dvh; height: 62dvh; width: auto; margin-inline-start: auto; }
   }
 
