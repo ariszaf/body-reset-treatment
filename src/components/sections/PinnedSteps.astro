@@ -526,11 +526,12 @@ const hasMedia = steps.some((s) => s.image);
       inset-block-end: calc(var(--stack-md) + var(--fab-size) + var(--stack-sm));
       margin: 0;
       z-index: 1;
-      /* The quietest of the lot: two tight rings, no pool. It is meant to sit
-         on the photograph, not to be lit up on it. */
-      text-shadow:
-        0 0 5px rgb(246 243 238),
-        0 0 2px rgb(246 243 238);
+      /* One ring, and not a solid one. Two were still reading as lit; this is
+         enough to keep the letterforms off the grain of the photograph without
+         announcing itself. It stays where the label and the name go bare
+         because it is the smallest type on the screen and the only one anyone
+         has to be able to press. */
+      text-shadow: 0 0 3px rgb(246 243 238 / 0.65);
     }
     :global(html.js-pinned) .pinned-foot {
       margin-block-start: auto;
@@ -585,15 +586,28 @@ const hasMedia = steps.some((s) => s.image);
       position: relative;
       z-index: 2;
       /* Ink, not accent. The gold tops out at 5.1:1 even on clean paper, and at
-         17px with wide tracking there is not enough of it per glyph for a halo
-         to carry over a photograph. The gold stays where it was asked for — on
-         the treatment's NAME. */
-      color: var(--color-text);
+         17px with wide tracking there is not enough of it per glyph to carry
+         over a photograph. The gold stays where it was asked for — on the
+         treatment's NAME.
+
+         Deeper than page ink, though. With no halo left to help, the plain
+         #33302c fell to 4.33:1 against the lit wall of the cupping frame —
+         under the 4.5 this size has to hold. This is the same ink, darker, and
+         at 17px uppercase nobody will see the difference. */
+      color: color-mix(in srgb, var(--color-text) 78%, #000);
     }
     /* Bold over a photograph. It is also what lets the name be judged as large
        text (≥18.66px bold → 3:1) instead of body copy, which is the honest
        reading for a 19px semibold heading. */
-    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-title { font-weight: 700; }
+    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-title {
+      font-weight: 700;
+      /* The same gold, deeper. With the halo gone the light was doing the
+         separating; now the ink has to. #75644e is a mid-tone and against a
+         lit wall it measured as low as 1.03:1 — the word was there and could
+         not be read. Deepening it keeps the colour the client asked for and
+         buys back the contrast without putting a glow behind it. */
+      color: color-mix(in srgb, var(--color-accent) 62%, #000);
+    }
 
     :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-media {
       position: absolute;
@@ -627,20 +641,15 @@ const hasMedia = steps.some((s) => s.image);
        picture stopped reaching the edge of the screen; the marks carry their own
        halo (below), which is enough on its own — measured. */
 
-    /* The halo. Three stacked shadows rather than one: a wide soft pool to lift
-       a dark background, and two tight ones to keep the letter edges crisp
-       against it. Page colour, so it reads as light rather than as a glow. */
-    :global(html.js-pinned) .pinned-eyebrow,
-    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-title,
-    :global(html.js-pinned) .pinned-steps[data-media] .pinned-step-text {
-      /* Tight to the letterforms. The wide outer ring was what read as a glow;
-         these hug the glyph and simply keep it off the photograph. */
-      text-shadow:
-        0 0 12px rgb(246 243 238),
-        0 0 6px rgb(246 243 238),
-        0 0 3px rgb(246 243 238),
-        0 0 1.5px rgb(246 243 238);
-    }
+    /* NO halo on the label or the treatment's name. Asked for plainly and
+       twice: no lighting, no white around the letters. They are set straight
+       onto the photograph.
+
+       What makes that survivable is the shoot itself — every frame is high-key,
+       a light wall and white linen, so dark ink on it is dark-on-light almost
+       everywhere. The numbers are in the commit; where a frame closes in on the
+       therapist's black shirt the reading is thinner than it was, and that is
+       the trade being made on purpose. */
     /* Same idea for the arrows, which are strokes rather than glyphs. */
     :global(html.js-pinned) .pinned-nav {
       /* Four rings, not two. A stroke this thin carries less of its own halo
