@@ -17,8 +17,9 @@ import WaveRule from '@components/WaveRule.astro';
 import HeroFullBleed from '@components/sections/HeroFullBleed.astro';
 import PinnedSteps from '@components/sections/PinnedSteps.astro';
 import StepsRail from '@components/sections/StepsRail.astro';
+import Container from '@components/Container.astro';
 import { services } from '@content/services';
-import { heroSequence, serviceImages } from '@content/images';
+import { images, heroSequence, serviceImages } from '@content/images';
 
 /* What "at home" actually means in practice — the three things someone wants
    answered before they let a stranger into their flat. */
@@ -46,6 +47,16 @@ const howItWorks = [
    colour moved onto the name itself.
    Built from services.ts + images.ts so nothing is restated here: this section
    and the machine-readable llms.txt can never disagree about what is offered. */
+/* The three lines the «Ποιοι Είμαστε» page is worth summarising by, drawn
+   word-for-word from the client's own copy — the years and where they were
+   spent, the refusal to run a protocol, and the equipment arriving with us.
+   Nothing here is written by us, so nothing here can drift from that page. */
+const highlights = [
+  'Περισσότερα από 9 χρόνια σε φυσικοθεραπευτικά κέντρα, δομές αποκατάστασης αθλητών και premium spa.',
+  'Καμία τυποποιημένη συνεδρία: κάθε θεραπεία προσαρμόζεται στις ανάγκες και τους στόχους του κάθε ανθρώπου.',
+  'Πλήρης επαγγελματικός εξοπλισμός στον δικό σας χώρο, χωρίς μετακινήσεις.',
+];
+
 const showcase = services.map((s) => ({
   title: s.title,
   text: s.short,
@@ -73,5 +84,93 @@ const showcase = services.map((s) => ({
       only once on a page, and the cue already points at the treatments. */}
   <StepsRail eyebrow="Πώς λειτουργεί" steps={howItWorks} />
 
+  {/* The last thing before the footer: who is actually turning up. A mobile
+      service asks someone to let a stranger into their home, and the site had
+      been answering everything except that. Three lines and the face, then out
+      to the page that says it properly — not a second copy of it. */}
+  <section class="py-section about">
+    <Container>
+      <div class="about-grid">
+        <figure class="about-media reveal reveal-up">
+          <img
+            src={images.therapist.src}
+            alt={images.therapist.alt}
+            width={images.therapist.width}
+            height={images.therapist.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+
+        <div class="about-copy">
+          <p class="text-eyebrow reveal reveal-up">Ποιοι είμαστε</p>
+          <h2 class="text-section-title about-title reveal reveal-up">
+            Το Body Reset Treatment δεν είναι απλώς μια συνεδρία μασάζ
+          </h2>
+          <ul class="about-list reveal-stagger">
+            {highlights.map((h) => (
+              <li class="text-card-body about-item reveal reveal-up">{h}</li>
+            ))}
+          </ul>
+          <p class="about-more reveal reveal-up">
+            <a class="about-link" href="/poioi-eimaste/">Περισσότερα για εμάς<span aria-hidden="true"> →</span></a>
+          </p>
+        </div>
+      </div>
+    </Container>
+  </section>
+
 
 </Layout>
+
+<style>
+  .about { background: var(--color-alt); }
+  .about-grid { display: grid; gap: var(--stack-xl); }
+  .about-media {
+    margin: 0;
+    aspect-ratio: 2 / 3;               /* the frame's own ratio — no crop */
+    overflow: hidden;
+    background: var(--color-bg);
+  }
+  .about-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  .about-title { margin-block-start: var(--stack-md); max-width: 22ch; }
+  .about-list { list-style: none; margin: var(--stack-lg) 0 0; padding: 0; }
+  /* A rule per line, the same mark the treatment pages use for their lists —
+     the brand's vocabulary is hairlines, not discs. */
+  .about-item {
+    padding-block: var(--stack-md);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+  }
+  .about-item:last-child { border-bottom: 1px solid var(--color-border); }
+
+  .about-more { margin-block-start: var(--stack-lg); }
+  .about-link {
+    color: color-mix(in srgb, var(--color-text) 78%, var(--color-bg));
+    text-decoration: none;
+    font-size: var(--text-label);      /* 17px floor */
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+    display: inline-flex;
+    padding-block: 0.5em 0.15em;
+    min-block-size: 2.75rem;           /* ≥44px for a finger */
+    align-items: flex-end;
+    margin-block-end: -0.55rem;
+  }
+  @media (hover: hover) {
+    .about-link { transition: color var(--transition-base), border-color var(--transition-base); }
+    .about-link:hover { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+  }
+
+  @media (min-width: 64rem) {
+    /* The portrait keeps the narrower column and the words the wider one —
+       the reverse of the treatments stage above it, so the two do not read as
+       the same layout twice. */
+    .about-grid {
+      grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
+      gap: var(--stack-xl);
+      align-items: center;
+    }
+    .about-grid > * { min-width: 0; }
+  }
+</style>

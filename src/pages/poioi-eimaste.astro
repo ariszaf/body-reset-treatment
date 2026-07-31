@@ -2,10 +2,10 @@
 /**
  * Ποιοι Είμαστε.
  *
- * NO photographs on this page. The one image the site owns belongs to the hero;
- * repeating it here would read as padding. More importantly the service is
- * mobile — there is no premises — so an interior shot would be describing
- * something that does not exist. The page is carried by type and line marks.
+ * ONE photograph: the therapist. It arrived late and it is the right one — a
+ * mobile service has no premises to show, so the honest subject of an about
+ * page here is the person who turns up at your door. No interiors, no stock:
+ * the rest of the page is still carried by type and line marks.
  *
  * COPY: supplied by the client, 31/07/2026, and used as written. It is the
  * first thing on this site to state a credential — "περισσότερων από 9 χρόνων"
@@ -19,6 +19,7 @@ import Button from '@components/Button.astro';
 import WaveRule from '@components/WaveRule.astro';
 import Breadcrumbs from '@components/Breadcrumbs.astro';
 import BrandIcon from '@components/BrandIcon.astro';
+import { images } from '@content/images';
 import { booking, bookingAttrs } from '@lib/booking';
 
 /* What every session is built to do. A list, not a paragraph: four parallel
@@ -52,23 +53,39 @@ const principles = [
   <section class="py-section page-head">
     <Container>
       <Breadcrumbs />
-      <p class="text-eyebrow reveal reveal-up">Ποιοι είμαστε</p>
-      <h1 class="text-h1 page-title reveal reveal-up">Σχετικά με το Body Reset Treatment</h1>
-      <p class="text-lead page-lead reveal reveal-up">
-        Το Body Reset Treatment δημιουργήθηκε με μία ξεκάθαρη φιλοσοφία: η πραγματική
-        αποκατάσταση δεν αποτελεί πολυτέλεια, αλλά ουσιαστική ανάγκη του σώματος.
-        Συνδυάζει την εξειδικευμένη θεραπευτική φροντίδα με την εμπειρία ενός premium
-        spa, προσφέροντας φροντίδα υψηλών προδιαγραφών στην άνεση του δικού σας χώρου.
-      </p>
-      <p class="text-card-body page-body reveal reveal-up">
-        Το brand αποτελεί την εξέλιξη περισσότερων από 9 χρόνων επαγγελματικής εμπειρίας
-        στον χώρο της θεραπευτικής μάλαξης, της αθλητικής αποκατάστασης και του wellness.
-        Η διαδρομή αυτή, μέσα από φυσικοθεραπευτικά κέντρα, δομές αποκατάστασης αθλητών
-        και premium spa, διαμόρφωσε μια προσέγγιση που συνδυάζει επιστημονική γνώση,
-        τεχνική ακρίβεια και υψηλά πρότυπα φροντίδας. Κάθε συνεδρία πραγματοποιείται με
-        πλήρη επαγγελματικό εξοπλισμό, προσφέροντας μια ολοκληρωμένη θεραπευτική εμπειρία,
-        χωρίς να χρειάζεται να μετακινηθείτε από τον χώρο σας.
-      </p>
+      <div class="page-head-grid">
+        <div class="page-head-copy">
+          <p class="text-eyebrow reveal reveal-up">Ποιοι είμαστε</p>
+          <h1 class="text-h1 page-title reveal reveal-up">Σχετικά με το Body Reset Treatment</h1>
+          <p class="text-lead page-lead reveal reveal-up">
+            Το Body Reset Treatment δημιουργήθηκε με μία ξεκάθαρη φιλοσοφία: η πραγματική
+            αποκατάσταση δεν αποτελεί πολυτέλεια, αλλά ουσιαστική ανάγκη του σώματος.
+            Συνδυάζει την εξειδικευμένη θεραπευτική φροντίδα με την εμπειρία ενός premium
+            spa, προσφέροντας φροντίδα υψηλών προδιαγραφών στην άνεση του δικού σας χώρου.
+          </p>
+          <p class="text-card-body page-body reveal reveal-up">
+            Το brand αποτελεί την εξέλιξη περισσότερων από 9 χρόνων επαγγελματικής εμπειρίας
+            στον χώρο της θεραπευτικής μάλαξης, της αθλητικής αποκατάστασης και του wellness.
+            Η διαδρομή αυτή, μέσα από φυσικοθεραπευτικά κέντρα, δομές αποκατάστασης αθλητών
+            και premium spa, διαμόρφωσε μια προσέγγιση που συνδυάζει επιστημονική γνώση,
+            τεχνική ακρίβεια και υψηλά πρότυπα φροντίδας. Κάθε συνεδρία πραγματοποιείται με
+            πλήρη επαγγελματικό εξοπλισμό, προσφέροντας μια ολοκληρωμένη θεραπευτική εμπειρία,
+            χωρίς να χρειάζεται να μετακινηθείτε από τον χώρο σας.
+          </p>
+        </div>
+
+        <figure class="page-portrait reveal reveal-up">
+          <img
+            src={images.therapist.src}
+            alt={images.therapist.alt}
+            width={images.therapist.width}
+            height={images.therapist.height}
+            loading="eager"
+            fetchpriority="high"
+            decoding="sync"
+          />
+        </figure>
+      </div>
     </Container>
   </section>
 
@@ -161,6 +178,23 @@ const principles = [
   }
   .page-lead { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
   .page-body { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
+
+  .page-head-grid { display: grid; gap: var(--stack-xl); }
+  .page-portrait {
+    margin: 0;
+    aspect-ratio: 2 / 3;               /* the frame's own ratio — no crop */
+    overflow: hidden;
+    background: var(--color-alt);
+  }
+  .page-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  @media (min-width: 64rem) {
+    /* The portrait takes the narrower column. `min-width: 0` on both, or the
+       long paragraph would push its own column past its share. */
+    .page-head-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 0.62fr); gap: var(--stack-xl); align-items: start; }
+    .page-head-grid > * { min-width: 0; }
+    .page-portrait { position: sticky; top: calc(var(--nav-bar-h) + var(--stack-lg)); }
+  }
 
   /* ----------------------------- approach ---------------------------- */
   .approach { background: var(--color-alt); }

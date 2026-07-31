@@ -38,6 +38,19 @@ export const images: Record<string, ImageEntry> = {
     alt: 'Γυναίκα ξαπλωμένη σε κρεβάτι μασάζ με λευκά λινά — μασάζ κατ’ οίκον στην Αθήνα, Body Reset Treatment',
     width: 2400, height: 1600,
   },
+
+  /* The therapist. The only portrait the site has, and the only image on it
+     with a face looking back — which is why it earns a place twice: once on
+     «Ποιοι Είμαστε», where the claim of nine years is made, and once at the
+     foot of the homepage, where that claim is summarised. Same file both
+     times; a mobile service has no premises to photograph, so this is what
+     "who you are letting into your flat" looks like.
+     Source: raw/Andrews1226.jpeg (3929×5894, already 2:3 — resized, not cropped). */
+  therapist: {
+    src: '/images/team/therapeftis-body-reset-treatment-athina.webp',
+    alt: 'Ο θεραπευτής του Body Reset Treatment — μασάζ κατ’ οίκον στην Αθήνα',
+    width: 1200, height: 1800,
+  },
 };
 
 /** The hero sequence. One entry = a still hero; add more to start a crossfade. */
