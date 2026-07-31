@@ -532,7 +532,10 @@ const hasMedia = steps.some((s) => s.image);
       display: flex;
       flex-direction: column;
       width: 100%;
-      padding-block-end: var(--stack-md);
+      /* Was --stack-md (24px). The arrows and the count are the last thing on
+         the screen and they were sitting a whole gutter above the edge, which
+         both wasted the band and crowded the link above them. */
+      padding-block-end: var(--stack-sm);
     }
     /* No description on a phone. The screen is the photograph's, and the name
        plus a way in is all that fits without eating into it. The sentence is
@@ -549,7 +552,10 @@ const hasMedia = steps.some((s) => s.image);
          has to be added back by hand or the link sits flush against the screen
          edge while every other line starts at the text column. */
       inset-inline-start: var(--space-container);
-      inset-block-end: calc(var(--stack-md) + var(--fab-size) + var(--stack-sm));
+      /* Clear of the row below it, not just above the call button. The gap
+         between this link and the arrows measured 20px, and both carry a 44px
+         touch box, so the two reads were touching. One more gutter of air. */
+      inset-block-end: calc(var(--stack-lg) + var(--fab-size) + var(--stack-sm));
       margin: 0;
       z-index: 1;
       /* One ring, and not a solid one. Two were still reading as lit; this is
