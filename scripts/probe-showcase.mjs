@@ -22,7 +22,7 @@ import { chromium } from 'playwright';
 
 const BASE = process.env.QA_BASE || 'http://localhost:4321';
 const HIDE =
-  '#ypiresies .pinned-step-copy > *, #ypiresies .pinned-eyebrow, #ypiresies .pinned-foot > *';
+  '#therapeies .pinned-step-copy > *, #therapeies .pinned-eyebrow, #therapeies .pinned-foot > *';
 
 /** [selector, label, minimum ratio] — 4.5 for text, 3 for meaningful marks. */
 const TARGETS = [
@@ -50,7 +50,7 @@ for (const [name, width, height] of VIEWPORTS) {
   await page.goto(BASE, { waitUntil: 'networkidle' });
 
   const track = await page.evaluate(() => {
-    const t = document.querySelector('#ypiresies .pinned-track');
+    const t = document.querySelector('#therapeies .pinned-track');
     return { top: t.getBoundingClientRect().top + scrollY, travel: t.offsetHeight - innerHeight };
   });
 
@@ -68,13 +68,13 @@ for (const [name, width, height] of VIEWPORTS) {
     await page.waitForTimeout(750); // outlast the 0.55s cross-fade
 
     const frame = await page.evaluate(() => {
-      const step = document.querySelector('#ypiresies .pinned-step.is-active');
+      const step = document.querySelector('#therapeies .pinned-step.is-active');
       const img = step.querySelector('img');
       const box = img.getBoundingClientRect();
       const natural = img.naturalWidth / img.naturalHeight;
       const rendered = box.width / box.height;
       const onePhone = innerWidth < 1024;
-      const label = document.querySelector('#ypiresies .pinned-eyebrow');
+      const label = document.querySelector('#therapeies .pinned-eyebrow');
       // The GLYPHS, not the box. The label is a block that runs the full width
       // of the container while its word sits at the left, so the centre of its
       // rectangle is empty space — and once the photograph was pinned to the
@@ -85,7 +85,7 @@ for (const [name, width, height] of VIEWPORTS) {
       range.selectNodeContents(label);
       const lb = range.getClientRects()[0] || label.getBoundingClientRect();
       const topmost = document.elementFromPoint(lb.x + lb.width / 2, lb.y + lb.height / 2);
-      const stage = document.querySelector('#ypiresies .pinned-stage').getBoundingClientRect();
+      const stage = document.querySelector('#therapeies .pinned-stage').getBoundingClientRect();
       // What `cover` throws away on top of the crop already baked into the file.
       const cover = rendered > natural ? 1 - natural / rendered : 1 - rendered / natural;
       return {
@@ -111,7 +111,7 @@ for (const [name, width, height] of VIEWPORTS) {
 
     for (const [selector, label, min] of TARGETS) {
       const box = await page.evaluate((s) => {
-        const el = document.querySelector('#ypiresies ' + s);
+        const el = document.querySelector('#therapeies ' + s);
         if (!el) return null;
         const r = el.getBoundingClientRect();
         if (r.width < 2) return null;

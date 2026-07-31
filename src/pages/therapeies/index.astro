@@ -1,6 +1,6 @@
 ---
 /**
- * Υπηρεσίες — the index of the six treatments.
+ * Θεραπείες — the index of the six treatments.
  *
  * A plain list, not a second showcase: the homepage already presents them one
  * at a time with a photograph, and repeating that here would make the two pages
@@ -14,12 +14,11 @@
 import Layout from '@layouts/Layout.astro';
 import Container from '@components/Container.astro';
 import Breadcrumbs from '@components/Breadcrumbs.astro';
-import BrandIcon from '@components/BrandIcon.astro';
 import { services } from '@content/services';
 import { serviceImages } from '@content/images';
 ---
 
-<Layout slug="ypiresies">
+<Layout slug="therapeies">
   <section class="py-section svc">
     <Container>
       <Breadcrumbs />
@@ -32,7 +31,7 @@ import { serviceImages } from '@content/images';
       <ul class="svc-list reveal-stagger">
         {services.map((s) => (
           <li class="svc-item reveal reveal-up">
-            <a class="svc-link" href={`/ypiresies/${s.slug}/`}>
+            <a class="svc-link" href={`/therapeies/${s.slug}/`}>
               <figure class="svc-media">
                 <img
                   src={serviceImages[s.slug].src}
@@ -43,7 +42,6 @@ import { serviceImages } from '@content/images';
                   decoding="async"
                 />
               </figure>
-              <BrandIcon name={s.icon} class="svc-icon" />
               <h2 class="text-card-title svc-name">{s.title}</h2>
               <p class="text-card-body svc-short">{s.short}</p>
               <span class="svc-more" aria-hidden="true">Αναλυτικά</span>
@@ -79,14 +77,7 @@ import { serviceImages } from '@content/images';
     background: var(--color-alt);
   }
   .svc-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .svc-link :global(.svc-icon) {
-    display: block;
-    width: 2.25rem;
-    height: 2.25rem;
-    margin-block-start: var(--stack-md);
-    color: var(--color-text);
-  }
-  .svc-name { margin-block-start: var(--stack-sm); color: var(--color-accent); }
+  .svc-name { margin-block-start: var(--stack-md); color: var(--color-accent); }
   .svc-short { margin-block-start: var(--stack-sm); color: var(--color-muted); }
   .svc-more {
     display: inline-block;

@@ -17,7 +17,6 @@ import Layout from '@layouts/Layout.astro';
 import Container from '@components/Container.astro';
 import Breadcrumbs from '@components/Breadcrumbs.astro';
 import Button from '@components/Button.astro';
-import BrandIcon from '@components/BrandIcon.astro';
 import WaveRule from '@components/WaveRule.astro';
 import { services } from '@content/services';
 import { serviceImages } from '@content/images';
@@ -49,20 +48,19 @@ const schema = {
   description: service.short,
   areaServed: site.serviceArea,
   provider: { '@type': 'LocalBusiness', name: site.name, url: site.url },
-  url: new URL(`/ypiresies/${service.slug}/`, site.url).href,
+  url: new URL(`/therapeies/${service.slug}/`, site.url).href,
 };
 ---
 
-<Layout slug={`ypiresies/${service.slug}`}>
+<Layout slug={`therapeies/${service.slug}`}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />
 
   <section class="py-section svc">
     <Container>
-      <Breadcrumbs trail={[{ name: 'Υπηρεσίες', href: '/ypiresies/' }, { name: service.title }]} />
+      <Breadcrumbs trail={[{ name: 'Θεραπείες', href: '/therapeies/' }, { name: service.title }]} />
 
       <div class="svc-head">
         <div class="svc-copy">
-          <BrandIcon name={service.icon} class="svc-icon reveal reveal-up" />
           <h1 class="text-h1 svc-title reveal reveal-up">{service.title}</h1>
           <p class="text-lead svc-short reveal reveal-up">{service.short}</p>
         </div>
@@ -102,7 +100,7 @@ const schema = {
       <ul class="svc-near-list reveal-stagger">
         {others.map((o) => (
           <li class="reveal reveal-up">
-            <a class="svc-near-card" href={`/ypiresies/${o.slug}/`}>
+            <a class="svc-near-card" href={`/therapeies/${o.slug}/`}>
               <figure class="svc-near-media">
                 <img
                   src={serviceImages[o.slug].src}
@@ -119,7 +117,7 @@ const schema = {
         ))}
       </ul>
       <p class="svc-near-all reveal reveal-up">
-        <a class="svc-near-link" href="/ypiresies/">Όλες οι θεραπείες<span aria-hidden="true"> →</span></a>
+        <a class="svc-near-link" href="/therapeies/">Όλες οι θεραπείες<span aria-hidden="true"> →</span></a>
       </p>
     </Container>
   </section>
@@ -127,13 +125,7 @@ const schema = {
 
 <style>
   .svc-head { display: grid; gap: var(--stack-lg); }
-  .svc-copy :global(.svc-icon) {
-    display: block;
-    width: 2.75rem;
-    height: 2.75rem;
-    color: var(--color-text);
-  }
-  .svc-title { margin-block-start: var(--stack-md); color: var(--color-accent); }
+  .svc-title { color: var(--color-accent); }
   .svc-short { margin-block-start: var(--stack-md); max-width: 34rem; color: var(--color-muted); }
 
   .svc-media {

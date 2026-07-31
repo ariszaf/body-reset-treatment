@@ -50,7 +50,7 @@ const showcase = services.map((s) => ({
   title: s.title,
   text: s.short,
   image: serviceImages[s.slug],
-  href: `/ypiresies/${s.slug}/`,
+  href: `/therapeies/${s.slug}/`,
 }));
 ---
 
@@ -61,12 +61,12 @@ const showcase = services.map((s) => ({
     ink="dark"
     markY="33%"
     markYPortrait="50%"
-    nextAnchor="ypiresies"
+    nextAnchor="therapeies"
   />
 
   {/* The treatments take the pinned stage — first thing after the photograph,
       one at a time, each with its own frame from the shoot. */}
-  <PinnedSteps id="ypiresies" eyebrow="Οι θεραπείες" steps={showcase} />
+  <PinnedSteps id="therapeies" eyebrow="Οι θεραπείες" steps={showcase} />
 
   {/* «How it works» keeps its content but changes shape: three across on a
       large screen, a swipeable rail below that. No `id` — an anchor may exist

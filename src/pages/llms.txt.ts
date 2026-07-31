@@ -19,7 +19,7 @@ export const GET: APIRoute = () => {
     '## Services',
     ...(services.length
       ? services.map((s) => `- ${s.title}: ${s.short}`)
-      : ['- (δείτε τον ιστότοπο για τις υπηρεσίες)']),
+      : ['- (δείτε τον ιστότοπο για τις θεραπείες)']),
     '',
     '## Contact',
     `- Phone: ${site.phone}`,

@@ -9,8 +9,8 @@ export type PageMeta = {
    *  site.ts + keyword (meta.ts). Μπαίνουν μόνο όταν το κείμενο είναι
    *  γραμμένο και εγκεκριμένο — αλλιώς η αυτόματη μορφή είναι ασφαλέστερη. */
   title?: string;
-  description?: string;            // '' = home · 'ypiresies', 'epikoinonia', …
-  nameEl: string;          // 'Υπηρεσίες'
+  description?: string;            // '' = home · 'therapeies', 'epikoinonia', …
+  nameEl: string;          // 'Θεραπείες'
   keyword: string;         // primary (focus) keyword — must be UNIQUE per page
   descriptionHint: string; // one-line hint — meta.ts expands it (≤155 final)
   excerpt?: string;        // 1–2 sentence summary (≤160) — cards, RSS, OG fallback
@@ -42,8 +42,8 @@ export const pages: PageMeta[] = [
     inNav: true,
   },
   {
-    slug: 'ypiresies',
-    nameEl: 'Υπηρεσίες',
+    slug: 'therapeies',
+    nameEl: 'Θεραπείες',
     keyword: 'θεραπείες μασάζ κατ’ οίκον',
     descriptionHint: 'Έξι θεραπείες σώματος στον δικό σας χώρο — σουηδικό, deep tissue, θεραπευτικό, sports, βεντούζες, Theragun.',
     excerpt: 'Οι έξι θεραπείες του Body Reset Treatment, αναλυτικά — τι περιλαμβάνει η καθεμία.',
@@ -55,42 +55,42 @@ export const pages: PageMeta[] = [
      Each keyword is DISTINCT: two pages competing for the same phrase is two
      pages ranking for neither. */
   {
-    slug: 'ypiresies/souidiko-masaz',
+    slug: 'therapeies/souidiko-masaz',
     nameEl: 'Σουηδικό μασάζ',
     keyword: 'σουηδικό μασάζ κατ’ οίκον',
     descriptionHint: 'Η κλασική τεχνική, σωστά εκτελεσμένη: συνεχής ροή και σταθερός ρυθμός, στον δικό σας χώρο.',
     inNav: false,
   },
   {
-    slug: 'ypiresies/deep-tissue',
+    slug: 'therapeies/deep-tissue',
     nameEl: 'Deep tissue',
     keyword: 'deep tissue μασάζ Αθήνα',
     descriptionHint: 'Αργή δουλειά στα βαθύτερα στρώματα, εκεί όπου η επιφανειακή πίεση δεν φτάνει.',
     inNav: false,
   },
   {
-    slug: 'ypiresies/therapeftiko-masaz',
+    slug: 'therapeies/therapeftiko-masaz',
     nameEl: 'Θεραπευτικό μασάζ',
     keyword: 'θεραπευτικό μασάζ Αθήνα',
     descriptionHint: 'Συνεδρία χτισμένη γύρω από ένα συγκεκριμένο σημείο που σας απασχολεί, μετά από αξιολόγηση.',
     inNav: false,
   },
   {
-    slug: 'ypiresies/sports-massage',
+    slug: 'therapeies/sports-massage',
     nameEl: 'Sports massage',
     keyword: 'sports massage Αθήνα',
     descriptionHint: 'Στοχευμένη δουλειά στις μυϊκές ομάδες που καταπονούνται από την προπόνηση — αποκατάσταση.',
     inNav: false,
   },
   {
-    slug: 'ypiresies/cupping-therapy',
+    slug: 'therapeies/cupping-therapy',
     nameEl: 'Cupping therapy',
     keyword: 'cupping therapy Αθήνα',
     descriptionHint: 'Βεντούζες σε συνδυασμό με μασάζ, για περιοχές όπου η ένταση δεν υποχωρεί με την πίεση.',
     inNav: false,
   },
   {
-    slug: 'ypiresies/theragun-therapy',
+    slug: 'therapeies/theragun-therapy',
     nameEl: 'Theragun therapy',
     keyword: 'theragun therapy Αθήνα',
     descriptionHint: 'Κρουστική συσκευή μαζί με δουλειά στα χέρια, για γρήγορη προετοιμασία ή αποφόρτιση.',

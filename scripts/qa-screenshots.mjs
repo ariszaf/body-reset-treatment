@@ -1,5 +1,5 @@
 // Polarzee QA runner — ships with the starter, never regenerated.
-// Usage: QA_BASE="http://localhost:4321" QA_ROUTES="/,/ypiresies" node scripts/qa-screenshots.mjs
+// Usage: QA_BASE="http://localhost:4321" QA_ROUTES="/,/therapeies" node scripts/qa-screenshots.mjs
 // Requires playwright (npx --yes playwright@latest install chromium)
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
