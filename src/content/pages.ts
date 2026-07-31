@@ -56,11 +56,11 @@ export const pages: PageMeta[] = [
     keyword: 'ραντεβού μασάζ κατ’ οίκον Αθήνα',
     descriptionHint: 'Τηλέφωνο, online κράτηση ή μήνυμα. Κλείστε ραντεβού για θεραπεία στον δικό σας χώρο.',
     excerpt: 'Τηλέφωνο, online κράτηση ή μήνυμα. Διαλέξτε ό,τι σας εξυπηρετεί.',
-    /* NOT in the menu. Every «Κλείστε ραντεβού» button on the site already
-       lands here, and a second entry saying the same thing one line above the
-       menu's own appointment item was the menu repeating itself. The page is
-       reachable, indexed and in the sitemap — it just is not listed twice. */
-    inNav: false,
+    /* In the menu as «Επικοινωνία». It sits one line above the menu's own
+       «Κλείστε ραντεβού online», and the two are deliberately different
+       destinations: this page is the channels that work today, that one is the
+       scheduler that is coming. */
+    inNav: true,
   },
 
   /* One page per treatment. `nameEl` is the treatment's own name, so the title,

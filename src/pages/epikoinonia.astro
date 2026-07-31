@@ -9,10 +9,13 @@
  * at 2am should not be told they will be called back. Three channels, stated
  * plainly, and they pick.
  *
- * ONLINE APPEARS ONLY WHEN IT EXISTS. `onlineBookingUrl` is empty unless
- * site.bookingUrl holds a real http(s) address, and this page renders the
- * option only then. A booking channel that is announced but does not work is
- * worse than one that is not announced.
+ * ONLINE IS LISTED NOW, BY INSTRUCTION. The scheduler lives somewhere else and
+ * the address has not been given yet, so the link points at '#' until it is,
+ * exactly like the menu item. The factory default is the opposite (a channel
+ * that does not work is not announced) and it is still the right default; this
+ * site overrides it because the channel is coming and the client wants it seen.
+ * The moment `site.bookingUrl` holds a real http(s) address it becomes a real
+ * link in a new tab, with no further change here.
  *
  * The details are read from site.ts, the same source as the footer, so the
  * number cannot be right in one place and stale in the other.
@@ -45,25 +48,23 @@ const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
         <section class="way reveal reveal-up">
           <p class="text-eyebrow">Τηλέφωνο</p>
           <p class="way-lead"><a class="way-tel" href={telHref}>{site.phone}</a></p>
-          <p class="text-card-body way-text">
-            Ο πιο γρήγορος δρόμος. Βρίσκουμε ώρα στο τηλέφωνο και τελειώσαμε.
-          </p>
         </section>
 
-        {onlineBookingUrl && (
-          <section class="way reveal reveal-up">
-            <p class="text-eyebrow">Online κράτηση</p>
-            <p class="way-lead">
-              <a class="way-link" href={onlineBookingUrl} target="_blank" rel="noopener">
-                Δείτε τις διαθέσιμες ώρες<span aria-hidden="true"> →</span>
-              </a>
-            </p>
-            <p class="text-card-body way-text">
-              Επιλέγετε μέρα και ώρα από το ημερολόγιο και το ραντεβού
-              επιβεβαιώνεται αμέσως, οποιαδήποτε ώρα της ημέρας.
-            </p>
-          </section>
-        )}
+        <section class="way reveal reveal-up">
+          <p class="text-eyebrow">Online κράτηση</p>
+          <p class="way-lead">
+            <a
+              class="way-link"
+              href={onlineBookingUrl || '#'}
+              target={onlineBookingUrl ? '_blank' : undefined}
+              rel={onlineBookingUrl ? 'noopener' : undefined}
+            >Δείτε τις διαθέσιμες ώρες<span aria-hidden="true"> →</span></a>
+          </p>
+          <p class="text-card-body way-text">
+            Επιλέγετε μέρα και ώρα από το ημερολόγιο και το ραντεβού
+            επιβεβαιώνεται αμέσως, οποιαδήποτε ώρα της ημέρας.
+          </p>
+        </section>
 
         <section class="way reveal reveal-up">
           <p class="text-eyebrow">Μήνυμα</p>
