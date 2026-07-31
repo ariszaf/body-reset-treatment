@@ -18,7 +18,6 @@ import Container from '@components/Container.astro';
 import Button from '@components/Button.astro';
 import WaveRule from '@components/WaveRule.astro';
 import Breadcrumbs from '@components/Breadcrumbs.astro';
-import BrandIcon from '@components/BrandIcon.astro';
 import { images } from '@content/images';
 import { booking, bookingAttrs } from '@lib/booking';
 
@@ -151,12 +150,7 @@ const principles = [
         <h2 class="text-section-title reveal reveal-up">Κλείστε την πρώτη σας συνεδρία</h2>
         <p class="text-lead detail-lead reveal reveal-up">{booking.lead}</p>
         <div class="detail-action reveal reveal-up">
-          {/* Online scheduler once site.bookingUrl is set; the enquiry dialog until then. */}
-          <Button class="booking-btn" {...bookingAttrs}>
-            {booking.icon && <BrandIcon name={booking.icon} class="booking-btn-icon" />}
-            <span>{booking.label}</span>
-          </Button>
-          <p class="booking-hint text-caption">{booking.hint}</p>
+          <Button {...bookingAttrs}>{booking.label}</Button>
         </div>
       </div>
     </Container>
@@ -245,7 +239,4 @@ const principles = [
   .detail-band { background: var(--color-alt); }
   .detail-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }
   .detail-action { margin-block-start: var(--stack-lg); }
-  .detail-action :global(.booking-btn) { display: inline-flex; align-items: center; gap: 0.7em; }
-  .detail-action :global(.booking-btn-icon) { width: 1.35em; height: 1.35em; color: currentColor; flex: none; }
-  .booking-hint { margin-block-start: var(--stack-sm); }
 </style>

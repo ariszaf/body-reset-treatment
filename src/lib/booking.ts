@@ -1,66 +1,42 @@
 /**
- * Where the appointment CTA points, and what the whole booking section SAYS —
- * resolved in ONE place so the header link, the homepage section and the About
- * button can never contradict each other.
+ * Where the appointment CTA points, and what the sections around it SAY —
+ * resolved in ONE place so the bar, the menu, the footer, the About page and
+ * every treatment page can never contradict each other.
  *
- * Two modes, switched by `site.bookingUrl`:
+ * ONE destination now: /epikoinonia/, the page that lays out every way to book —
+ * phone, online, message. The site used to decide that for the visitor (dialog
+ * or scheduler, depending on whether a booking URL existed) and it was deciding
+ * badly: someone who wants to ring should not have to open a form to find the
+ * number, and someone who wants a slot at 2am should not be told they will be
+ * called back. The choice belongs on a page, made by them.
  *
- *   filled  → real self-service booking (Cal). The visitor picks a slot and
- *             confirms on the spot, so the CTA has to look and read like an
- *             online scheduler: calendar mark, "online" in the label, an
- *             external-link cue, and a heading that no longer promises a callback.
- *   empty   → the enquiry dialog: leave your details, we call you back.
- *
- * The wording is part of the switch, not decoration. A button that says
- * "Κλείστε Ραντεβού" under a heading that says "Αφήστε μας τα στοιχεία σας" tells
- * the visitor two different things about what is about to happen.
+ * `site.bookingUrl` no longer switches the button — it switches whether the
+ * ONLINE option appears on that page. Until a real address is given, the page
+ * offers the two channels that work.
  */
 import { site } from '../content/site';
-import type { IconName } from './icons';
 
 export type BookingMode = {
   href: string;
-  /** attach [data-booking] so the dialog intercepts the click */
-  useDialog: boolean;
-  external: boolean;
-  /** button text */
+  /** button text — the same three words everywhere */
   label: string;
-  /** mark shown inside the button — none in dialog mode, where there is nothing to signal */
-  icon?: IconName;
-  /** section heading */
+  /** section heading where a booking block is introduced */
   heading: string;
   /** section lead */
   lead: string;
-  /** one quiet line under the button, setting the expectation */
-  hint: string;
 };
 
+/** The self-service scheduler, if there is one. '#' and other placeholders do
+ *  not count: only a real address may be offered as a way to book. */
 const url = (site as { bookingUrl?: string }).bookingUrl?.trim() ?? '';
+export const onlineBookingUrl = /^https?:\/\//i.test(url) ? url : '';
 
-export const booking: BookingMode = url
-  ? {
-      href: url,
-      useDialog: false,
-      external: true,
-      label: 'Κλείστε ραντεβού online',
-      icon: 'calendar',
-      heading: 'Δείτε τις διαθέσιμες ώρες',
-      lead: 'Επιλέξτε ημέρα και ώρα από το ημερολόγιο και το ραντεβού σας θα επιβεβαιωθεί αμέσως.',
-      hint: 'Ηλεκτρονική κράτηση — ανοίγει σε νέα καρτέλα',
-    }
-  : {
-      href: site.cta.href,
-      useDialog: true,
-      external: false,
-      label: site.cta.label,
-      heading: 'Αφήστε μας τα στοιχεία σας',
-      lead: 'Θα σας καλέσουμε άμεσα για να βρούμε μαζί την πρώτη διαθέσιμη ώρα.',
-      hint: 'Σας καλούμε εμείς — δεν χρειάζεται να τηλεφωνήσετε',
-    };
+export const booking: BookingMode = {
+  href: '/epikoinonia/',
+  label: site.cta.label,
+  heading: 'Κλείστε την πρώτη σας συνεδρία',
+  lead: 'Τηλέφωνο, online κράτηση ή μήνυμα — διαλέξτε ό,τι σας βολεύει.',
+};
 
 /** Spread onto an <a>/<Button>: `{...bookingAttrs}` */
-export const bookingAttrs = {
-  href: booking.href,
-  ...(booking.useDialog ? { 'data-booking': '' } : {}),
-  ...(booking.external ? { target: '_blank', rel: 'noopener' } : {}),
-};
+export const bookingAttrs = { href: booking.href };

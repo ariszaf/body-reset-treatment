@@ -1,9 +1,20 @@
 ---
 /**
- * Breadcrumbs — visual trail + BreadcrumbList JSON-LD (spec origin: seo.md §10).
- * Place at the top of every page EXCEPT the homepage.
+ * Breadcrumbs — BreadcrumbList JSON-LD ONLY. Nothing is drawn on the page.
+ *
+ * The visible trail («Αρχική › Θεραπείες») was removed at the client's request:
+ * they do not want a directory path on the page. The structured data stays, and
+ * that is not a loophole — the two do different jobs. On the page the trail was
+ * a second, smaller navigation for a site with three sections and a menu that
+ * is always on screen. In a search result the same data draws the path UNDER
+ * the link, which is where it earns its keep and where nobody has to look at it
+ * until it is useful.
+ *
+ * Keep placing it at the top of every page EXCEPT the homepage — it renders
+ * nothing, so where it sits only affects where the script tag lands.
+ *
  * Auto-derives from the current URL via pages.ts; pass `trail` to override
- * (e.g. service pages: [{name:'Θεραπείες',href:'/therapeies/'},{name:'Λεύκανση'}]).
+ * (e.g. treatment pages: [{name:'Θεραπείες',href:'/therapeies/'},{name:'Cupping'}]).
  */
 import { site } from '../content/site';
 import { pages } from '../content/pages';
@@ -36,33 +47,4 @@ const schema = {
 };
 ---
 
-{crumbs.length > 1 && (
-  <nav class="breadcrumbs" aria-label="Breadcrumb">
-    <ol>
-      {crumbs.map((c, i) => (
-        <li>
-          {c.href ? <a href={c.href}>{c.name}</a> : <span aria-current="page">{c.name}</span>}
-          {i < crumbs.length - 1 && <span class="sep" aria-hidden="true">›</span>}
-        </li>
-      ))}
-    </ol>
-    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
-  </nav>
-)}
-
-<style>
-  .breadcrumbs { padding-block: var(--stack-sm); }
-  .breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
-  .breadcrumbs li { display: flex; gap: 0.5rem; align-items: center; font-size: var(--text-caption); color: var(--color-muted); }
-  /* Padding + matching negative margin: a ≥40px touch target without changing
-     where the crumb sits on the line. */
-  .breadcrumbs a {
-    color: inherit;
-    text-decoration: none;
-    display: inline-block;
-    padding-block: 0.55em;
-    margin-block: -0.55em;
-  }
-  @media (hover: hover) { .breadcrumbs a:hover { color: var(--color-primary); text-decoration: underline; } }
-  .sep { color: var(--color-border); }
-</style>
+{crumbs.length > 1 && <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />}

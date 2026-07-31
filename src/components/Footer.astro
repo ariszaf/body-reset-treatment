@@ -13,10 +13,9 @@
  * and "Θα σας καλέσουμε άμεσα…" were saying in a section title what the button
  * already says on its face, and the dialog says again the moment it opens.
  *
- * It carries `id="epikoinonia"` — the anchor every CTA on the site points at
- * (site.cta.href). Because it lives in the footer it now exists on EVERY page,
- * so the menu's "Κλείστε Ραντεβού" no longer has to bounce back to the homepage
- * first. Still exactly one element with that id per page.
+ * The `id="epikoinonia"` it used to carry is gone: the name now belongs to a
+ * real page (/epikoinonia/) with the message form on it, and one site cannot
+ * have both an anchor and a page answering to the same word.
  */
 import { site } from '../content/site';
 import { navigation, legalLinks } from '../content/navigation';
@@ -24,7 +23,6 @@ import { booking, bookingAttrs } from '../lib/booking';
 import Container from './Container.astro';
 import LangSwitch from './LangSwitch.astro';
 import Button from './Button.astro';
-import BrandIcon from './BrandIcon.astro';
 
 const year = new Date().getFullYear();
 const socials = Object.entries(site.social).filter(([, url]) => url);
@@ -32,14 +30,13 @@ const clientDomain = new URL(site.url).hostname;
 const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
 ---
 
-<footer class="site-footer" id="epikoinonia">
+<footer class="site-footer">
   <Container>
     <div class="footer-main py-section">
       <div class="footer-brand">
         <p class="text-card-title">{site.name}</p>
         <p class="text-caption footer-desc">{site.description}</p>
         <Button class="footer-btn" {...bookingAttrs}>
-          {booking.icon && <BrandIcon name={booking.icon} class="footer-btn-icon" />}
           <span>{booking.label}</span>
         </Button>
       </div>

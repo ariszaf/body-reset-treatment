@@ -27,7 +27,7 @@ export const faq: FaqItem[] = [
   {
     question: 'Τι θεραπείες κάνετε;',
     answer:
-      'Προσφέρουμε έξι θεραπείες: σουηδικό μασάζ, deep tissue, θεραπευτικό μασάζ, sports massage, cupping therapy και Theragun therapy. Ποια ταιριάζει κρίνεται στην αξιολόγηση, στην αρχή της συνεδρίας.',
+      'Προσφέρουμε έξι θεραπείες: σουηδικό μασάζ, deep tissue, θεραπευτικό μασάζ, sports massage, cupping therapy και Theragun therapy.',
   },
   {
     question: 'Πώς κλείνω ραντεβού;',

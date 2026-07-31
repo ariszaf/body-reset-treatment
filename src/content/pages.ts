@@ -50,6 +50,15 @@ export const pages: PageMeta[] = [
     inNav: true,
   },
 
+  {
+    slug: 'epikoinonia',
+    nameEl: 'Επικοινωνία',
+    keyword: 'ραντεβού μασάζ κατ’ οίκον Αθήνα',
+    descriptionHint: 'Τηλέφωνο, online κράτηση ή μήνυμα — κλείστε ραντεβού για θεραπεία στον δικό σας χώρο.',
+    excerpt: 'Τηλέφωνο, online κράτηση ή μήνυμα — διαλέξτε ό,τι σας βολεύει.',
+    inNav: true,
+  },
+
   /* One page per treatment. `nameEl` is the treatment's own name, so the title,
      the breadcrumb and the navigation all read the same without restating it.
      Each keyword is DISTINCT: two pages competing for the same phrase is two

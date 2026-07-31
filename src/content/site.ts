@@ -46,17 +46,22 @@ export const site = {
   priceRange: '€€€',
   openingHours: [] as string[],
 
-  /* Branding / integrations — ONE CTA sitewide: the appointment.
-     Anchor (not a page) so it works from every page while the contact page is pending. */
-  cta: { label: 'Κλείστε ραντεβού online', href: '/#epikoinonia' },
+  /* Branding / integrations — ONE CTA sitewide: the appointment. It does not go
+     to a booking system, it goes to the page that offers every way to book. */
+  cta: { label: 'Κλείστε ραντεβού', href: '/epikoinonia/' },
 
-  /* Online scheduler (Cal). THE MOMENT this is filled, every CTA on the site
-     switches from "leave your details and we call you" to real self-service
-     booking — see src/lib/booking.ts. Empty = the enquiry dialog stays.
-     TODO: paste the real Cal link, e.g. https://cal.com/body-reset-treatment */
+  /* The self-service scheduler, when there is one. This no longer switches the
+     button — it switches whether ONLINE κράτηση appears among the options on
+     /epikoinonia/. Empty (or a placeholder like '#') and the page offers the two
+     channels that actually work: phone and message.
+     ⚠ TODO: paste the real address the moment the client gives it. */
   bookingUrl: '',
   agencyCredit: 'silent' as 'silent' | 'visible',
 
-  /* Contact form → forms.polarzee.com (register the domain + key before launch). */
+  /* Contact form. Empty = the Polarzee hosted endpoint, which is the factory
+     default and needs the domain registered at forms.polarzee.com.
+     ⚠ TODO: the client is supplying their own endpoint — paste the URL here and
+     the form posts there instead, same JSON payload, no other change. */
+  formEndpoint: '',
   formSiteKey: 'body-reset-treatment',
 } as const;

@@ -1,17 +1,33 @@
 ---
 /**
- * Contact form → the Polarzee hosted forms endpoint (forms.polarzee.com).
- * NO API key, NO third-party mail service. Flow: GET a one-time token on mount,
- * then POST the JSON payload with that token + a honeypot. The site's origin is
- * allow-listed server-side — register the domain + key at forms.polarzee.com and
- * set `site.formSiteKey`. Server limits: name ≤120, email ≤200, phone ≤60,
- * subject ≤200, message ≤5000 (mirrored as maxlength for instant UX).
- * Failures are reported through error-logger's logFormError.
+ * Contact form. WHERE IT POSTS is `site.formEndpoint`; leave that empty and it
+ * falls back to the Polarzee hosted endpoint (forms.polarzee.com), which is the
+ * factory default and needs the domain registered there.
+ *
+ * The token dance is Polarzee's, not a general requirement: GET a one-time token
+ * on mount, POST it back with the payload and a honeypot. A CUSTOM endpoint gets
+ * the plain JSON and nothing else — no token round-trip, because there is no
+ * reason to assume someone else's server issues one. That is the only behaviour
+ * that changes with the address.
+ *
+ * NO API key, NO third-party mail service either way. Server limits: name ≤120,
+ * email ≤200, phone ≤60, subject ≤200, message ≤5000 (mirrored as maxlength for
+ * instant UX). Failures are reported through error-logger's logFormError.
  */
 import { site } from '../content/site';
+
+const POLARZEE = 'https://forms.polarzee.com/';
+const endpoint = (site as { formEndpoint?: string }).formEndpoint?.trim() || POLARZEE;
+const usesPolarzee = endpoint === POLARZEE;
 ---
 
-<form class="contact-form" novalidate data-site-key={site.formSiteKey}>
+<form
+  class="contact-form"
+  novalidate
+  data-site-key={site.formSiteKey}
+  data-endpoint={endpoint}
+  data-token-flow={usesPolarzee ? '' : undefined}
+>
   <div class="field">
     <label class="text-label" for="cf-name">Ονοματεπώνυμο</label>
     <input id="cf-name" name="name" type="text" required autocomplete="name" maxlength="120" />
@@ -63,10 +79,13 @@ import { site } from '../content/site';
 <script>
   import { logFormError } from '../scripts/error-logger';
 
-  const ENDPOINT = 'https://forms.polarzee.com/';
   const GENERIC = 'Δεν ήταν δυνατή η αποστολή του μηνύματος αυτή τη στιγμή — δοκιμάστε ξανά αργότερα ή επικοινωνήστε μαζί μας απευθείας.';
 
   const form = document.querySelector<HTMLFormElement>('.contact-form');
+  // Where to post and whether that address issues one-time tokens. Both come
+  // from the markup, so a change of endpoint is a change of one data file.
+  const ENDPOINT = form?.dataset.endpoint || 'https://forms.polarzee.com/';
+  const TOKEN_FLOW = form?.dataset.tokenFlow !== undefined;
   const status = form?.querySelector<HTMLElement>('.form-status');
   const btn = form?.querySelector<HTMLButtonElement>('.btn-submit');
   const honeypot = form?.querySelector<HTMLInputElement>('[name="company_url"]');
@@ -82,14 +101,24 @@ import { site } from '../content/site';
       if (d?.ok && d.token) token = d.token;
     } catch { /* offline / blocked — retried on submit */ }
   }
-  // fetch on mount: the token is valid 2s–2h, and a human takes >2s to fill in
-  if (form) getToken();
+  // ON FIRST TOUCH, not on mount. The token is valid 2s–2h and the server
+  // rejects anything submitted within 2s of issuing one, so it has to be asked
+  // for before the submit — but asking on page load meant every visitor who
+  // never touches the form still paid for a cross-origin request, and while the
+  // domain is not registered at the endpoint that request FAILS and prints CORS
+  // errors in the console of every visit. The launch gate caught it: three
+  // errors on a page nobody had interacted with.
+  // Focusing a field is the earliest honest signal, and filling one in takes
+  // far longer than the two seconds the server wants.
+  if (form && TOKEN_FLOW) {
+    form.addEventListener('focusin', () => { if (!token) getToken(); }, { once: true });
+  }
 
   async function post(fields: Record<string, string>) {
     const res = await fetch(ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...fields, _token: token }),
+      body: JSON.stringify(TOKEN_FLOW ? { ...fields, _token: token } : fields),
     });
     const data = await res.json().catch(() => ({}));
     return { res, data };
@@ -113,7 +142,7 @@ import { site } from '../content/site';
     if (btn) btn.disabled = true;
     if (status) status.textContent = 'Αποστολή…';
     try {
-      if (!token) await getToken();
+      if (TOKEN_FLOW && !token) await getToken();
       let { res, data } = await post(fields);
 
       // one retry on a token problem: too_fast → brief wait; else → fresh token

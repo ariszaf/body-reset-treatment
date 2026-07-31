@@ -80,7 +80,6 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
               class="navov-link"
               href={item.href}
               data-cta={item.cta ? '' : undefined}
-              data-booking={item.cta && booking.useDialog ? '' : undefined}
               target={item.cta && booking.external ? '_blank' : undefined}
               rel={item.cta && booking.external ? 'noopener' : undefined}
               aria-current={isCurrent(item.href)}

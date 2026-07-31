@@ -1,0 +1,142 @@
+---
+/**
+ * Κλείστε ραντεβού — every way to reach the business, on one page.
+ *
+ * WHY A PAGE AND NOT A DIALOG. Every appointment button on the site lands here.
+ * The site used to make the choice for the visitor — a form that promised a
+ * callback — and it was the wrong choice for half of them: someone who wants to
+ * ring should not have to open a form to find the number, and someone deciding
+ * at 2am should not be told they will be called back. Three channels, stated
+ * plainly, and they pick.
+ *
+ * ONLINE APPEARS ONLY WHEN IT EXISTS. `onlineBookingUrl` is empty unless
+ * site.bookingUrl holds a real http(s) address, and this page renders the
+ * option only then. A booking channel that is announced but does not work is
+ * worse than one that is not announced.
+ *
+ * The details are read from site.ts, the same source as the footer, so the
+ * number cannot be right in one place and stale in the other.
+ */
+import Layout from '@layouts/Layout.astro';
+import Container from '@components/Container.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
+import ContactForm from '@components/ContactForm.astro';
+import { site } from '@content/site';
+import { onlineBookingUrl } from '@lib/booking';
+
+const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
+---
+
+<Layout slug="epikoinonia">
+  <section class="py-section page-head">
+    <Container>
+      <Breadcrumbs />
+      <p class="text-eyebrow reveal reveal-up">Ραντεβού</p>
+      <h1 class="text-h1 page-title reveal reveal-up">Κλείστε ραντεβού</h1>
+      <p class="text-lead page-lead reveal reveal-up">
+        Διαλέξτε τον τρόπο που σας βολεύει. Δουλεύουμε αποκλειστικά κατόπιν
+        ραντεβού — {site.serviceArea}.
+      </p>
+
+      <div class="ways reveal-stagger">
+        <section class="way reveal reveal-up">
+          <p class="text-eyebrow">Τηλέφωνο</p>
+          <p class="way-lead"><a class="way-tel" href={telHref}>{site.phone}</a></p>
+          <p class="text-card-body way-text">
+            Ο πιο γρήγορος δρόμος. Βρίσκουμε ώρα στο τηλέφωνο και τελειώσαμε.
+          </p>
+        </section>
+
+        {onlineBookingUrl && (
+          <section class="way reveal reveal-up">
+            <p class="text-eyebrow">Online κράτηση</p>
+            <p class="way-lead">
+              <a class="way-link" href={onlineBookingUrl} target="_blank" rel="noopener">
+                Δείτε τις διαθέσιμες ώρες<span aria-hidden="true"> →</span>
+              </a>
+            </p>
+            <p class="text-card-body way-text">
+              Επιλέγετε μέρα και ώρα από το ημερολόγιο και το ραντεβού
+              επιβεβαιώνεται αμέσως, οποιαδήποτε ώρα της ημέρας.
+            </p>
+          </section>
+        )}
+
+        <section class="way reveal reveal-up">
+          <p class="text-eyebrow">Μήνυμα</p>
+          <p class="way-lead"><a class="way-link" href={`mailto:${site.email}`}>{site.email}</a></p>
+          <p class="text-card-body way-text">
+            Ή συμπληρώστε τη φόρμα πιο κάτω και απαντάμε το συντομότερο δυνατό.
+          </p>
+        </section>
+      </div>
+    </Container>
+  </section>
+
+  <section class="py-section form-band">
+    <Container>
+      <h2 class="text-section-title reveal reveal-up">Στείλτε μας μήνυμα</h2>
+      <p class="text-card-body form-lead reveal reveal-up">
+        Πείτε μας τι σας απασχολεί και σε ποια περιοχή βρίσκεστε.
+      </p>
+      <div class="form-col reveal reveal-up">
+        <ContactForm />
+      </div>
+    </Container>
+  </section>
+</Layout>
+
+<style>
+  /* The header floats over the page with no background, so inner pages have to
+     reserve the clearance the homepage gets for free from its full-bleed hero. */
+  .page-head { padding-block-start: calc(var(--space-section) + clamp(6.5rem, 9.5vw, 10.5rem)); }
+  .page-title {
+    margin-block-start: var(--stack-md);
+    max-width: 24ch;
+    text-transform: uppercase;
+    font-weight: 200;
+    letter-spacing: 0.1em;
+    line-height: 1.35;
+  }
+  .page-lead { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
+
+  /* ------------------------------ the ways ---------------------------- */
+  .ways { margin-block-start: var(--stack-xl); display: grid; gap: var(--stack-xl); }
+  .way { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
+  .way-lead { margin-block-start: var(--stack-md); }
+  .way-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
+
+  /* The number is the biggest thing on the page after the title — it is the
+     channel most people will use, and it should not have to be hunted for. */
+  /* Padding with a matching negative margin: a ≥44px finger target without
+     moving where the line sits. The gate measured 28px and 23px here — the
+     two links on the page most likely to be pressed on a phone. */
+  .way-tel,
+  .way-link {
+    display: inline-block;
+    text-decoration: none;
+    padding-block: 0.5em;
+    margin-block: -0.5em;
+    min-block-size: 2.75rem;
+  }
+  .way-tel {
+    font-size: var(--text-section-title);
+    letter-spacing: 0.04em;
+    color: var(--color-text);
+  }
+  .way-link { color: var(--color-accent); font-size: var(--text-lead); }
+  @media (hover: hover) {
+    .way-tel, .way-link { transition: color var(--transition-base); }
+    .way-tel:hover, .way-link:hover { color: var(--color-accent); }
+    .way-link:hover { text-decoration: underline; }
+  }
+
+  @media (min-width: 48rem) {
+    .ways { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--stack-lg); }
+  }
+
+  /* ------------------------------- the form --------------------------- */
+  .form-band { background: var(--color-alt); }
+  .form-lead { margin-block-start: var(--stack-md); max-width: 40rem; color: var(--color-muted); }
+  .form-col { margin-block-start: var(--stack-lg); }
+</style>
