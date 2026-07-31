@@ -31,11 +31,14 @@ const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
   <section class="py-section page-head">
     <Container>
       <Breadcrumbs />
-      <p class="text-eyebrow reveal reveal-up">Ραντεβού</p>
+      {/* The label, the title and the line under it said «ραντεβού» three
+          times in four lines. The title keeps the word — it is the instruction
+          — and the other two say something the title does not. */}
+      <p class="text-eyebrow reveal reveal-up">Επικοινωνία</p>
       <h1 class="text-h1 page-title reveal reveal-up">Κλείστε ραντεβού</h1>
       <p class="text-lead page-lead reveal reveal-up">
-        Διαλέξτε τον τρόπο που σας βολεύει. Δουλεύουμε αποκλειστικά κατόπιν
-        ραντεβού — {site.serviceArea}.
+        Διαλέξτε τον τρόπο που σας βολεύει. Δεχόμαστε αποκλειστικά κατόπιν
+        συνεννόησης — {site.serviceArea}.
       </p>
 
       <div class="ways reveal-stagger">

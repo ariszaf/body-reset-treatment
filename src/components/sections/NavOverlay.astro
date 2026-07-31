@@ -23,7 +23,7 @@ import BrandMark from '@components/BrandMark.astro';
 import LangSwitch from '@components/LangSwitch.astro';
 import { site } from '@content/site';
 import { navigation } from '@content/navigation';
-import { booking } from '@lib/booking';
+import { onlineBookingUrl } from '@lib/booking';
 
 interface Props {
   /**
@@ -36,9 +36,15 @@ interface Props {
 }
 const { tone = 'dark' } = Astro.props;
 
+/* The menu's last item is the ONLINE booking, and it is deliberately dead: the
+   client's scheduler lives somewhere else and the address has not been given
+   yet. It is listed now so the channel is announced where people look for it,
+   and it becomes a real link the moment `site.bookingUrl` is filled in —
+   nothing else changes. Until then it points at '#', which the client asked
+   for explicitly, and it is the ONE dead control on the site. */
 const links: { label: string; href: string; cta?: boolean }[] = [
   ...navigation,
-  { label: booking.label, href: booking.href, cta: true },
+  { label: 'Κλείστε ραντεβού online', href: onlineBookingUrl || '#', cta: true },
 ];
 
 const norm = (p: string) => p.replace(/\/+$/, '') || '/';
@@ -80,8 +86,8 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
               class="navov-link"
               href={item.href}
               data-cta={item.cta ? '' : undefined}
-              target={item.cta && booking.external ? '_blank' : undefined}
-              rel={item.cta && booking.external ? 'noopener' : undefined}
+              target={item.cta && onlineBookingUrl ? '_blank' : undefined}
+              rel={item.cta && onlineBookingUrl ? 'noopener' : undefined}
               aria-current={isCurrent(item.href)}
             >{item.label}</a>
           </li>
@@ -91,7 +97,9 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
 
     {site.phone && (
       <div class="navov-foot navov-item" style={`--i:${links.length}`}>
-        <span class="navov-contact-label">Ραντεβού</span>
+        {/* No label over the number. It said «Ραντεβού» directly under a menu
+            item that says «Κλείστε ραντεβού online» — the same word twice, and
+            a phone number needs no introduction. */}
         <a class="navov-tel" href={telHref}>{site.phone}</a>
       </div>
     )}
@@ -292,13 +300,6 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
     padding-block-start: var(--stack-md);
     padding-block-end: max(0px, env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-border);
-  }
-  .navov-contact-label {
-    font-size: var(--text-label);     /* 17px floor */
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wide);
-    color: var(--color-muted);
   }
   .navov-tel {
     font-size: var(--text-lead);

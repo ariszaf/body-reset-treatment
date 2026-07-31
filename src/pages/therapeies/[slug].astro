@@ -62,7 +62,11 @@ const schema = {
       <div class="svc-head">
         <div class="svc-copy">
           <h1 class="text-h1 svc-title reveal reveal-up">{service.title}</h1>
-          <p class="text-lead svc-short reveal reveal-up">{service.short}</p>
+          {/* No one-liner under the title. `short` is now compressed from the
+              description, and the description is the very next thing on the
+              page — the two would be the same sentence twice, seconds apart.
+              It still earns its place on the showcase and the cards, where the
+              full text is nowhere near it. */}
         </div>
 
         <figure class="svc-media reveal reveal-up">
@@ -161,7 +165,6 @@ const schema = {
 <style>
   .svc-head { display: grid; gap: var(--stack-lg); }
   .svc-title { color: var(--color-accent); }
-  .svc-short { margin-block-start: var(--stack-md); max-width: 34rem; color: var(--color-muted); }
 
   .svc-media {
     margin: 0;
