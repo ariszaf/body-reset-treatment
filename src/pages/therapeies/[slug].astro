@@ -45,7 +45,7 @@ const schema = {
   '@type': 'Service',
   name: service.title,
   serviceType: service.title,
-  description: service.short,
+  description: service.description,
   areaServed: site.serviceArea,
   provider: { '@type': 'LocalBusiness', name: site.name, url: site.url },
   url: new URL(`/therapeies/${service.slug}/`, site.url).href,
@@ -83,6 +83,42 @@ const schema = {
         {service.durations && (
           <p class="svc-durations text-label">Διάρκειες: {service.durations.join(' · ')}</p>
         )}
+      </div>
+
+      {/* Three blocks, always in this order and never behind a control.
+
+          The last of them is a contraindications list — who should not have
+          this treatment. On a health page that is the one thing a visitor may
+          need before they book and cannot be asked to go looking for, so there
+          is no accordion here and nothing is collapsed on a phone. It is set in
+          full ink rather than muted for the same reason. */}
+      <div class="svc-detail">
+        <section class="svc-block reveal reveal-up">
+          <h2 class="text-eyebrow">Σε ποιους απευθύνεται</h2>
+          <p class="text-card-body svc-block-text">{service.forWhom}</p>
+        </section>
+
+        <section class="svc-block reveal reveal-up">
+          <h2 class="text-eyebrow">Οφέλη</h2>
+          <ul class="svc-list">
+            {service.benefits.map((b) => (
+              <li class="text-card-body svc-item">{b}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="svc-block svc-block--care reveal reveal-up">
+          <h2 class="text-eyebrow">Αντενδείξεις</h2>
+          <ul class="svc-list">
+            {service.cautions.map((c) => (
+              <li class="text-card-body svc-item">{c}</li>
+            ))}
+          </ul>
+          <p class="svc-note text-caption">
+            Αν κάτι από τα παραπάνω σας αφορά, πείτε το μας πριν το ραντεβού —
+            προσαρμόζουμε ή προτείνουμε άλλη θεραπεία.
+          </p>
+        </section>
       </div>
 
       <div class="svc-cta reveal reveal-up">
@@ -139,6 +175,33 @@ const schema = {
   .svc-body { margin-block-start: var(--stack-xl); max-width: 40rem; }
   .svc-para + .svc-para { margin-block-start: var(--stack-md); }
   .svc-durations { margin-block-start: var(--stack-lg); color: var(--color-accent); }
+
+  /* ------------------------- for whom / benefits / cautions ------------- */
+  .svc-detail { margin-block-start: var(--stack-xl); display: grid; gap: var(--stack-xl); }
+  .svc-block { max-width: 40rem; padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
+  .svc-block-text { margin-block-start: var(--stack-md); color: var(--color-muted); }
+  .svc-list { list-style: none; margin: var(--stack-md) 0 0; padding: 0; display: grid; gap: var(--stack-sm); }
+  /* A rule as the mark, not a disc — the brand's whole vocabulary is hairlines,
+     and a column of bullets would be the one place on the site speaking
+     otherwise. `em`, so it tracks the line it belongs to. */
+  .svc-item { position: relative; padding-inline-start: 1.6em; color: var(--color-muted); }
+  .svc-item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.75em;
+    inline-size: 0.9em;
+    block-size: 1px;                       /* px — hairline */
+    background: var(--color-accent);
+  }
+  /* Full ink, not muted: this is the block someone may have to act on. */
+  .svc-block--care .svc-item { color: var(--color-text); }
+  .svc-note { margin-block-start: var(--stack-md); }
+
+  @media (min-width: 64rem) {
+    .svc-detail { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--stack-lg); align-items: start; }
+    .svc-block { max-width: none; }
+  }
   .svc-cta { margin-block-start: var(--stack-xl); }
   .svc-hint { margin-block-start: var(--stack-sm); }
 

@@ -7,9 +7,11 @@
  * mobile — there is no premises — so an interior shot would be describing
  * something that does not exist. The page is carried by type and line marks.
  *
- * ⚠ COPY NOTE: nothing here claims credentials, years in practice, staff names
- * or certifications — none of that was supplied, and inventing it on a health
- * page is not acceptable.
+ * COPY: supplied by the client, 31/07/2026, and used as written. It is the
+ * first thing on this site to state a credential — "περισσότερων από 9 χρόνων"
+ * — which is exactly why it had to come from them rather than from us.
+ *
+ * One word was changed and one section removed; both are in the commit message.
  */
 import Layout from '@layouts/Layout.astro';
 import Container from '@components/Container.astro';
@@ -17,9 +19,19 @@ import Button from '@components/Button.astro';
 import WaveRule from '@components/WaveRule.astro';
 import Breadcrumbs from '@components/Breadcrumbs.astro';
 import BrandIcon from '@components/BrandIcon.astro';
-import { site } from '@content/site';
 import { booking, bookingAttrs } from '@lib/booking';
 
+/* What every session is built to do. A list, not a paragraph: four parallel
+   outcomes read as four when they are set as four. */
+const outcomes = [
+  'Αποφόρτιση του μυϊκού συστήματος και ανακούφιση από την ένταση.',
+  'Βελτίωση της κινητικότητας και της λειτουργικότητας του σώματος.',
+  'Υποστήριξη της αποκατάστασης και της συνολικής σωματικής ευεξίας.',
+  'Μια ολοκληρωμένη εμπειρία θεραπευτικής φροντίδας στον δικό σας χώρο, χωρίς μετακινήσεις και περιττή ταλαιπωρία.',
+];
+
+/* The three rules that follow from the approach above. Deliberately concrete:
+   the section before it is the thinking, this is what the thinking commits to. */
 const principles = [
   {
     title: 'Αξιολόγηση πριν από κάθε άγγιγμα',
@@ -34,19 +46,6 @@ const principles = [
     text: 'Η επόμενη συνεδρία ορίζεται μόνο εάν κρίνεται πραγματικά απαραίτητη για την αποκατάστασή σας. Δεν προωθούμε προπληρωμένα πακέτα συνεδριών.',
   },
 ];
-
-const athome = [
-  {
-    icon: 'home' as const,
-    title: 'Στον δικό σας χώρο',
-    text: 'Το σαλόνι ή το υπνοδωμάτιο είναι υπεραρκετά. Χρειαζόμαστε μόνο έναν ελεύθερο χώρο περίπου δύο επί δύο μέτρα — όλο τον υπόλοιπο εξοπλισμό τον αναλαμβάνουμε εμείς.',
-  },
-  {
-    icon: 'table' as const,
-    title: 'Πλήρης εξοπλισμός',
-    text: 'Διαθέτουμε επαγγελματικό κρεβάτι, πεντακάθαρα λινά και εξαιρετικής ποιότητας έλαια σε κάθε επίσκεψη. Ο χώρος σας παραδίδεται ακριβώς όπως τον βρήκαμε.',
-  },
-];
 ---
 
 <Layout slug="poioi-eimaste">
@@ -54,31 +53,45 @@ const athome = [
     <Container>
       <Breadcrumbs />
       <p class="text-eyebrow reveal reveal-up">Ποιοι είμαστε</p>
-      <h1 class="text-h1 page-title reveal reveal-up">Αθλητικό και Σουηδικό μασάζ κατ’ οίκον στην Αθήνα: Μια προσέγγιση που ξεκινά από το σώμα, όχι από το πρόγραμμα.</h1>
+      <h1 class="text-h1 page-title reveal reveal-up">Σχετικά με το Body Reset Treatment</h1>
       <p class="text-lead page-lead reveal reveal-up">
-        Το Body Reset Treatment δεν λειτουργεί σαν ένα συμβατικό studio. Η θεραπεία
-        έρχεται αποκλειστικά σε εσάς, και κάθε συνεδρία σχεδιάζεται πάνω στις
-        πραγματικές ανάγκες του σώματος που βρίσκεται μπροστά μας.
+        Το Body Reset Treatment δημιουργήθηκε με μία ξεκάθαρη φιλοσοφία: η πραγματική
+        αποκατάσταση δεν αποτελεί πολυτέλεια, αλλά ουσιαστική ανάγκη του σώματος.
+        Συνδυάζει την εξειδικευμένη θεραπευτική φροντίδα με την εμπειρία ενός premium
+        spa, προσφέροντας φροντίδα υψηλών προδιαγραφών στην άνεση του δικού σας χώρου.
+      </p>
+      <p class="text-card-body page-body reveal reveal-up">
+        Το brand αποτελεί την εξέλιξη περισσότερων από 9 χρόνων επαγγελματικής εμπειρίας
+        στον χώρο της θεραπευτικής μάλαξης, της αθλητικής αποκατάστασης και του wellness.
+        Η διαδρομή αυτή, μέσα από φυσικοθεραπευτικά κέντρα, δομές αποκατάστασης αθλητών
+        και premium spa, διαμόρφωσε μια προσέγγιση που συνδυάζει επιστημονική γνώση,
+        τεχνική ακρίβεια και υψηλά πρότυπα φροντίδας. Κάθε συνεδρία πραγματοποιείται με
+        πλήρη επαγγελματικό εξοπλισμό, προσφέροντας μια ολοκληρωμένη θεραπευτική εμπειρία,
+        χωρίς να χρειάζεται να μετακινηθείτε από τον χώρο σας.
       </p>
     </Container>
   </section>
 
-  <section class="py-section athome">
+  <section class="py-section approach">
     <Container>
-      <h2 class="text-section-title reveal reveal-up">Πώς λειτουργεί η κατ’ οίκον συνεδρία</h2>
-      <ul class="athome-list reveal-stagger">
-        {athome.map((item) => (
-          <li class="athome-item reveal reveal-up">
-            <BrandIcon name={item.icon} />
-            <h3 class="text-card-title athome-title">{item.title}</h3>
-            <p class="text-card-body athome-text">{item.text}</p>
+      <h2 class="text-section-title reveal reveal-up">Η προσέγγιση</h2>
+      <p class="text-card-body approach-text reveal reveal-up">
+        Κάθε σώμα είναι διαφορετικό και έχει τις δικές του ανάγκες. Για τον λόγο αυτό,
+        δεν υπάρχουν προκαθορισμένα πρωτόκολλα ούτε τυποποιημένες συνεδρίες. Κάθε
+        θεραπεία προσαρμόζεται αποκλειστικά στις ανάγκες, την καθημερινότητα και τους
+        στόχους του κάθε ανθρώπου, με γνώμονα την ποιότητα, την ακρίβεια και το
+        ουσιαστικό αποτέλεσμα.
+      </p>
+      <p class="text-card-body approach-text reveal reveal-up">
+        Κάθε συνεδρία έχει σχεδιαστεί ώστε να συμβάλλει σε:
+      </p>
+      <ul class="outcomes reveal-stagger">
+        {outcomes.map((o) => (
+          <li class="outcome reveal reveal-up">
+            <p class="text-card-body outcome-text">{o}</p>
           </li>
         ))}
       </ul>
-      <p class="text-card-body athome-note reveal reveal-up">
-        Δουλεύουμε αποκλειστικά κατόπιν ραντεβού, διασφαλίζοντας ότι δεν θα υπάρξει
-        ποτέ αναμονή ή πίεση χρόνου μεταξύ των επισκέψεων.
-      </p>
     </Container>
   </section>
 
@@ -86,7 +99,7 @@ const athome = [
 
   <section class="py-section principles">
     <Container>
-      <h2 class="text-section-title reveal reveal-up">Η φιλοσοφία μας</h2>
+      <h2 class="text-section-title reveal reveal-up">Τι ισχύει πάντα</h2>
       <ol class="principles-list reveal-stagger">
         {principles.map((p, i) => (
           <li class="principle reveal reveal-up">
@@ -102,6 +115,17 @@ const athome = [
   </section>
 
   <WaveRule />
+
+  <section class="py-section closing">
+    <Container>
+      <p class="text-lead closing-text reveal reveal-up">
+        Το Body Reset Treatment δεν είναι απλώς μια συνεδρία μασάζ. Αποτελεί μια
+        ολοκληρωμένη εμπειρία επαγγελματικής θεραπευτικής φροντίδας, σχεδιασμένη για
+        ανθρώπους που επιλέγουν την ποιότητα, την εξειδίκευση και το ουσιαστικό
+        αποτέλεσμα.
+      </p>
+    </Container>
+  </section>
 
   <section class="py-section detail-band">
     <Container>
@@ -136,28 +160,26 @@ const athome = [
     line-height: 1.35;
   }
   .page-lead { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
+  .page-body { margin-block-start: var(--stack-lg); max-width: 44rem; color: var(--color-muted); }
 
-  /* ------------------------------ at home ---------------------------- */
-  .athome { background: var(--color-alt); }
-  .athome-list {
-    list-style: none;
-    margin: var(--stack-xl) 0 0;
-    padding: 0;
-    display: grid;
-    gap: var(--stack-xl);
-  }
-  .athome-item { padding-block-start: var(--stack-md); border-top: 1px solid var(--color-border); }
-  .athome-title { margin-block-start: var(--stack-md); }
-  .athome-text { margin-block-start: var(--stack-sm); color: var(--color-muted); }
-  .athome-note {
-    margin-block-start: var(--stack-xl);
+  /* ----------------------------- approach ---------------------------- */
+  .approach { background: var(--color-alt); }
+  .approach-text {
+    margin-block-start: var(--stack-lg);
     max-width: 44rem;
     color: var(--color-muted);
   }
 
-  @media (min-width: 48rem) {
-    .athome-list { grid-template-columns: repeat(2, 1fr); gap: var(--stack-xl); }
+  /* Rules, not bullet glyphs. The brand's whole vocabulary is two hairlines;
+     a row of discs would be the one place on the site speaking otherwise. */
+  .outcomes { list-style: none; margin: var(--stack-lg) 0 0; padding: 0; }
+  .outcome {
+    padding-block: var(--stack-md);
+    border-top: 1px solid var(--color-border);
+    max-width: 44rem;
   }
+  .outcome:last-child { border-bottom: 1px solid var(--color-border); }
+  .outcome-text { color: var(--color-muted); }
 
   /* ---------------------------- principles --------------------------- */
   .principles-list { list-style: none; margin: var(--stack-lg) 0 0; padding: 0; }
@@ -180,7 +202,13 @@ const athome = [
   }
   .principle-text { margin-block-start: var(--stack-sm); color: var(--color-muted); max-width: 44rem; }
 
+  /* ----------------------------- closing ----------------------------- */
+  /* The last word before the appointment. Full ink rather than muted — it is a
+     statement, not supporting copy. */
+  .closing-text { max-width: 44rem; }
+
   /* ---------------------------- detail band -------------------------- */
+  .detail-band { background: var(--color-alt); }
   .detail-lead { margin-block-start: var(--stack-md); max-width: 38rem; color: var(--color-muted); }
   .detail-action { margin-block-start: var(--stack-lg); }
   .detail-action :global(.booking-btn) { display: inline-flex; align-items: center; gap: 0.7em; }
