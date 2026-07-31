@@ -54,7 +54,9 @@ const { eyebrow, title, id, steps } = Astro.props;
 
 <section class="rail" id={id}>
   <Container>
-    {eyebrow && <p class="text-eyebrow reveal reveal-up">{eyebrow}</p>}
+    {/* h2 for the same reason as the treatments section: the cards below are
+        h3 and this is their parent. */}
+    {eyebrow && <h2 class="text-eyebrow rail-eyebrow reveal reveal-up">{eyebrow}</h2>}
     {title && <h2 class="text-section-title rail-title reveal reveal-up">{title}</h2>}
 
     <div class="rail-embla" data-embla>
@@ -96,6 +98,7 @@ const { eyebrow, title, id, steps } = Astro.props;
 
 <style>
   .rail { padding-block: var(--space-section); }
+  .rail-eyebrow { margin: 0; }
   .rail-title { margin-block-start: var(--stack-md); }
 
   /* ---- base: a plain vertical stack. This is what renders without JS. ---- */

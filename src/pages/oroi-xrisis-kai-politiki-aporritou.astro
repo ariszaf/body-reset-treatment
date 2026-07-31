@@ -18,12 +18,26 @@ const html = marked.parse(
 <Layout slug="oroi-xrisis-kai-politiki-aporritou">
   <Container>
     <Breadcrumbs />
-    <article class="legal-doc py-section" set:html={html} />
+    <div class="legal-head py-section">
+      {/* The document itself starts at «ΟΡΟΙ ΧΡΗΣΗΣ», an h2, so the page had no
+          h1 at all — the only page on the site without one. The markdown is
+          three documents joined end to end and each keeps its own h2, so the
+          heading that names the page has to live outside it. */}
+      <h1 class="text-h1 legal-title">Όροι Χρήσης &amp; Πολιτική Απορρήτου</h1>
+    </div>
+    <article class="legal-doc" set:html={html} />
   </Container>
 </Layout>
 
 <style is:global>
-  .legal-doc { max-width: 46rem; }
+  .legal-head { padding-block-end: 0; max-width: 46rem; }
+  .legal-title {
+    text-transform: uppercase;
+    font-weight: 200;
+    letter-spacing: 0.1em;
+    line-height: 1.35;
+  }
+  .legal-doc { max-width: 46rem; padding-block: var(--stack-xl) var(--space-section); }
   .legal-doc h2 { font-size: var(--text-section-title); margin-block: var(--stack-xl) var(--stack-md); }
   .legal-doc h2:first-child { margin-block-start: 0; }
   .legal-doc h3 { font-size: var(--text-card-title); margin-block: var(--stack-lg) var(--stack-sm); }

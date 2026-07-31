@@ -55,7 +55,11 @@ const hasMedia = steps.some((s) => s.image);
     <div class="pinned-stage">
       <Container>
         <div class="pinned-inner">
-          {eyebrow && <p class="text-eyebrow pinned-eyebrow">{eyebrow}</p>}
+          {/* h2, not a paragraph. The treatment names inside are h3, so with a
+              styled <p> here the document jumped h1 → h3 and a screen reader
+              announced six level-3 headings with no parent. It looks identical;
+              only the outline changes. */}
+          {eyebrow && <h2 class="text-eyebrow pinned-eyebrow">{eyebrow}</h2>}
           {title && <h2 class="text-section-title pinned-title">{title}</h2>}
 
           <ol class="pinned-steps" data-media={hasMedia ? '' : undefined}>
@@ -174,6 +178,7 @@ const hasMedia = steps.some((s) => s.image);
     color: var(--color-muted);
     max-width: 34rem;
   }
+  .pinned-eyebrow { margin: 0; }
   .pinned-title { margin-block-start: var(--stack-md); }
   /* Both only exist in pinned mode — the stacked fallback is already a list you
      read top to bottom, with nothing to page through. */
