@@ -74,7 +74,12 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
 
 {!isStill && <style is:inline set:html={keyframes} />}
 
+{/* data-under-nav: this hero MEANS to run under the fixed bar — it is the one
+    page that opens full-bleed. NavOverlay reads the attribute to cancel the
+    offset it gives every other page. Opt-in, so a page that forgets it gets
+    too much room (visible) rather than a heading behind the bar (not). */}
 <section
+  data-under-nav
   class:list={['hero', markY && 'hero--placed']}
   data-ink={ink}
   style={[

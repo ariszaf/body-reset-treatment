@@ -115,6 +115,26 @@ const panelId = `navov-panel-${Math.random().toString(36).slice(2, 8)}`;
      off them, and when two copies drifted the logotype physically covered the
      first menu link and swallowed its clicks. */
 
+  /* --------------------- the bar pays for its own space -------------------
+     The bar is FIXED, so it is out of flow and NOTHING below it knows it is
+     there. `py-section` alone is smaller than the bar on every screen, so the
+     first section of every inner page started level with it or under it — the
+     h1 of a treatment page sat 24px BEHIND the bar, and the index had a 0px
+     gap. It reads as a page with no top padding at all.
+
+     Paid once on <main>, not per section: a rule each page has to remember is
+     a rule some page forgets, and the whole point of a fixed bar is that no
+     page can see it. The section's own py-section then supplies the rhythm
+     BELOW the bar, exactly as it does between any two sections.
+
+     The exception is opt-IN, never opt-out: a hero that MEANS to run under the
+     bar says so with `data-under-nav` (that is also why the bar hides its own
+     logotype there). Forgetting the attribute costs extra room and you see it
+     at a glance; the inverse hides a heading and nobody sees it until it is
+     reported. Same contract as the factory module — do not let them drift. */
+  :global(main) { padding-block-start: var(--nav-bar-h); }
+  :global(main:has(> [data-under-nav])) { padding-block-start: 0; }
+
   /* ---------------------------- slim fixed bar --------------------------- */
   .navov-bar {
     position: fixed;
