@@ -91,9 +91,8 @@ const telHref = `tel:${site.phone.replace(/\s+/g, '')}`;
 </Layout>
 
 <style>
-  /* The header floats over the page with no background, so inner pages have to
-     reserve the clearance the homepage gets for free from its full-bleed hero. */
-  .page-head { padding-block-start: calc(var(--space-section) + clamp(6.5rem, 9.5vw, 10.5rem)); }
+  /* No bar clearance here — see Ποιοι είμαστε. NavOverlay pays for its own
+     height once on <main>; a per-page copy only drifts and breaks the rhythm. */
   .page-title {
     margin-block-start: var(--stack-md);
     max-width: 24ch;

@@ -158,10 +158,12 @@ const principles = [
 </Layout>
 
 <style>
-  /* The header floats over the page with no background, so inner pages have to
-     reserve the clearance the homepage gets for free from its full-bleed hero.
-     Matches the bar: logo clamp(4.5rem,8.5vw,7.5rem) + the edge gutter twice. */
-  .page-head { padding-block-start: calc(var(--space-section) + clamp(6.5rem, 9.5vw, 10.5rem)); }
+  /* No bar clearance here. It used to live on this page as a second copy of the
+     bar's geometry — and being a copy, it drifted: it read 137px where the bar
+     measures 166px, so it never actually matched the thing it was named after.
+     Worse, only this page and Επικοινωνία carried it, so the site had two pages
+     with one top rhythm and three with another. NavOverlay now pays for its own
+     height once on <main>; every page starts at the same py-section below it. */
   .page-title {
     margin-block-start: var(--stack-md);
     max-width: 24ch;
