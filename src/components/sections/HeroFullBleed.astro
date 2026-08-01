@@ -344,20 +344,30 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     transform: translateY(-50%);
   }
   .hero-h1 { margin: 0; }
-  /* Sized off the viewport, but capped: the mark is the quiet centre of the
-     frame, not a banner. The photograph still carries the scale.
+  /* Two limits, whichever runs out first: the WIDTH of the frame, and the empty
+     band above the subject — which is a share of its HEIGHT. The old 19rem
+     ceiling was reached at ~1170px and never moved again, so a laptop and a 27"
+     monitor drew the same 304px mark and the big one read as an afterthought.
+
+     Both terms are viewport-relative on purpose. Anything in rem or px here is a
+     browser-zoom setting in disguise: zoom does not resize the window, it
+     changes how many CSS pixels fit in it, so a rem threshold makes the same
+     physical screen land on either side of the same rule. vw/svh give the same
+     PHYSICAL mark at 90%, 100% or 125%.
+
      The height is DERIVED from the logo's own viewBox ratio (267.9 / 181.3), so
      the placement floor above can reason about it before layout happens. */
   .hero {
-    --mark-w: clamp(11rem, 26vw, 19rem);
+    --mark-w: clamp(12.5rem, min(30vw, 52svh), 40rem);
     --mark-h: calc(var(--mark-w) / 1.478);
   }
   /* A fifth larger on a phone. The vertical crop is a taller, emptier frame than
      the landscape one, so the mark can carry more of it without crowding the
      subject — and at arm's length a phone shows it smaller than the numbers
-     suggest. The placement floor below reads --mark-h, so it follows on its own. */
+     suggest. The placement floor below reads --mark-h, so it follows on its own.
+     Every number here is the landscape one × 1.2 — keep it that way. */
   @media (orientation: portrait) {
-    .hero { --mark-w: clamp(13.2rem, 31.2vw, 22.8rem); }
+    .hero { --mark-w: clamp(15rem, 36vw, 43rem); }
   }
   .hero-mark {
     display: block;
@@ -367,17 +377,20 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
 
   /* A letterboxed window — a phone held sideways, or a short desktop window —
      crops a landscape photograph straight through its middle, which is exactly
-     where the subject is. Bias the crop upward and shrink the mark, so the two
-     stay in the empty part of the frame instead of colliding in it.
+     where the subject is. Bias the crop upward, so she drops into the lower half
+     and the mark keeps the empty band above her to itself.
 
-     Gated on the SHAPE of the window, not its width: a tall phone at 360×640 is
-     short too, but its crop is horizontal and needs none of this.
+     Gated on the SHAPE of the window ALONE. The old gate also carried
+     `max-height: 46rem`, and a rem threshold is a browser-zoom threshold: the
+     same physical window crossed it just by stepping 90% → 100%, because zooming
+     changes how many CSS pixels fit in it, not the window. One notch of zoom
+     therefore swung the crop AND (while the mark was sized here too) shrank the
+     logotype by 40%. An aspect ratio is the same number at every zoom level.
 
      Must come AFTER the .hero rule above — same specificity, so source order
      decides, and declaring it earlier silently loses. */
-  @media (min-aspect-ratio: 3 / 2) and (max-height: 46rem) {
+  @media (min-aspect-ratio: 2 / 1) {
     .hero-frame img { object-position: center 20%; }
-    .hero { --mark-w: clamp(7.5rem, 14vw, 10.5rem); }
     /* Biasing the crop upward pushes the darkest part of the photograph down
        into the strip the cue sits in, so that end of the scrim has to work
        harder here than it does in a full-height frame. */
