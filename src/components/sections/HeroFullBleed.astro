@@ -29,6 +29,10 @@
  *               high-key one). Everything keys off this: the mark, the cue, the
  *               scrim's direction, and the colour the nav bar takes while it
  *               floats over the frame.
+ *   scrim       false leaves the photograph completely untouched — no wash, no
+ *               lift, nothing painted over it. The marks then have to carry
+ *               their own legibility, so they get a halo in page colour instead
+ *               (see .hero--bare below). Default true.
  *   markY       where the logotype's centre sits, top-down. The photograph
  *               decides this — it belongs wherever the frame is empty.
  *   markYPortrait
@@ -46,13 +50,17 @@ interface Props {
   slides: ImageEntry[];
   title: string;
   ink?: 'light' | 'dark';
+  scrim?: boolean;
   markY?: string;
   markYPortrait?: string;
   holdSec?: number;
   nextAnchor?: string;
 }
 
-const { slides, title, ink = 'light', markY, markYPortrait, holdSec = 7, nextAnchor } = Astro.props;
+const {
+  slides, title, ink = 'light', scrim = true,
+  markY, markYPortrait, holdSec = 7, nextAnchor,
+} = Astro.props;
 
 const N = slides.length;
 const cycle = N * holdSec;
@@ -80,7 +88,7 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     too much room (visible) rather than a heading behind the bar (not). */}
 <section
   data-under-nav
-  class:list={['hero', markY && 'hero--placed']}
+  class:list={['hero', markY && 'hero--placed', !scrim && 'hero--bare']}
   data-ink={ink}
   style={[
     markY && `--mark-y:${markY}`,
@@ -115,7 +123,7 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
     ))}
   </div>
 
-  <div class="hero-scrim" aria-hidden="true"></div>
+  {scrim && <div class="hero-scrim" aria-hidden="true"></div>}
 
   <div class="hero-content">
     <h1 class="hero-h1">
@@ -259,6 +267,45 @@ const delayFor = (i: number) => -(((N - i) % N) * holdSec);
       rgb(255 255 255 / 0.30) 88%,
       rgb(255 255 255 / 0.46) 100%
     );
+  }
+
+  /* ------------------------- no scrim at all ---------------------------
+     `scrim={false}`: the photograph is published as it was shot — nothing is
+     painted over any part of it. What the scrim was doing for legibility now
+     has to be done at the letterforms themselves, which is the cheaper trade
+     anyway: a wash costs a third of the frame, a halo costs a few pixels
+     around each stroke and leaves the picture a picture.
+
+     `drop-shadow` rather than `box-shadow`: these are SVG paths, so the glow
+     has to follow the alpha channel, not the element's rectangle. Two passes —
+     a tight opaque one that does the actual separating, and a wide soft one
+     that keeps the tight one from reading as an outline.
+
+     It goes on the CHILDREN of .hero-cue, never on .hero-cue itself: that
+     element's entrance animation ends on `filter: none` with `both` fill, and a
+     filled animation outranks a plain declaration. Declared there, it would
+     never once run — the same cascade trap the hover state already documents. */
+  .hero--bare .hero-mark {
+    filter:
+      drop-shadow(0 0 2px var(--color-bg))
+      drop-shadow(0 0 14px rgb(246 243 238 / 0.85));
+  }
+  .hero--bare .hero-cue-line,
+  .hero--bare .hero-cue svg {
+    filter:
+      drop-shadow(0 0 2px var(--color-bg))
+      drop-shadow(0 0 8px rgb(246 243 238 / 0.9));
+  }
+  /* The bar floats over this frame with no wash under it either, so its
+     hamburger and the ΕΛ/EN pair need the same treatment. They live in another
+     component; the hero is what removed their background, so the hero is what
+     pays for it. Both states are covered, because `over-hero` only exists once
+     the observer has run and the strip is already photographed before that. */
+  :global(body:has(.hero--bare) .navov:not(.tone-ready) .navov-right),
+  :global(body:has(.hero--bare) .navov.over-hero:not(.is-open) .navov-right) {
+    filter:
+      drop-shadow(0 0 2px var(--color-bg))
+      drop-shadow(0 0 8px rgb(246 243 238 / 0.9));
   }
 
   /* --------------------- the mark: it forms, then it stays ----------------

@@ -37,10 +37,11 @@ accent σκούρυνε σε **`#75644e`** επειδή το προηγούμε�
 | `WaveRule.astro` | Το κύμα του λογότυπου ως διαχωριστικό, ανοίγει στο scroll |
 | `BrandIcon.astro` + `lib/icons.ts` | Εννέα γραμμικά σύμβολα, χαράζονται στο scroll |
 | `PinnedSteps.astro` | ΕΝΑ component, δύο χρήσεις: απλά βήματα ή **βιτρίνα** (κατηγορία + τίτλος + μία γραμμή + φωτογραφία) όταν δοθεί `image`. Η φωτό ζει ΜΕΣΑ στο βήμα, ώστε να αλλάζει μαζί του και να δουλεύει και χωρίς JS |
-| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. **Κάνει το ίδιο το intro**: κρεμ οθόνη → το λογότυπο χαράζεται στη θέση του → η φωτογραφία εμφανίζεται από πίσω και μετά **αναπνέει** (zoom 20s μέσα/έξω, μόνο transform). Χωρίς ορατό κείμενο· ο h1 μένει ως `.sr-only`. `ink` prop → η φωτογραφία ορίζει μελάνη/scrim/χρώμα μπάρας |
+| `HeroFullBleed.astro` | Full-screen, art direction κατά **προσανατολισμό** όχι πλάτος. **Κάνει το ίδιο το intro**: κρεμ οθόνη → το λογότυπο χαράζεται στη θέση του → η φωτογραφία εμφανίζεται από πίσω και μετά **αναπνέει** (zoom 20s μέσα/έξω, μόνο transform). Χωρίς ορατό κείμενο· ο h1 μένει ως `.sr-only`. `ink` prop → η φωτογραφία ορίζει μελάνη/scrim/χρώμα μπάρας. `scrim={false}` (Αρχική) → **τίποτα δεν βάφεται πάνω στη φωτογραφία**· η αναγνωσιμότητα περνά σε φωτοστέφανο στα ίδια τα γράμματα |
 | `scripts/make-logo-parts.py` | Ξαναφτιάχνει το `logo-parts.svg` από το export του Illustrator — 4 **αδελφά** groups |
 | `scripts/probe-showcase.mjs` | Μετράει τη βιτρίνα: 6 θεραπείες × 8 μεγέθη — κοπή, σειρά βαφής, αντίθεση κάθε κειμένου πάνω στη φωτογραφία |
 | `scripts/probe-hero-mark.mjs` | Δειγματοληπτεί τον βρόχο του hero σε ακριβείς χρόνους (pause + `currentTime`) |
+| `scripts/probe-hero-bare.mjs` | Το hero **χωρίς scrim**: μετράει λογότυπο/δείκτη/μπάρα με **διαφορά καρέ** (λήψη με και χωρίς το στοιχείο → ξέρει ποια pixel είναι δικά του), και δίπλα τι θα έδινε χωρίς φωτοστέφανο |
 | `NavOverlay.astro` | Διάφανη μπάρα, hamburger σε όλα τα breakpoints· κρύβει το λογότυπό της πάνω από hero που δείχνει ήδη το σήμα |
 | `LangSwitch.astro` | ΕΛ / EN σε κεφαλίδα + υποσέλιδο. **Σήμανση, όχι λειτουργία** — το ανενεργό είναι `<span>`, όχι `href="#"` |
 | `StepsRail.astro` | Τα ίδια βήματα οριζόντια: 3 μαζί ≥64rem, ράγα με swipe + κουκκίδες πιο κάτω. CSS scroll-snap, όχι βιβλιοθήκη |
@@ -158,6 +159,7 @@ npm run build      # παραγωγή
 npm run preview    # έλεγχος του build
 QA_BASE="http://localhost:4321" QA_ROUTES="/,/poioi-eimaste,/oroi-xrisis-kai-politiki-aporritou" \
   node scripts/qa-screenshots.mjs     # launch gate, οπτικό μέρος
+QA_BASE="http://localhost:4321" node scripts/probe-hero-bare.mjs   # αντίθεση πάνω στη γυμνή φωτογραφία
 ```
 
 Τα build scripts για λογότυπο/σύμβολα/φωτογραφίες ζουν στο scratchpad της συνεδρίας —
